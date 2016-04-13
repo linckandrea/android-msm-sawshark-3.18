@@ -55,6 +55,7 @@
 #include "mdss_smmu.h"
 #include "mdss_mdp.h"
 #include "mdp3_ctrl.h"
+#include "mdss_dsi.h"
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MDSS_FB_NUM 3
@@ -814,6 +815,7 @@ static ssize_t mdss_fb_get_dfps_mode(struct device *dev,
 	return ret;
 }
 
+<<<<<<< HEAD
 static ssize_t mdss_fb_change_persist_mode(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t len)
 {
@@ -861,6 +863,39 @@ end:
 }
 
 static ssize_t mdss_fb_get_persist_mode(struct device *dev,
+=======
+static ssize_t mdss_fb_set_idle_mode(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = fbi->par;
+	struct mdss_panel_data *pdata;
+	int rc = 0;
+	int idle_mode = 0;
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
+
+	pdata = dev_get_platdata(&mfd->pdev->dev);
+	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
+				panel_data);
+
+	rc = kstrtoint(buf, 10, &idle_mode);
+	if (rc) {
+		pr_err("kstrtoint failed. rc=%d\n", rc);
+		return rc;
+	}
+
+	pr_debug("Idle mode = %d\n", idle_mode);
+
+	if (mfd->index == 0) {
+		if (ctrl_pdata && ctrl_pdata->low_power_config)
+			ctrl_pdata->low_power_config(pdata, idle_mode);
+	}
+
+	return count;
+}
+
+static ssize_t mdss_fb_get_display_mode(struct device *dev,
+>>>>>>> 7a548431bee7... Display:oled:change code for LCD idle mode
 		struct device_attribute *attr, char *buf)
 {
 	struct fb_info *fbi = dev_get_drvdata(dev);
@@ -868,6 +903,11 @@ static ssize_t mdss_fb_get_persist_mode(struct device *dev,
 	struct mdss_panel_data *pdata;
 	struct mdss_panel_info *pinfo;
 	int ret;
+<<<<<<< HEAD
+=======
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
+	char *rx_buf = NULL;
+>>>>>>> 7a548431bee7... Display:oled:change code for LCD idle mode
 
 	pdata = dev_get_platdata(&mfd->pdev->dev);
 	if (!pdata) {
@@ -875,12 +915,32 @@ static ssize_t mdss_fb_get_persist_mode(struct device *dev,
 		return -EINVAL;
 	}
 	pinfo = &pdata->panel_info;
+<<<<<<< HEAD
 
 	ret = scnprintf(buf, PAGE_SIZE, "%d\n", pinfo->persist_mode);
+=======
+	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
+				panel_data);
+	rx_buf= kzalloc(2, GFP_KERNEL);
+	if (!rx_buf) {
+		pr_err("not enough memory to hold panel reg dump\n");
+		return -ENOMEM;;
+	}
+	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x0a, 0x00,
+				NULL, rx_buf, 1);
+	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);
+
+	kfree(rx_buf);
+>>>>>>> 7a548431bee7... Display:oled:change code for LCD idle mode
 
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 7a548431bee7... Display:oled:change code for LCD idle mode
 static DEVICE_ATTR(msm_fb_type, S_IRUGO, mdss_fb_get_type, NULL);
 static DEVICE_ATTR(msm_fb_split, S_IRUGO | S_IWUSR, mdss_fb_show_split,
 					mdss_fb_store_split);
@@ -897,10 +957,18 @@ static DEVICE_ATTR(msm_fb_panel_status, S_IRUGO | S_IWUSR,
 	mdss_fb_get_panel_status, mdss_fb_force_panel_dead);
 static DEVICE_ATTR(msm_fb_dfps_mode, S_IRUGO | S_IWUSR,
 	mdss_fb_get_dfps_mode, mdss_fb_change_dfps_mode);
+<<<<<<< HEAD
 static DEVICE_ATTR(measured_fps, S_IRUGO | S_IWUSR | S_IWGRP,
 	mdss_fb_get_fps_info, NULL);
 static DEVICE_ATTR(msm_fb_persist_mode, S_IRUGO | S_IWUSR,
 	mdss_fb_get_persist_mode, mdss_fb_change_persist_mode);
+=======
+static DEVICE_ATTR(idle_mode, S_IRUGO | S_IWUSR | S_IWGRP, NULL, mdss_fb_set_idle_mode);
+static DEVICE_ATTR(display_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_display_mode, NULL);
+
+
+
+>>>>>>> 7a548431bee7... Display:oled:change code for LCD idle mode
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
 	&dev_attr_msm_fb_split.attr,
@@ -912,8 +980,13 @@ static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_thermal_level.attr,
 	&dev_attr_msm_fb_panel_status.attr,
 	&dev_attr_msm_fb_dfps_mode.attr,
+<<<<<<< HEAD
 	&dev_attr_measured_fps.attr,
 	&dev_attr_msm_fb_persist_mode.attr,
+=======
+	&dev_attr_idle_mode.attr,
+	&dev_attr_display_mode.attr,
+>>>>>>> 7a548431bee7... Display:oled:change code for LCD idle mode
 	NULL,
 };
 
