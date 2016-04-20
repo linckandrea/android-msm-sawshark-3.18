@@ -345,4 +345,10 @@ config ARCH_MSM8909
 	select ARCH_WANT_KMAP_ATOMIC_FLUSH
 
 endmenu
+
+config HUAWEI_SAWSHARK
+	bool "Use HUAWEI Sawshark DTS"
+	default n
+	help
+	  use huawei DTS
 endif
