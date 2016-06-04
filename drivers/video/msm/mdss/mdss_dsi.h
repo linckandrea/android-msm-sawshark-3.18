@@ -475,6 +475,7 @@ struct mdss_dsi_ctrl_pdata {
 	struct dsi_panel_cmds lp_off_cmds;
 	struct dsi_panel_cmds status_cmds;
 	int idle;
+	int ulps_mode;
 	struct dsi_panel_cmds idle_on_cmds;
 	struct dsi_panel_cmds idle_off_cmds;
 	struct dsi_panel_cmds brightness_cmds;
