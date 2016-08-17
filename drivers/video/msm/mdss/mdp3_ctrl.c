@@ -3070,7 +3070,7 @@ static int mdp3_ctrl_ioctl_handler(struct msm_fb_data_type *mfd,
 		if (mdp3_session->in_splash_screen)
 			mdp3_ctrl_reset(mfd);
 		mutex_unlock(&mdp3_res->fs_idle_pc_lock);
-		if (!rc)
+		if (!rc && !mfd->ulps_fmode)
 			rc = mdp3_overlay_play(mfd, &ov_data);
 		if (rc)
 			pr_err("OVERLAY_PLAY failed (%d)\n", rc);
