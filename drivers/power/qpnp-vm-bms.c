@@ -2946,7 +2946,7 @@ static void adjust_pon_ocv(struct qpnp_bms_chip *chip, int batt_temp)
 	}
 }
 
-extern int usb_flag;
+extern int get_usb_power_on_flag(void);
 extern int mp2661_global_get_batt_charging_current(void);
 static int lk_charge_flag = -1;
 static int __init param_lk_charge_setup(char *str)
@@ -2963,6 +2963,7 @@ static int calculate_initial_soc(struct qpnp_bms_chip *chip)
 	int rbatt_mohm = 0;
 	int batt_charging_current;
 	int pc = 0;
+	int usb_flag = 0;
 
 	__setup("lk_charge_flag=", param_lk_charge_setup);
 
@@ -2994,6 +2995,7 @@ static int calculate_initial_soc(struct qpnp_bms_chip *chip)
 	}
 	else
 	{
+		usb_flag = get_usb_power_on_flag();
 		switch(usb_flag)
 		{
 		case 0:
