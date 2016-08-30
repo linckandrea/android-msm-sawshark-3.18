@@ -200,6 +200,5 @@ source "drivers/hwmcu/Kconfig"
 
 source "drivers/nfc/Kconfig"
 
-source "drivers/haptics/Kconfig"
 
 endmenu
