@@ -768,6 +768,8 @@ struct mdss_panel_info {
 
 	/* HDR properties of display panel*/
 	struct mdss_panel_hdr_properties hdr_properties;
+
+	u32 bl_pre;
 };
 
 struct mdss_panel_timing {
