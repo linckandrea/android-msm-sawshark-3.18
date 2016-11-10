@@ -2271,6 +2271,32 @@ static int msm8x16_wcd_ext_spk_boost_set(struct snd_kcontrol *kcontrol,
 		__func__, msm8x16_wcd->spk_boost_set);
 	return 0;
 }
+
+static int msm8x16_wcd_audio_ssr_status_get(struct snd_kcontrol *kcontrol,
+				struct snd_ctl_elem_value *ucontrol)
+{
+	int ret = 0;
+	struct snd_soc_codec *codec = snd_soc_kcontrol_codec(kcontrol);
+	struct msm8x16_wcd_priv *msm8x16_wcd = snd_soc_codec_get_drvdata(codec);
+
+	ret = test_bit(BUS_DOWN, &msm8x16_wcd->status_mask);
+	pr_debug("%s status: %d\n", __func__, ret);
+	if (ret) {
+		ucontrol->value.integer.value[0] = 0;
+	} else {
+		ucontrol->value.integer.value[0] = 1;
+	}
+	return 0;
+}
+
+static int msm8x16_wcd_audio_ssr_status_set(struct snd_kcontrol *kcontrol,
+				struct snd_ctl_elem_value *ucontrol)
+{
+	pr_debug("%s\n", __func__);
+	/* dummy */
+	return 0;
+}
+
 static int msm8x16_wcd_get_iir_enable_audio_mixer(
 					struct snd_kcontrol *kcontrol,
 					struct snd_ctl_elem_value *ucontrol)
@@ -2559,6 +2585,10 @@ static const char * const msm8x16_wcd_hph_mode_ctrl_text[] = {
 static const struct soc_enum msm8x16_wcd_hph_mode_ctl_enum[] = {
 		SOC_ENUM_SINGLE_EXT(ARRAY_SIZE(msm8x16_wcd_hph_mode_ctrl_text),
 			msm8x16_wcd_hph_mode_ctrl_text),
+static const char * const msm8x16_wcd_ssr_status_text[] = {"DISABLE", "ENABLE"};
+
+static const struct soc_enum msm8x16_wcd_audio_ssr_status_enum[] = {
+		SOC_ENUM_SINGLE_EXT(2, msm8x16_wcd_ssr_status_text),
 };
 
 /*cut of frequency for high pass filter*/
@@ -2600,6 +2630,9 @@ static const struct snd_kcontrol_new msm8x16_wcd_snd_controls[] = {
 
 	SOC_ENUM_EXT("Ext Spk Boost", msm8x16_wcd_ext_spk_boost_ctl_enum[0],
 		msm8x16_wcd_ext_spk_boost_get, msm8x16_wcd_ext_spk_boost_set),
+
+	SOC_ENUM_EXT("Audio SSR Status", msm8x16_wcd_audio_ssr_status_enum[0],
+		msm8x16_wcd_audio_ssr_status_get, msm8x16_wcd_audio_ssr_status_set),
 
 	SOC_ENUM_EXT("LOOPBACK Mode", msm8x16_wcd_loopback_mode_ctl_enum[0],
 		msm8x16_wcd_loopback_mode_get, msm8x16_wcd_loopback_mode_put),
