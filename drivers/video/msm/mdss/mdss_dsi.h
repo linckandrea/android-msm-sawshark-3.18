@@ -403,6 +403,7 @@ struct mdss_dsi_ctrl_pdata {
 	int (*off) (struct mdss_panel_data *pdata);
 	int (*low_power_config) (struct mdss_panel_data *pdata, int enable);
 	int (*boost_mode_config) (struct mdss_panel_data *pdata, int enable);
+	int (*set_acl) (struct mdss_panel_data *pdata, int enable);
 	int (*set_col_page_addr)(struct mdss_panel_data *pdata, bool force);
 	int (*check_status) (struct mdss_dsi_ctrl_pdata *pdata);
 	int (*check_read_status) (struct mdss_dsi_ctrl_pdata *pdata);
@@ -568,6 +569,7 @@ struct mdss_dsi_ctrl_pdata {
 	bool update_phy_timing; /* flag to recalculate PHY timings */
 
 	bool phy_power_off;
+	bool acl_enable;
 };
 
 struct dsi_status_data {
