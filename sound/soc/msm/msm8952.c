@@ -80,7 +80,7 @@ static atomic_t quin_mi2s_clk_ref;
 static atomic_t auxpcm_mi2s_clk_ref;
 
 static int msm_quat_mi2s_clk = 0;
-static int msm_function_mi2s = 0;
+int msm_function_mi2s = 0;
 static int muxsel_csr_gp_io_mux_mic_ctl = 0;
 static int muxsel_csr_gp_io_mux_mic_ctl_size = 0;
 
@@ -213,6 +213,8 @@ static const char *const proxy_rx_ch_text[] = {"One", "Two", "Three", "Four",
 static const char *const vi_feed_ch_text[] = {"One", "Two"};
 static char const *mi2s_rx_sample_rate_text[] = {"KHZ_48",
 					"KHZ_96", "KHZ_192"};
+
+static int msm8952_get_port_id(int be_id);
 
 static inline int param_is_mask(int p)
 {
@@ -428,13 +430,19 @@ static int msm_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 					SNDRV_PCM_HW_PARAM_RATE);
 	struct snd_interval *channels = hw_param_interval(params,
 					SNDRV_PCM_HW_PARAM_CHANNELS);
+	int port_id = 0;
 
 	pr_debug("%s(), channel:%d, func_mi2s: %d\n", __func__, msm_ter_mi2s_tx_ch, msm_function_mi2s);
 	param_set_mask(params, SNDRV_PCM_HW_PARAM_FORMAT,
 			mi2s_tx_bit_format);
-	if(msm_function_mi2s){
-		rate->min = rate->max = 8000;
-	}else {
+	if (msm_function_mi2s) {
+		port_id = msm8952_get_port_id(rtd->dai_link->be_id);
+
+		if ((port_id == AFE_PORT_ID_QUATERNARY_MI2S_RX) || (port_id == AFE_PORT_ID_QUATERNARY_MI2S_TX))
+			rate->min = rate->max = 8000;
+		else
+			rate->min = rate->max = 16000;
+	} else {
 		rate->min = rate->max = 48000;
 	}
 	channels->min = channels->max = msm_ter_mi2s_tx_ch;
@@ -465,12 +473,18 @@ static int msm_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 
 	struct snd_interval *channels = hw_param_interval(params,
 					SNDRV_PCM_HW_PARAM_CHANNELS);
+	int port_id = 0;
 
 	pr_debug("%s(),func_mi2s = %d\n", __func__,msm_function_mi2s);
-	if(msm_function_mi2s){
-		rate->min = rate->max = 8000;
-		channels->min = channels->max = 1;
-	}else {
+
+	if (msm_function_mi2s) {
+		port_id = msm8952_get_port_id(rtd->dai_link->be_id);
+
+		if ((port_id == AFE_PORT_ID_QUATERNARY_MI2S_RX) || (port_id == AFE_PORT_ID_QUATERNARY_MI2S_TX))
+			rate->min = rate->max = 8000;
+		else
+			rate->min = rate->max = 16000;
+	} else {
 		rate->min = rate->max = 48000;
 		channels->min = channels->max = 2;
 	}
@@ -613,9 +627,12 @@ static uint32_t get_mi2s_clk_val(int port_id)
 	} else {
 		if (mi2s_rx_bit_format == SNDRV_PCM_FORMAT_S24_LE)
 			clk_val =  Q6AFE_LPASS_IBIT_CLK_3_P072_MHZ;
-		else{
-			if(msm_function_mi2s){
-				clk_val = Q6AFE_LPASS_IBIT_CLK_256_KHZ;
+		else {
+			if (msm_function_mi2s) {
+				if ((port_id == AFE_PORT_ID_QUATERNARY_MI2S_RX) || (port_id == AFE_PORT_ID_QUATERNARY_MI2S_TX))
+					clk_val = Q6AFE_LPASS_IBIT_CLK_256_KHZ;
+				else
+					clk_val = Q6AFE_LPASS_IBIT_CLK_512_KHZ;
 			} else {
 				clk_val = Q6AFE_LPASS_IBIT_CLK_1_P536_MHZ;
 			}
