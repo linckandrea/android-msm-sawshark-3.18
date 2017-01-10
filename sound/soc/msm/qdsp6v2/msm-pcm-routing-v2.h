@@ -418,4 +418,5 @@ int msm_pcm_routing_send_chmix_cfg(int fe_id, int ip_channel_cnt,
 				int op_channel_cnt, int *ch_wght_coeff,
 				int session_type, bool use_default_chmap,
 				char *channel_map);
+int check_if_lte_call_fallback(void);
 #endif /*_MSM_PCM_H*/
