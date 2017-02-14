@@ -237,7 +237,6 @@ static int mdss_dsi_panel_acl_dcs(struct mdss_panel_data *pdata, int enable)
 		pr_err("%s: Invalid input data\n", __func__);
 		return -1;
 	}
-
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 						panel_data);
 	if ( NULL == ctrl )
@@ -250,6 +249,13 @@ static int mdss_dsi_panel_acl_dcs(struct mdss_panel_data *pdata, int enable)
 	if ( NULL == pinfo )
 	{
 		pr_err("%s: panel info error", __func__);
+		return -1;
+	}
+
+
+	if( MDSS_PANEL_POWER_OFF == pinfo->panel_power_state )
+	{
+		pr_err("%s: panel_power_state is MDSS_PANEL_POWER_OFF", __func__);
 		return -1;
 	}
 
@@ -268,8 +274,6 @@ static int mdss_dsi_panel_acl_dcs(struct mdss_panel_data *pdata, int enable)
 	cmdreq.cb = NULL;
 
 	mdss_dsi_cmdlist_put(ctrl, &cmdreq);
-
-	ctrl->acl_enable = true;
 
 	return 0;
 }
@@ -986,6 +990,10 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 	mdss_dsi_panel_acl_dcs(pdata, 1);
 end:
 	pinfo->blank_state = MDSS_PANEL_BLANK_UNBLANK;
+	if( ctrl->acl_enable )
+	{
+		mdss_dsi_panel_acl_dcs(pdata, true );
+	}
 	pr_debug("%s:-\n", __func__);
 	return ret;
 }
@@ -1219,10 +1227,6 @@ static int mdss_dsi_panel_boost_config(struct mdss_panel_data *pdata,
 
 		if(ctrl->boost_off_cmds.cmd_cnt){
 			mdss_dsi_panel_cmds_send(ctrl, &ctrl->boost_off_cmds, CMD_REQ_COMMIT);}
-	}
-
-	if(!ctrl->acl_enable){
-		mdss_dsi_panel_acl_dcs(pdata, 1);
 	}
 
 	return 0;
