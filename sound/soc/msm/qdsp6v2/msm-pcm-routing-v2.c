@@ -2580,6 +2580,11 @@ static int msm_pcm_channel_input_be_put(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 	}
 
+	if (mux >= e->items) {
+		pr_err("%s: Invalid mux value %d\n", __func__, mux);
+		return -EINVAL;
+	}
+
 	channel_input[fe_id][in_ch] = ucontrol->value.enumerated.item[0];
 	return 1;
 }
