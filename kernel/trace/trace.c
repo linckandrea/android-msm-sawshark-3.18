@@ -3989,6 +3989,7 @@ tracing_saved_tgids_read(struct file *file, char __user *ubuf,
 
 	for (i = 0; i < savedcmd->cmdline_num; i++) {
 		int pid;
+		int r;
 
 		pid = savedcmd->map_cmdline_to_pid[i];
 		if (pid == -1 || pid == NO_CMDLINE_MAP)
