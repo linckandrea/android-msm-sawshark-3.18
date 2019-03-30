@@ -27,7 +27,8 @@
 
 #include "smpboot.h"
 
-#define LITTLE_CPU_MASK	(CPU_MASK(0) | CPU_MASK(1) | CPU_MASK(2) | CPU_MASK(3))
+#define CPU_MASK(cpu) (1U << (cpu))
+#define LITTLE_CPU_MASK (CPU_MASK(0) | CPU_MASK(1) | CPU_MASK(2) | CPU_MASK(3))
 static const unsigned long little_cluster_cpus = LITTLE_CPU_MASK;
 const struct cpumask *const cpu_lp_mask = to_cpumask(&little_cluster_cpus);
 EXPORT_SYMBOL(cpu_lp_mask);
