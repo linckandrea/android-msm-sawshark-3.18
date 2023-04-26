@@ -72,6 +72,9 @@ static ssize_t power_supply_show_property(struct device *dev,
 	static char *scope_text[] = {
 		"Unknown", "System", "Device"
 	};
+	static char *battery_id[] = {
+		"Unknown", "GUANGYU", "DESAY"
+	};
 	static const char * const typec_text[] = {
 		"Nothing attached", "Sink attached", "Powered cable w/ sink",
 		"Debug Accessory", "Audio Adapter", "Powered cable w/o sink",
@@ -134,6 +137,18 @@ static ssize_t power_supply_show_property(struct device *dev,
 		return sprintf(buf, "%s\n", type_text[value.intval]);
 	else if (off == POWER_SUPPLY_PROP_SCOPE)
 		return sprintf(buf, "%s\n", scope_text[value.intval]);
+	else if (off == POWER_SUPPLY_PROP_USB_INPUT_CURRENT)
+		return sprintf(buf, "%d\n", value.intval);
+	else if (off == POWER_SUPPLY_PROP_BATTERY_ID)
+		return sprintf(buf, "%s\n", battery_id[value.intval]);
+	else if (off == POWER_SUPPLY_PROP_DEVICE_NAME)
+		return sprintf(buf, "0x%04x\n", value.intval);
+	else if (off == POWER_SUPPLY_PROP_RETAIL_MODE)
+		return sprintf(buf, "%d\n", value.intval);
+	else if (off == POWER_SUPPLY_PROP_NOTIFY_USER_PARIED)
+		return sprintf(buf, "%d\n", value.intval);
+	else if (off == POWER_SUPPLY_PROP_VBUS_ONLINE_STATUS)
+		return sprintf(buf, "%d\n", value.intval);
 	else if (off == POWER_SUPPLY_PROP_TYPEC_MODE)
 		return snprintf(buf, PAGE_SIZE,
 					"%s\n", typec_text[value.intval]);
@@ -246,6 +261,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(scope),
 	POWER_SUPPLY_ATTR(charge_term_current),
 	POWER_SUPPLY_ATTR(calibrate),
+	POWER_SUPPLY_ATTR(vbus_online_status),
 	/* Local extensions */
 	POWER_SUPPLY_ATTR(usb_hc),
 	POWER_SUPPLY_ATTR(usb_otg),
@@ -329,6 +345,11 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(manufacturer),
 	POWER_SUPPLY_ATTR(serial_number),
 	POWER_SUPPLY_ATTR(battery_type),
+	POWER_SUPPLY_ATTR(usb_input_current),
+	POWER_SUPPLY_ATTR(battery_id),
+	POWER_SUPPLY_ATTR(dev_name),
+	POWER_SUPPLY_ATTR(retail_mode),
+	POWER_SUPPLY_ATTR(notify_user_paired),
 };
 
 static struct attribute *

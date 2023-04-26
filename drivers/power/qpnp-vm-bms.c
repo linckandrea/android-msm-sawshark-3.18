@@ -948,6 +948,7 @@ static int adjust_uuc(struct qpnp_bms_chip *chip, int soc_uuc)
 	return chip->prev_soc_uuc;
 }
 
+static int get_battery_status(struct qpnp_bms_chip *chip);
 static int lookup_soc_ocv(struct qpnp_bms_chip *chip, int ocv_uv, int batt_temp)
 {
 	int soc_ocv = 0, soc_cutoff = 0, soc_final = 0;
@@ -961,9 +962,11 @@ static int lookup_soc_ocv(struct qpnp_bms_chip *chip, int ocv_uv, int batt_temp)
 	soc_final = DIV_ROUND_CLOSEST(100 * (soc_ocv - soc_cutoff),
 							(100 - soc_cutoff));
 
+	status = get_battery_status(chip);
+
 	if (chip->batt_data->ibat_acc_lut) {
 		/* Apply  ACC logic only if we discharging */
-		if (chip->current_now > 0) {
+		if (2 == status && chip->current_now > 0) {
 
 			/*
 			 * IBAT averaging is disabled at low temp.
@@ -1220,7 +1223,7 @@ static int get_batt_therm(struct qpnp_bms_chip *chip, int *batt_temp)
 	int rc;
 	struct qpnp_vadc_result result;
 
-	rc = qpnp_vadc_read(chip->vadc_dev, LR_MUX1_BATT_THERM, &result);
+	rc = qpnp_vadc_read(chip->vadc_dev, P_MUX2_1_1, &result);
 	if (rc) {
 		pr_err("error reading adc channel = %d, rc = %d\n",
 					LR_MUX1_BATT_THERM, rc);
@@ -1593,6 +1596,8 @@ static int report_vm_bms_soc(struct qpnp_bms_chip *chip)
 	int time_since_last_change_sec = 0, charge_time_sec = 0;
 	unsigned long last_change_sec;
 	bool charging;
+	int status = -1;
+	int vbatt = 0;
 
 	soc = chip->calculated_soc;
 
@@ -1600,6 +1605,8 @@ static int report_vm_bms_soc(struct qpnp_bms_chip *chip)
 	calculate_delta_time(&last_change_sec, &time_since_last_change_sec);
 
 	charging = is_battery_charging(chip);
+	status = get_battery_status(chip);
+	get_battery_voltage(chip, &vbatt);
 
 	pr_debug("charging=%d last_soc=%d last_soc_unbound=%d\n",
 		charging, chip->last_soc, chip->last_soc_unbound);
@@ -1718,6 +1725,16 @@ static int report_vm_bms_soc(struct qpnp_bms_chip *chip)
 	 * We do not want the algorithm to be based of a wrong
 	 * initial OCV.
 	 */
+
+	if(chip->last_soc < 4 && vbatt > chip->dt.cfg_v_cutoff_uv)
+	{
+		chip->last_soc = 4;
+	}
+
+	if(vbatt <= chip->dt.cfg_v_cutoff_uv)
+	{
+		chip->last_soc = 0;
+	}
 
 	backup_ocv_soc(chip, chip->last_ocv_uv, chip->last_soc);
 
@@ -2890,6 +2907,8 @@ static void adjust_pon_ocv(struct qpnp_bms_chip *chip, int batt_temp)
 		chip->last_ocv_uv += delta_uv;
 	}
 }
+
+extern int usb_flag;
 
 static int calculate_initial_soc(struct qpnp_bms_chip *chip)
 {
