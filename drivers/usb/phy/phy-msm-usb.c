@@ -2773,6 +2773,10 @@ do_wait:
 	}
 }
 
+#if CONFIG_HUAWEI_SAWSHARK
+extern bool mp2661_global_is_chg_plugged_in(void);
+#endif
+
 static void msm_otg_sm_work(struct work_struct *w)
 {
 	struct msm_otg *motg = container_of(w, struct msm_otg, sm_work);
@@ -2911,6 +2915,13 @@ static void msm_otg_sm_work(struct work_struct *w)
 				get_pm_runtime_counter(otg->phy->dev), 0);
 			/* Delay used only if autosuspend enabled */
 			pm_runtime_mark_last_busy(dev);
+#ifdef CONFIG_HUAWEI_SAWSHARK
+			if(dev->power.usage_count.counter > 1)
+			{
+				pr_err("usage_count = %d is error and adjust it  to 1\n", dev->power.usage_count.counter);
+				atomic_set(&dev->power.usage_count, 1);
+			}
+#endif
 			pm_runtime_put_autosuspend(dev);
 		}
 		break;
@@ -3531,7 +3542,13 @@ static int otg_power_get_property_usb(struct power_supply *psy,
 		break;
 	/* Reflect USB enumeration */
 	case POWER_SUPPLY_PROP_ONLINE:
+#if CONFIG_HUAWEI_SAWSHARK
+		/* online status is determined by charger */
+		val->intval = (int)mp2661_global_is_chg_plugged_in();
+#else
 		val->intval = motg->online;
+
+#endif
 		break;
 	case POWER_SUPPLY_PROP_REAL_TYPE:
 		val->intval = motg->usb_supply_type;
