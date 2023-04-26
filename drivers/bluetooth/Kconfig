@@ -282,4 +282,10 @@ config BTFM_SLIM_WCN3990
 	  It is designed to adapt any future BT/FM device to implement a specific
 	  chip initialization process and control.
 
+config BRCM_BT_SLEEP
+        tristate "Bluetooth low power driver"
+        depends on BT
+        help
+          Bluetooth low power test
+
 endmenu
