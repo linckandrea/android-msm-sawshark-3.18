@@ -198,4 +198,6 @@ source "drivers/bif/Kconfig"
 
 source "drivers/hwmcu/Kconfig"
 
+source "drivers/nfc/Kconfig"
+
 endmenu
