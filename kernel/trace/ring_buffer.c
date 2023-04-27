@@ -1706,6 +1706,7 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size,
 		nr_pages = 2;
 
 	size = nr_pages * BUF_PAGE_SIZE;
+
 	/*
 	 * Don't succeed if resizing is disabled, as a reader might be
 	 * manipulating the ring buffer and is expecting a sane state while
