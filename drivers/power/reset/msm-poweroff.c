@@ -62,9 +62,8 @@ static void scm_disable_sdi(void);
 */
 static int download_mode = 1;
 #else
-static const int download_mode;
+static const int download_mode = 0;
 #endif
-static int download_mode = 0;
 static struct kobject dload_kobj;
 
 #ifdef CONFIG_MSM_DLOAD_MODE

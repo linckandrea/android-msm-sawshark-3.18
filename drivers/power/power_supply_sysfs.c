@@ -82,10 +82,12 @@ static ssize_t power_supply_show_property(struct device *dev,
 	};
 	static const char * const typec_pr_text[] = {
 		"none", "dual power role", "sink", "source"
+	};
 
 	static char *battery_id[] = {
 		"Unknown", "GUANGYU", "DESAY"
 	};
+
 	ssize_t ret = 0;
 	struct power_supply *psy = dev_get_drvdata(dev);
 	const ptrdiff_t off = attr - power_supply_attrs;
