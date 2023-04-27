@@ -767,13 +767,8 @@ static int wl_cfg80211_delayed_roam(struct bcm_cfg80211 *cfg, struct net_device 
 static int bw2cap[] = { 0, 0, WLC_BW_CAP_20MHZ, WLC_BW_CAP_40MHZ, WLC_BW_CAP_80MHZ,
 	WLC_BW_CAP_160MHZ, WLC_BW_CAP_160MHZ };
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 2, 0))
-#define CFG80211_DISCONNECTED(dev, reason, ie, len, loc_gen, gfp) \
-	cfg80211_disconnected(dev, reason, ie, len, gfp);
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0))
 #define CFG80211_DISCONNECTED(dev, reason, ie, len, loc_gen, gfp) \
 	cfg80211_disconnected(dev, reason, ie, len, loc_gen, gfp);
-#endif
 
 #ifdef RSSI_OFFSET
 static s32 wl_rssi_offset(s32 rssi)
