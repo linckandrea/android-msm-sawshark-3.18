@@ -1974,7 +1974,7 @@ static int netlink_dump(struct sock *sk)
 	struct sk_buff *skb = NULL;
 	struct nlmsghdr *nlh;
 	struct module *module;
-	int len, err = -ENOBUFS;
+	int err = -ENOBUFS;
 	int alloc_size;
 
 	mutex_lock(nlk->cb_mutex);
