@@ -1294,7 +1294,6 @@ struct saved_cmdlines_buffer {
 	unsigned cmdline_num;
 	int cmdline_idx;
 	char *saved_cmdlines;
-	int *saved_tgids;
 };
 static struct saved_cmdlines_buffer *savedcmd;
 
@@ -3906,7 +3905,6 @@ tracing_saved_cmdlines_size_read(struct file *filp, char __user *ubuf,
 static void free_saved_cmdlines_buffer(struct saved_cmdlines_buffer *s)
 {
 	kfree(s->saved_cmdlines);
-	kfree(s->saved_tgids);
 	kfree(s->map_cmdline_to_pid);
 	kfree(s->map_cmdline_to_tgid);
 	kfree(s);
