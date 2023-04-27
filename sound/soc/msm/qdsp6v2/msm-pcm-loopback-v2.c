@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016, 2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License version 2 and
@@ -25,7 +25,6 @@
 #include <sound/control.h>
 #include <sound/tlv.h>
 #include <asm/dma.h>
-#include <sound/q6audio-v2.h>
 
 #include "msm-pcm-routing-v2.h"
 
@@ -65,12 +64,6 @@ static struct fe_dai_session_map session_map[LOOPBACK_SESSION_MAX] = {
 	{ {}, NULL},
 	{ {}, NULL},
 };
-
-struct msm_pcm_pdata {
-	int perf_mode;
-};
-
-static u32 hfp_tx_mute;
 
 static void stop_pcm(struct msm_pcm_loopback *pcm);
 static int msm_pcm_loopback_get_session(struct snd_soc_pcm_runtime *rtd,
@@ -116,13 +109,6 @@ static void msm_pcm_loopback_event_handler(uint32_t opcode, uint32_t token,
 	}
 }
 
-static int msm_loopback_session_mute_get(struct snd_kcontrol *kcontrol,
-					 struct snd_ctl_elem_value *ucontrol)
-{
-	ucontrol->value.integer.value[0] = hfp_tx_mute;
-	return 0;
-}
-
 static int msm_loopback_session_mute_put(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
@@ -136,9 +122,8 @@ static int msm_loopback_session_mute_put(struct snd_kcontrol *kcontrol,
 		goto done;
 	}
 
-	mutex_lock(&loopback_session_lock);
 	pr_debug("%s: mute=%d\n", __func__, mute);
-	hfp_tx_mute = mute;
+
 	for (n = 0; n < LOOPBACK_SESSION_MAX; n++) {
 		if (!strcmp(session_map[n].stream_name, "MultiMedia6"))
 			pcm = session_map[n].loopback_priv;
@@ -149,15 +134,13 @@ static int msm_loopback_session_mute_put(struct snd_kcontrol *kcontrol,
 			pr_err("%s: Send mute command failed rc=%d\n",
 				__func__, ret);
 	}
-	 mutex_unlock(&loopback_session_lock);
 done:
 	return ret;
 }
 
 static struct snd_kcontrol_new msm_loopback_controls[] = {
 	SOC_SINGLE_EXT("HFP TX Mute", SND_SOC_NOPM, 0, 1, 0,
-			msm_loopback_session_mute_get,
-			msm_loopback_session_mute_put),
+			NULL, msm_loopback_session_mute_put),
 };
 
 static int msm_pcm_loopback_probe(struct snd_soc_platform *platform)
@@ -250,7 +233,6 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 	struct msm_pcm_routing_evt event;
 	struct asm_session_mtmx_strtr_param_window_v2_t asm_mtmx_strtr_window;
 	uint32_t param_id;
-	struct msm_pcm_pdata *pdata;
 
 	ret =  msm_pcm_loopback_get_session(rtd, &pcm);
 	if (ret)
@@ -276,15 +258,6 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 		if (pcm->audio_client != NULL)
 			stop_pcm(pcm);
 
-		pdata = (struct msm_pcm_pdata *)
-			dev_get_drvdata(rtd->platform->dev);
-		if (!pdata) {
-			dev_err(rtd->platform->dev,
-				"%s: platform data not populated\n", __func__);
-			mutex_unlock(&pcm->lock);
-			return -EINVAL;
-		}
-
 		pcm->audio_client = q6asm_audio_client_alloc(
 				(app_cb)msm_pcm_loopback_event_handler, pcm);
 		if (!pcm->audio_client) {
@@ -294,7 +267,7 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 			return -ENOMEM;
 		}
 		pcm->session_id = pcm->audio_client->session;
-		pcm->audio_client->perf_mode = pdata->perf_mode;
+		pcm->audio_client->perf_mode = false;
 		ret = q6asm_open_loopback_v2(pcm->audio_client,
 					     bits_per_sample);
 		if (ret < 0) {
@@ -351,8 +324,6 @@ static void stop_pcm(struct msm_pcm_loopback *pcm)
 
 	if (pcm->audio_client == NULL)
 		return;
-
-	mutex_lock(&loopback_session_lock);
 	q6asm_cmd(pcm->audio_client, CMD_CLOSE);
 
 	if (pcm->playback_substream != NULL) {
@@ -367,7 +338,6 @@ static void stop_pcm(struct msm_pcm_loopback *pcm)
 	}
 	q6asm_audio_client_free(pcm->audio_client);
 	pcm->audio_client = NULL;
-	mutex_unlock(&loopback_session_lock);
 }
 
 static int msm_pcm_close(struct snd_pcm_substream *substream)
@@ -506,7 +476,6 @@ static int msm_pcm_volume_ctl_put(struct snd_kcontrol *kcontrol,
 
 	prtd = substream->runtime->private_data;
 	rc = pcm_loopback_set_volume(prtd, volume);
-	mutex_unlock(&loopback_session_lock);
 
 	return rc;
 }
@@ -527,7 +496,6 @@ static int msm_pcm_volume_ctl_get(struct snd_kcontrol *kcontrol,
 		pr_err("%s substream runtime not found\n", __func__);
 		return -ENODEV;
 	}
-	mutex_lock(&loopback_session_lock);
 	prtd = substream->runtime->private_data;
 	if (prtd){
 		ucontrol->value.integer.value[0] = prtd->volume;
@@ -766,22 +734,9 @@ static struct snd_soc_platform_driver msm_soc_platform = {
 
 static int msm_pcm_probe(struct platform_device *pdev)
 {
-	struct msm_pcm_pdata *pdata;
 
 	dev_dbg(&pdev->dev, "%s: dev name %s\n",
 		__func__, dev_name(&pdev->dev));
-
-	pdata = kzalloc(sizeof(struct msm_pcm_pdata), GFP_KERNEL);
-	if (!pdata)
-		return -ENOMEM;
-
-	if (of_property_read_bool(pdev->dev.of_node,
-				"qcom,msm-pcm-loopback-low-latency"))
-		pdata->perf_mode = LOW_LATENCY_PCM_MODE;
-	else
-		pdata->perf_mode = LEGACY_PCM_MODE;
-
-	dev_set_drvdata(&pdev->dev, pdata);
 
 	return snd_soc_register_platform(&pdev->dev,
 				   &msm_soc_platform);

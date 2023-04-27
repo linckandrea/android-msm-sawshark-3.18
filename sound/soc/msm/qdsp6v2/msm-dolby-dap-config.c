@@ -822,7 +822,7 @@ int msm_dolby_dap_param_to_get_control_get(struct snd_kcontrol *kcontrol,
 		pr_err("%s: Incorrect parameter length", __func__);
 		return -EINVAL;
 	}
-	params_value = kzalloc(params_length + param_payload_len, GFP_KERNEL);
+	params_value = kzalloc(params_length, GFP_KERNEL);
 	if (!params_value) {
 		pr_err("%s, params memory alloc failed\n", __func__);
 		return -ENOMEM;
@@ -841,7 +841,8 @@ int msm_dolby_dap_param_to_get_control_get(struct snd_kcontrol *kcontrol,
 			pr_err("%s: invalid param id to set", __func__);
 			rc = -EINVAL;
 		} else {
-			params_length = dolby_dap_params_length[i] *
+			params_length = (dolby_dap_params_length[i] +
+						DOLBY_PARAM_PAYLOAD_SIZE) *
 						sizeof(uint32_t);
 			rc = adm_get_params(port_id, copp_idx,
 					    DOLBY_BUNDLE_MODULE_ID,
