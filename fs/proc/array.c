@@ -182,10 +182,6 @@ static inline void task_state(struct seq_file *m, struct pid_namespace *ns,
 		"Ngid:\t%d\n",
 		get_task_state(p),
 		leader ? task_pid_nr_ns(leader, ns) : 0,
-<<<<<<< HEAD
-		task_numa_group_id(p),
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		pid_nr_ns(pid, ns),
 		ppid, tpid,
 		from_kuid_munged(user_ns, cred->uid),

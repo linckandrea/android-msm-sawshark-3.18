@@ -3669,11 +3669,8 @@ out:
 		d_delete(dentry);
 	return error;
 }
-<<<<<<< HEAD
-=======
 EXPORT_SYMBOL(vfs_rmdir2);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 int vfs_rmdir(struct inode *dir, struct dentry *dentry)
 {
 	return vfs_rmdir2(NULL, dir, dentry);
@@ -4180,11 +4177,7 @@ int vfs_rename2(struct vfsmount *mnt,
 	struct inode *target = new_dentry->d_inode;
 	bool new_is_dir = false;
 	unsigned max_links = new_dir->i_sb->s_max_links;
-<<<<<<< HEAD
-    struct name_snapshot old_name;
-=======
 	struct name_snapshot old_name;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (source == target)
 		return 0;

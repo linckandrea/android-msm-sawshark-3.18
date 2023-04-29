@@ -160,11 +160,7 @@ static void timerfd_setup_cancel(struct timerfd_ctx *ctx, int flags)
 		}
 	} else {
 		__timerfd_remove_cancel(ctx);
-<<<<<<< HEAD
- 	}
-=======
 	}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	spin_unlock(&ctx->cancel_lock);
 }
 

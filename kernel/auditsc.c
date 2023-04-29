@@ -72,10 +72,6 @@
 #include <linux/fs_struct.h>
 #include <linux/compat.h>
 #include <linux/ctype.h>
-<<<<<<< HEAD
-=======
-#include <linux/uaccess.h>
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #include <linux/string.h>
 #include <linux/uaccess.h>
 #include <uapi/linux/limits.h>

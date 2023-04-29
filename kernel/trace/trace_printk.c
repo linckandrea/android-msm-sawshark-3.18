@@ -296,12 +296,9 @@ static int t_show(struct seq_file *m, void *v)
 	const char *str = *fmt;
 	int i;
 
-<<<<<<< HEAD
-=======
 	if (!*fmt)
 		return 0;
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	seq_printf(m, "0x%lx : \"", 0L);
 
 	/*

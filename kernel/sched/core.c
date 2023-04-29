@@ -1662,13 +1662,10 @@ static inline void clear_hmp_request(int cpu) { }
 
 static inline void update_cluster_topology(void) {}
 
-<<<<<<< HEAD
-=======
 int register_cpu_cycle_counter_cb(struct cpu_cycle_counter_cb *cb)
 {
 	return 0;
 }
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #endif	/* CONFIG_SCHED_HMP */
 
 #define SCHED_MIN_FREQ 1

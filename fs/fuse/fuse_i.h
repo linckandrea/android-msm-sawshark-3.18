@@ -160,10 +160,6 @@ struct fuse_file {
 
 	/* the read write file */
 	struct file *rw_lower_file;
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	bool shortcircuit_enabled;
 };
 

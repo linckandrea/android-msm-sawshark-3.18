@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -75,10 +71,7 @@ struct q6core_str {
 	struct cal_type_data *cal_data[CORE_MAX_CAL];
 	uint32_t mem_map_cal_handle;
 	int32_t adsp_status;
-<<<<<<< HEAD
-=======
 	struct q6core_avcs_ver_info q6core_avcs_ver_info;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	u32 q6_core_avs_version;
 };
 
@@ -206,14 +199,11 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		wake_up(&q6core_lcl.bus_bw_req_wait);
 		break;
 	case AVCS_GET_VERSIONS_RSP:
-<<<<<<< HEAD
-=======
 		if (data->payload_size < 4 * sizeof(uint32_t)) {
 			pr_err("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		payload1 = data->payload;
 		pr_debug("%s: Received ADSP version response[3]0x%x\n",
 					 __func__, payload1[3]);
@@ -240,14 +230,11 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		break;
 
 	 case AVCS_CMDRSP_GET_LICENSE_VALIDATION_RESULT:
-<<<<<<< HEAD
-=======
 		if (data->payload_size < sizeof(uint32_t)) {
 			pr_err("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		payload1 = data->payload;
 		pr_debug("%s: cmd = LICENSE_VALIDATION_RESULT, result = 0x%x\n",
 				__func__, payload1[0]);

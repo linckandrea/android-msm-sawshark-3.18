@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2013-2017, 2019 The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -27,12 +23,8 @@
 #define GET_NEXT(ptr, upper_limit, rc)                                  \
 ({                                                                      \
 	if (((ptr) + 1) > (upper_limit)) {                              \
-<<<<<<< HEAD
-		pr_err("%s: param list out of boundary\n", __func__);   \
-=======
 		pr_err_ratelimited("%s: param list out of boundary\n",  \
 				   __func__);				\
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		(rc) = -EINVAL;                                         \
 	}                                                               \
 	((rc) == 0) ? *(ptr)++ :  -EINVAL;                              \
@@ -41,12 +33,8 @@
 #define CHECK_PARAM_LEN(len, max_len, tag, rc)                          \
 do {                                                                    \
 	if ((len) > (max_len)) {                                        \
-<<<<<<< HEAD
-		pr_err("%s: params length overflows\n", (tag));         \
-=======
 		pr_err_ratelimited("%s: params length overflows\n",	\
 				   (tag));				\
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		(rc) = -EINVAL;                                         \
 	}                                                               \
 } while (0)

@@ -414,12 +414,8 @@ void msm_pcm_routing_reg_stream_app_type_cfg(int fedai_id, int app_type,
 			int acdb_dev_id, int sample_rate, int session_type);
 int msm_pcm_routing_get_stream_app_type_cfg(int fedai_id, int session_type,
 			int *app_type, int *acdb_dev_id, int *sample_rate);
-<<<<<<< HEAD
-int check_if_lte_call_fallback(void);
-=======
 int msm_pcm_routing_send_chmix_cfg(int fe_id, int ip_channel_cnt,
 				int op_channel_cnt, int *ch_wght_coeff,
 				int session_type, bool use_default_chmap,
 				char *channel_map);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #endif /*_MSM_PCM_H*/

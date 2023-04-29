@@ -420,11 +420,6 @@ static struct mount *next_descendent(struct mount *root, struct mount *cur)
 	if (!IS_MNT_NEW(cur) && !list_empty(&cur->mnt_slave_list))
 		return first_slave(cur);
 	do {
-<<<<<<< HEAD
-		if (cur->mnt_slave.next != &cur->mnt_master->mnt_slave_list)
-			return next_slave(cur);
-		cur = cur->mnt_master;
-=======
 		struct mount *master = cur->mnt_master;
 
 		if (!master || cur->mnt_slave.next != &master->mnt_slave_list) {
@@ -433,7 +428,6 @@ static struct mount *next_descendent(struct mount *root, struct mount *cur)
 			return (next == root) ? NULL : next;
 		}
 		cur = master;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	} while (cur != root);
 	return NULL;
 }

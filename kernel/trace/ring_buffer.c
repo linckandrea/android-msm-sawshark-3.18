@@ -1704,11 +1704,6 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size,
 	/* we need a minimum of two pages */
 	if (nr_pages < 2)
 		nr_pages = 2;
-<<<<<<< HEAD
-=======
-
-	size = nr_pages * BUF_PAGE_SIZE;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	size = nr_pages * BUF_PAGE_SIZE;
 	/*

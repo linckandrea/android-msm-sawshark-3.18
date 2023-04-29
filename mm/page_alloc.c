@@ -638,10 +638,6 @@ continue_merging:
 	}
 
 done_merging:
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	set_page_order(page, order);
 
 	/*
@@ -1203,16 +1199,11 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 
 	pages = move_freepages_block(zone, page, start_type, 0);
 
-<<<<<<< HEAD
-		pages = move_freepages_block(zone, page,
-				start_type, 0);
-=======
 	/* Claim the whole block if over half of it is free */
 	if (pages >= (1 << (pageblock_order-1)) ||
 			page_group_by_mobility_disabled)
 		set_pageblock_migratetype(page, start_type);
 }
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 /* Check whether there is a suitable fallback freepage with requested order. */
 static int find_suitable_fallback(struct free_area *area, unsigned int order,
@@ -1256,32 +1247,11 @@ __rmqueue_fallback(struct zone *zone, unsigned int order, int start_migratetype)
 	for (current_order = MAX_ORDER-1;
 				current_order >= order && current_order <= MAX_ORDER-1;
 				--current_order) {
-<<<<<<< HEAD
-		int i;
-		for (i = 0;; i++) {
-			int migratetype = fallbacks[start_migratetype][i];
-			int buddy_type = start_migratetype;
-
-			/* MIGRATE_RESERVE handled later if necessary */
-			if (migratetype == MIGRATE_RESERVE)
-				break;
-
-			area = &(zone->free_area[current_order]);
-			if (list_empty(&area->free_list[migratetype]))
-				continue;
-
-			page = list_entry(area->free_list[migratetype].next,
-					struct page, lru);
-			area->nr_free--;
-			if (is_migrate_cma(migratetype))
-				area->nr_free_cma--;
-=======
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
 				start_migratetype, &can_steal);
 		if (fallback_mt == -1)
 			continue;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 		page = list_entry(area->free_list[fallback_mt].next,
 						struct page, lru);

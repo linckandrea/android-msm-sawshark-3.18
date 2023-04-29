@@ -212,19 +212,11 @@ static int __f2fs_set_acl(struct inode *inode, int type,
 	switch (type) {
 	case ACL_TYPE_ACCESS:
 		name_index = F2FS_XATTR_INDEX_POSIX_ACL_ACCESS;
-<<<<<<< HEAD
-		if (acl) {
-			error = posix_acl_update_mode(inode, &inode->i_mode, &acl);
-			if (error)
-				return error;
-			set_acl_inode(fi, inode->i_mode);
-=======
 		if (acl && !ipage) {
 			error = posix_acl_update_mode(inode, &mode, &acl);
 			if (error)
 				return error;
 			set_acl_inode(inode, mode);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		}
 		break;
 

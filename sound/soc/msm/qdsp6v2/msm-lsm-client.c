@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- * Copyright (c) 2013-2017, Linux Foundation. All rights reserved.
-=======
  * Copyright (c) 2013-2017, 2019 Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1271,17 +1267,6 @@ static int msm_lsm_ioctl_shared(struct snd_pcm_substream *substream,
 	return rc;
 }
 #ifdef CONFIG_COMPAT
-<<<<<<< HEAD
-=======
-
-struct snd_lsm_event_status_v3_32 {
-	u32 timestamp_lsw;
-	u32 timestamp_msw;
-	u16 status;
-	u16 payload_size;
-	u8 payload[0];
-};
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 struct snd_lsm_sound_model_v2_32 {
 	compat_uptr_t data;
@@ -1851,8 +1836,6 @@ static int msm_lsm_ioctl(struct snd_pcm_substream *substream,
 		struct snd_lsm_event_status *user = NULL, userarg;
 		dev_dbg(rtd->dev,
 			"%s: SNDRV_LSM_EVENT_STATUS\n", __func__);
-<<<<<<< HEAD
-=======
 		if (copy_from_user(&userarg, arg, sizeof(userarg))) {
 			dev_err(rtd->dev,
 				"%s: err copyuser event_status\n",
@@ -1915,7 +1898,6 @@ static int msm_lsm_ioctl(struct snd_pcm_substream *substream,
 				__func__);
 			return -EINVAL;
 		}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (copy_from_user(&userarg, arg, sizeof(userarg))) {
 			dev_err(rtd->dev,
 				"%s: err copyuser event_status_v3\n",
@@ -1933,27 +1915,14 @@ static int msm_lsm_ioctl(struct snd_pcm_substream *substream,
 			goto done;
 		}
 
-<<<<<<< HEAD
-		size = sizeof(struct snd_lsm_event_status) +
-		userarg.payload_size;
-=======
 		size = sizeof(struct snd_lsm_event_status_v3) +
 			userarg.payload_size;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		user = kzalloc(size, GFP_KERNEL);
 		if (!user) {
 			dev_err(rtd->dev,
 				"%s: Allocation failed event status size %d\n",
 				__func__, size);
-<<<<<<< HEAD
-			err = -EFAULT;
-			goto done;
-		} else {
-			user->payload_size = userarg.payload_size;
-			err = msm_lsm_ioctl_shared(substream, cmd, user);
-=======
 			return -EFAULT;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		}
 		user->payload_size = userarg.payload_size;
 		err = msm_lsm_ioctl_shared(substream, cmd, user);
@@ -1975,13 +1944,8 @@ static int msm_lsm_ioctl(struct snd_pcm_substream *substream,
 		kfree(user);
 		if (err)
 			dev_err(rtd->dev,
-<<<<<<< HEAD
-				"%s: lsmevent failed %d", __func__, err);
-		goto done;
-=======
 				"%s: lsm_event_v3 failed %d", __func__, err);
 		break;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 
 	default:

@@ -27,11 +27,8 @@
 #include <linux/notifier.h>
 #include <linux/suspend.h>
 #include <linux/slab.h>
-<<<<<<< HEAD
-=======
 #include <linux/debugfs.h>
 #include <linux/debugfs.h>
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #define MAX_WAKEUP_REASON_IRQS 32
 static bool suspend_abort;
@@ -117,10 +114,8 @@ add_to_siblings(struct wakeup_irq_node *root, int irq)
 		list_add(&n->siblings, &root->siblings);
 	return n;
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
 static struct wakeup_irq_node* add_child(struct wakeup_irq_node *root, int irq)
 {
@@ -263,10 +258,6 @@ static ssize_t last_resume_reason_show(struct kobject *kobj,
 	spin_unlock_irqrestore(&resume_reason_lock, flags);
 
 	return b.buf_offset;
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 static ssize_t last_suspend_time_show(struct kobject *kobj,
@@ -309,10 +300,6 @@ static struct attribute_group attr_group = {
 	.attrs = attrs,
 };
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 static inline void stop_logging_wakeup_reasons(void)
 {
 	ACCESS_ONCE(log_wakeups) = false;
@@ -337,10 +324,7 @@ void log_base_wakeup_reason(int irq)
 }
 
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 /* This function is called by generic_handle_irq, which may call itself
  * recursively.  This happens with interrupts disabled.  Using
  * log_possible_wakeup_reason, we build a tree of interrupts, tracing the call
@@ -582,10 +566,7 @@ static int wakeup_reason_pm_event(struct notifier_block *notifier,
 		curr_monotime = ktime_get();
 		/* monotonic time since boot including the time spent in suspend */
 		curr_stime = ktime_get_boottime();
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
 		/* log_wakeups should have been cleared by now. */
 		if (WARN_ON(logging_wakeup_reasons())) {
@@ -606,8 +587,6 @@ static struct notifier_block wakeup_reason_pm_notifier_block = {
 	.notifier_call = wakeup_reason_pm_event,
 };
 
-<<<<<<< HEAD
-=======
 #if IS_ENABLED(CONFIG_DEBUG_FS) && IS_ENABLED(CONFIG_SUSPEND_TIME)
 static int suspend_time_debug_show(struct seq_file *s, void *data)
 {
@@ -656,7 +635,6 @@ late_initcall(suspend_time_debug_init);
 /* Initializes the sysfs parameter
  * registers the pm_event notifier
  */
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 int __init wakeup_reason_init(void)
 {
 	spin_lock_init(&resume_reason_lock);

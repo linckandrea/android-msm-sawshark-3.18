@@ -822,11 +822,7 @@ int msm_dolby_dap_param_to_get_control_get(struct snd_kcontrol *kcontrol,
 		pr_err("%s: Incorrect parameter length", __func__);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
-	params_value = kzalloc(params_length, GFP_KERNEL);
-=======
 	params_value = kzalloc(params_length + param_payload_len, GFP_KERNEL);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (!params_value) {
 		pr_err("%s, params memory alloc failed\n", __func__);
 		return -ENOMEM;

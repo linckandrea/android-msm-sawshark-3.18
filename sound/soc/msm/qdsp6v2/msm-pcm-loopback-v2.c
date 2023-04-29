@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2013-2016, 2019 The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License version 2 and
@@ -70,15 +66,12 @@ static struct fe_dai_session_map session_map[LOOPBACK_SESSION_MAX] = {
 	{ {}, NULL},
 };
 
-<<<<<<< HEAD
-=======
 struct msm_pcm_pdata {
 	int perf_mode;
 };
 
 static u32 hfp_tx_mute;
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 static void stop_pcm(struct msm_pcm_loopback *pcm);
 static int msm_pcm_loopback_get_session(struct snd_soc_pcm_runtime *rtd,
 					struct msm_pcm_loopback **pcm);
@@ -123,8 +116,6 @@ static void msm_pcm_loopback_event_handler(uint32_t opcode, uint32_t token,
 	}
 }
 
-<<<<<<< HEAD
-=======
 static int msm_loopback_session_mute_get(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
@@ -132,7 +123,6 @@ static int msm_loopback_session_mute_get(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 static int msm_loopback_session_mute_put(struct snd_kcontrol *kcontrol,
 					 struct snd_ctl_elem_value *ucontrol)
 {
@@ -146,14 +136,9 @@ static int msm_loopback_session_mute_put(struct snd_kcontrol *kcontrol,
 		goto done;
 	}
 
-<<<<<<< HEAD
-	pr_debug("%s: mute=%d\n", __func__, mute);
-
-=======
 	mutex_lock(&loopback_session_lock);
 	pr_debug("%s: mute=%d\n", __func__, mute);
 	hfp_tx_mute = mute;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	for (n = 0; n < LOOPBACK_SESSION_MAX; n++) {
 		if (!strcmp(session_map[n].stream_name, "MultiMedia6"))
 			pcm = session_map[n].loopback_priv;
@@ -164,22 +149,15 @@ static int msm_loopback_session_mute_put(struct snd_kcontrol *kcontrol,
 			pr_err("%s: Send mute command failed rc=%d\n",
 				__func__, ret);
 	}
-<<<<<<< HEAD
-=======
 	 mutex_unlock(&loopback_session_lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 done:
 	return ret;
 }
 
 static struct snd_kcontrol_new msm_loopback_controls[] = {
 	SOC_SINGLE_EXT("HFP TX Mute", SND_SOC_NOPM, 0, 1, 0,
-<<<<<<< HEAD
-			NULL, msm_loopback_session_mute_put),
-=======
 			msm_loopback_session_mute_get,
 			msm_loopback_session_mute_put),
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 static int msm_pcm_loopback_probe(struct snd_soc_platform *platform)
@@ -189,12 +167,8 @@ static int msm_pcm_loopback_probe(struct snd_soc_platform *platform)
 
 	return 0;
 }
-<<<<<<< HEAD
-static int pcm_loopback_set_volume(struct msm_pcm_loopback *prtd, int volume)
-=======
 static int pcm_loopback_set_volume(struct msm_pcm_loopback *prtd,
 				   uint32_t volume)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 {
 	int rc = -EINVAL;
 
@@ -283,13 +257,6 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 	if (ret)
 		return ret;
 
-<<<<<<< HEAD
-	ret =  msm_pcm_loopback_get_session(rtd, &pcm);
-	if (ret)
-		return ret;
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	mutex_lock(&pcm->lock);
 
 	pcm->volume = 0x2000;
@@ -521,28 +488,6 @@ static int msm_pcm_volume_ctl_put(struct snd_kcontrol *kcontrol,
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	int rc = 0;
-<<<<<<< HEAD
-	struct snd_pcm_volume *vol = snd_kcontrol_chip(kcontrol);
-	struct snd_pcm_substream *substream = vol->pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream;
-	struct msm_pcm_loopback *prtd;
-	int volume = ucontrol->value.integer.value[0];
-
-	if (!substream) {
-		pr_err("%s substream not found\n", __func__);
-		return -ENODEV;
-	}
-	if (!substream->runtime) {
-		pr_err("%s substream runtime not found\n", __func__);
-		return 0;
-	}
-	if (volume < 0){
-		volume = 0;
-	}
-
-	prtd = substream->runtime->private_data;
-	rc = pcm_loopback_set_volume(prtd, volume);
-
-=======
 	struct snd_pcm_volume *vol = kcontrol->private_data;
 	struct snd_pcm_substream *substream = vol->pcm->streams[0].substream;
 	struct msm_pcm_loopback *prtd;
@@ -564,41 +509,18 @@ static int msm_pcm_volume_ctl_put(struct snd_kcontrol *kcontrol,
 	mutex_unlock(&loopback_session_lock);
 
 exit:
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return rc;
 }
 
 static int msm_pcm_volume_ctl_get(struct snd_kcontrol *kcontrol,
-<<<<<<< HEAD
-		      struct snd_ctl_elem_value *ucontrol)
-{
-=======
 				  struct snd_ctl_elem_value *ucontrol)
 {
 	int rc = 0;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	struct snd_pcm_volume *vol = snd_kcontrol_chip(kcontrol);
 	struct snd_pcm_substream *substream =
 		vol->pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream;
 	struct msm_pcm_loopback *prtd;
 
-<<<<<<< HEAD
-	if (!substream) {
-		pr_err("%s substream not found\n", __func__);
-		return -ENODEV;
-	}
-	if (!substream->runtime) {
-		pr_err("%s substream runtime not found\n", __func__);
-		return -ENODEV;
-	}
-	prtd = substream->runtime->private_data;
-	if (prtd){
-		ucontrol->value.integer.value[0] = prtd->volume;
-		return 0;
-	}else	{
-		return -EINVAL;
-	}
-=======
 	pr_debug("%s\n", __func__);
 	if ((!substream) || (!substream->runtime)) {
 		pr_err("%s substream or runtime not found\n", __func__);
@@ -617,7 +539,6 @@ static int msm_pcm_volume_ctl_get(struct snd_kcontrol *kcontrol,
 	mutex_unlock(&loopback_session_lock);
 exit:
 	return rc;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 static int msm_pcm_add_volume_controls(struct snd_soc_pcm_runtime *rtd)
@@ -849,16 +770,11 @@ static struct snd_soc_platform_driver msm_soc_platform = {
 
 static int msm_pcm_probe(struct platform_device *pdev)
 {
-<<<<<<< HEAD
-=======
 	struct msm_pcm_pdata *pdata;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	dev_dbg(&pdev->dev, "%s: dev name %s\n",
 		__func__, dev_name(&pdev->dev));
 
-<<<<<<< HEAD
-=======
 	pdata = kzalloc(sizeof(struct msm_pcm_pdata), GFP_KERNEL);
 	if (!pdata)
 		return -ENOMEM;
@@ -871,7 +787,6 @@ static int msm_pcm_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, pdata);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return snd_soc_register_platform(&pdev->dev,
 				   &msm_soc_platform);
 }

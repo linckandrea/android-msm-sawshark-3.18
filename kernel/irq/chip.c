@@ -658,10 +658,6 @@ EXPORT_SYMBOL(handle_edge_irq);
 bool handle_edge_eoi_irq(unsigned int irq, struct irq_desc *desc)
 {
 	bool handled = false;
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	struct irq_chip *chip = irq_desc_get_chip(desc);
 
 	raw_spin_lock(&desc->lock);

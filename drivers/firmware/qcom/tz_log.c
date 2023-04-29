@@ -57,14 +57,11 @@
  * TZ 3.X version info
  */
 #define QSEE_VERSION_TZ_3_X 0x800000
-<<<<<<< HEAD
-=======
 
 #define TZBSP_AES_256_ENCRYPTED_KEY_SIZE 256
 #define TZBSP_NONCE_LEN 12
 #define TZBSP_TAG_LEN 16
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 /*
  * VMID Table
  */

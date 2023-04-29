@@ -536,11 +536,7 @@ static ssize_t sockfs_listxattr(struct dentry *dentry, char *buffer,
 	return used;
 }
 
-<<<<<<< HEAD
-int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
-=======
 static int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 {
 	int err = simple_setattr(dentry, iattr);
 

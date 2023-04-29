@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- * Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
-=======
  * Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  * Author: Brian Swetland <swetland@google.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -1682,17 +1678,11 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 		pr_err("%s: data NULL\n", __func__);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
-	if (!q6asm_is_valid_audio_client(ac)) {
-		pr_err("%s: audio client pointer is invalid, ac = %pK\n",
-				__func__, ac);
-=======
 
 	session_id = q6asm_get_session_id_from_audio_client(ac);
 	if (session_id <= 0) {
 		pr_err("%s: Session ID is invalid, session = %d\n", __func__,
 			session_id);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
 
@@ -1933,12 +1923,6 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 				return -EINVAL;
 			}
 			spin_lock_irqsave(&port->dsp_lock, dsp_flags);
-<<<<<<< HEAD
-			if (lower_32_bits(port->buf[data->token].phys) !=
-			payload[0] ||
-			msm_audio_populate_upper_32_bits(
-				port->buf[data->token].phys) !=	payload[1]) {
-=======
 			if (data->token < 0 ||
 					data->token >= port->max_buf_cnt) {
 				pr_debug("%s: Invalid token buffer index %u\n",
@@ -1956,7 +1940,6 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 				msm_audio_populate_upper_32_bits(
 					port->buf[data->token].phys) !=
 						payload[1])) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 				pr_debug("%s: Expected addr %pK\n",
 				__func__, &port->buf[data->token].phys);
 				pr_err("%s: rxedl[0x%x] rxedu [0x%x]\n",
@@ -2789,11 +2772,6 @@ static int __q6asm_open_write(struct audio_client *ac, uint32_t format,
 	open.bits_per_sample = bits_per_sample;
 
 	open.postprocopo_id = q6asm_get_asm_topology_cal();
-<<<<<<< HEAD
-	if (ac->perf_mode != LEGACY_PCM_MODE)
-		open.postprocopo_id = ASM_STREAM_POSTPROCOPO_ID_NONE;
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	pr_debug("%s: perf_mode %d asm_topology 0x%x bps %d\n", __func__,
 		 ac->perf_mode, open.postprocopo_id, open.bits_per_sample);
@@ -6713,11 +6691,7 @@ int q6asm_set_mute(struct audio_client *ac, int muteflag)
 				atomic_read(&ac->cmd_state_pp)),
 				mute.data.param_id);
 		rc = adsp_err_get_lnx_err_code(
-<<<<<<< HEAD
-				atomic_read(&ac->cmd_state));
-=======
 				atomic_read(&ac->cmd_state_pp));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		goto fail_cmd;
 	}
 	rc = 0;

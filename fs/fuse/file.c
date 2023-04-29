@@ -66,13 +66,8 @@ struct fuse_file *fuse_file_alloc(struct fuse_conn *fc)
 
 	ff->rw_lower_file = NULL;
 	ff->shortcircuit_enabled = 0;
-<<<<<<< HEAD
-        if (fc->shortcircuit_io)
-	    ff->shortcircuit_enabled = 1;
-=======
 	if (fc->shortcircuit_io)
 		ff->shortcircuit_enabled = 1;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	ff->fc = fc;
 	ff->reserved_req = fuse_request_alloc(0);
 	if (unlikely(!ff->reserved_req)) {
@@ -2221,10 +2216,7 @@ static int fuse_direct_mmap(struct file *file, struct vm_area_struct *vma)
 	struct fuse_file *ff = file->private_data;
 
 	ff->shortcircuit_enabled = 0;
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	/* Can't provide the coherency needed for MAP_SHARED */
 	if (vma->vm_flags & VM_MAYSHARE)
 		return -ENODEV;

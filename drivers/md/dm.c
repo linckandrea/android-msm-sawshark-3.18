@@ -3039,10 +3039,6 @@ struct mapped_device *dm_get_from_kobject(struct kobject *kobj)
 		md = NULL;
 		goto out;
 	}
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	dm_get(md);
 out:
 	spin_unlock(&_minor_lock);

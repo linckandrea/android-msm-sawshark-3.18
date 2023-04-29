@@ -88,34 +88,6 @@
 		(x)->i_mode = ((x)->i_mode & S_IFMT) | 0775;\
 	} while (0)
 
-<<<<<<< HEAD
-/* OVERRIDE_CRED() and REVERT_CRED()
- *	OVERRIDE_CRED()
- *		backup original task->cred
- *		and modifies task->cred->fsuid/fsgid to specified value.
- *	REVERT_CRED()
- *		restore original task->cred->fsuid/fsgid.
- * These two macro should be used in pair, and OVERRIDE_CRED() should be
- * placed at the beginning of a function, right after variable declaration.
- */
-#define OVERRIDE_CRED(sdcardfs_sbi, saved_cred, info)		\
-	do {	\
-		saved_cred = override_fsids(sdcardfs_sbi, info->data);	\
-		if (!saved_cred)	\
-			return -ENOMEM;	\
-	} while (0)
-
-#define OVERRIDE_CRED_PTR(sdcardfs_sbi, saved_cred, info)	\
-	do {	\
-		saved_cred = override_fsids(sdcardfs_sbi, info->data);	\
-		if (!saved_cred)	\
-			return ERR_PTR(-ENOMEM);	\
-	} while (0)
-
-#define REVERT_CRED(saved_cred)	revert_fsids(saved_cred)
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 /* Android 5.0 support */
 
 /* Permission mode for a specific node. Controls how file permissions
@@ -204,10 +176,7 @@ struct sdcardfs_inode_info {
 	struct sdcardfs_inode_data *data;
 
 	/* top folder for ownership */
-<<<<<<< HEAD
-=======
 	spinlock_t top_lock;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	struct sdcardfs_inode_data *top_data;
 
 	struct inode vfs_inode;
@@ -227,10 +196,7 @@ struct sdcardfs_mount_options {
 	userid_t fs_user_id;
 	bool multiuser;
 	bool gid_derivation;
-<<<<<<< HEAD
-=======
 	bool default_normal;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	unsigned int reserved_mb;
 };
 
@@ -390,16 +356,12 @@ static inline struct sdcardfs_inode_data *data_get(
 static inline struct sdcardfs_inode_data *top_data_get(
 		struct sdcardfs_inode_info *info)
 {
-<<<<<<< HEAD
-	return data_get(info->top_data);
-=======
 	struct sdcardfs_inode_data *top_data;
 
 	spin_lock(&info->top_lock);
 	top_data = data_get(info->top_data);
 	spin_unlock(&info->top_lock);
 	return top_data;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 extern void data_release(struct kref *ref);
@@ -421,25 +383,6 @@ static inline void release_own_data(struct sdcardfs_inode_info *info)
 }
 
 static inline void set_top(struct sdcardfs_inode_info *info,
-<<<<<<< HEAD
-			struct sdcardfs_inode_data *top)
-{
-	struct sdcardfs_inode_data *old_top = info->top_data;
-
-	if (top)
-		data_get(top);
-	info->top_data = top;
-	if (old_top)
-		data_put(old_top);
-}
-
-static inline int get_gid(struct vfsmount *mnt,
-		struct sdcardfs_inode_data *data)
-{
-	struct sdcardfs_vfsmount_options *opts = mnt->data;
-
-	if (opts->gid == AID_SDCARD_RW)
-=======
 			struct sdcardfs_inode_info *top_owner)
 {
 	struct sdcardfs_inode_data *old_top;
@@ -464,7 +407,6 @@ static inline int get_gid(struct vfsmount *mnt,
 	struct sdcardfs_sb_info *sbi = SDCARDFS_SB(sb);
 
 	if (vfsopts->gid == AID_SDCARD_RW && !sbi->options.default_normal)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		/* As an optimization, certain trusted system components only run
 		 * as owner but operate across all users. Since we're now handing
 		 * out the sdcard_rw GID only to trusted apps, we're okay relaxing
@@ -473,11 +415,7 @@ static inline int get_gid(struct vfsmount *mnt,
 		 */
 		return AID_SDCARD_RW;
 	else
-<<<<<<< HEAD
-		return multiuser_get_uid(data->userid, opts->gid);
-=======
 		return multiuser_get_uid(data->userid, vfsopts->gid);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 static inline int get_mode(struct vfsmount *mnt,
@@ -564,12 +502,7 @@ struct limit_search {
 };
 
 extern void setup_derived_state(struct inode *inode, perm_t perm,
-<<<<<<< HEAD
-		userid_t userid, uid_t uid, bool under_android,
-		struct sdcardfs_inode_data *top);
-=======
 			userid_t userid, uid_t uid);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 extern void get_derived_permission(struct dentry *parent, struct dentry *dentry);
 extern void get_derived_permission_new(struct dentry *parent, struct dentry *dentry, const struct qstr *name);
 extern void fixup_perms_recursive(struct dentry *dentry, struct limit_search *limit);
@@ -711,11 +644,7 @@ static inline bool str_n_case_eq(const char *s1, const char *s2, size_t len)
 
 static inline bool qstr_case_eq(const struct qstr *q1, const struct qstr *q2)
 {
-<<<<<<< HEAD
-	return q1->len == q2->len && str_case_eq(q1->name, q2->name);
-=======
 	return q1->len == q2->len && str_n_case_eq(q1->name, q2->name, q2->len);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 /* */

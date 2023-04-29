@@ -670,10 +670,6 @@ has_zeroout:
 		 */
 		if (map->m_flags & EXT4_MAP_NEW &&
 		    !(map->m_flags & EXT4_MAP_UNWRITTEN) &&
-<<<<<<< HEAD
-		    !(flags & EXT4_GET_BLOCKS_ZERO) &&
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		    !IS_NOQUOTA(inode) &&
 		    ext4_should_order_data(inode)) {
 			ret = ext4_jbd2_file_inode(handle, inode);
