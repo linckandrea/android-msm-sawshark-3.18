@@ -32,19 +32,6 @@ config ANDROID_BINDER_IPC_32BIT
 
 	  Note that enabling this will break newer Android user-space.
 
-<<<<<<< HEAD
-config ANDROID_BINDER_IPC_SELFTEST
-	bool "Android Binder IPC Driver Selftest"
-	depends on ANDROID_BINDER_IPC
-	---help---
-	  This feature allows binder selftest to run.
-
-	  Binder selftest checks the allocation and free of binder buffers
-	  exhaustively with combinations of various buffer sizes and
-	  alignments.
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 config ANDROID_BINDER_DEVICES
 	string "Android Binder devices"
 	depends on ANDROID_BINDER_IPC
@@ -57,8 +44,6 @@ config ANDROID_BINDER_DEVICES
 	  created. Each binder device has its own context manager, and is
 	  therefore logically separated from the other devices.
 
-<<<<<<< HEAD
-=======
 config ANDROID_BINDER_IPC_SELFTEST
         bool "Android Binder IPC Driver Selftest"
         depends on ANDROID_BINDER_IPC
@@ -69,7 +54,6 @@ config ANDROID_BINDER_IPC_SELFTEST
           exhaustively with combinations of various buffer sizes and
           alignments.
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 config ASHMEM
 	bool "Enable the Anonymous Shared Memory Subsystem"
 	default n

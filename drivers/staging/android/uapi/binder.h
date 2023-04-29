@@ -86,8 +86,6 @@ enum flat_binder_object_flags {
 	 * scheduling policy from the caller (for synchronous transactions).
 	 */
 	FLAT_BINDER_FLAG_INHERIT_RT = 0x800,
-<<<<<<< HEAD
-=======
 
 	/**
 	 * @FLAT_BINDER_FLAG_TXN_SECURITY_CTX: request security contexts
@@ -96,7 +94,6 @@ enum flat_binder_object_flags {
 	 * context
 	 */
 	FLAT_BINDER_FLAG_TXN_SECURITY_CTX = 0x1000,
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 #ifdef BINDER_IPC_32BIT
@@ -264,10 +261,7 @@ struct binder_node_debug_info {
 #define BINDER_THREAD_EXIT		_IOW('b', 8, __s32)
 #define BINDER_VERSION			_IOWR('b', 9, struct binder_version)
 #define BINDER_GET_NODE_DEBUG_INFO	_IOWR('b', 11, struct binder_node_debug_info)
-<<<<<<< HEAD
-=======
 #define BINDER_SET_CONTEXT_MGR_EXT	_IOW('b', 13, struct flat_binder_object)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 /*
  * NOTE: Two special error codes you should check for when calling
@@ -326,14 +320,11 @@ struct binder_transaction_data {
 	} data;
 };
 
-<<<<<<< HEAD
-=======
 struct binder_transaction_data_secctx {
 	struct binder_transaction_data transaction_data;
 	binder_uintptr_t secctx;
 };
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 struct binder_transaction_data_sg {
 	struct binder_transaction_data transaction_data;
 	binder_size_t buffers_size;
