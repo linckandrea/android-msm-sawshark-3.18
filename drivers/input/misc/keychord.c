@@ -373,11 +373,7 @@ static ssize_t keychord_write(struct file *file, const char __user *buffer,
 		spin_lock_irqsave(&kdev->lock, flags);
 		kfree(kdev->keychords);
 		kdev->keychords = 0;
-<<<<<<< HEAD
-		spin_unlock_irqrestore(&kdev->lock, flags);
-=======
 		keychord_write_unlock(kdev);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return ret;
 	}
 	kdev->registered = 1;

@@ -23,8 +23,7 @@
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/types.h>
-<<<<<<< HEAD
-=======
+
 
 /*
  * Choose whether access to the RAM zone requires locking or not.  If a zone
@@ -32,7 +31,6 @@
  * PRZ_FLAG_NO_LOCK is used. For all other cases, locking is required.
  */
 #define PRZ_FLAG_NO_LOCK	BIT(0)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 struct persistent_ram_buffer;
 struct rs_control;

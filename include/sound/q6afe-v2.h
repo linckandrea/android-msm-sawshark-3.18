@@ -339,11 +339,5 @@ int afe_send_custom_tdm_header_cfg(
 	struct afe_param_id_custom_tdm_header_cfg *custom_tdm_header_cfg,
 	u16 port_id);
 int afe_tdm_port_start(u16 port_id, struct afe_tdm_port_config *tdm_port,
-<<<<<<< HEAD
-		u32 rate);
-int msm_external_pa_get(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol);
-
-=======
 		u32 rate, u16 num_groups);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #endif /* __Q6AFE_V2_H__ */

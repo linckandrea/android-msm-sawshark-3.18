@@ -1,25 +1,9 @@
-<<<<<<< HEAD
-/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
-#ifndef MSM_CAM_ISPIF_H
-#define MSM_CAM_ISPIF_H
-=======
 #ifndef UAPI_MSMB_ISPIF_H
 #define UAPI_MSMB_ISPIF_H
 
 #include <linux/types.h>
 #include <linux/ioctl.h>
 #include <linux/videodev2.h>
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #define CSID_VERSION_V20                      0x02000011
 #define CSID_VERSION_V22                      0x02001000
@@ -52,10 +36,6 @@ enum msm_ispif_intftype {
 #define RDI1_MASK (1 << RDI1)
 #define RDI2_MASK (1 << RDI2)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 enum msm_ispif_vc {
 	VC0,
 	VC1,
@@ -92,8 +72,6 @@ enum msm_ispif_csid {
 	CSID_MAX
 };
 
-<<<<<<< HEAD
-=======
 enum msm_ispif_pixel_odd_even {
 	PIX_EVEN,
 	PIX_ODD
@@ -112,7 +90,6 @@ struct msm_ispif_pack_cfg {
 	enum msm_ispif_pixel_pack_mode pack_mode;
 };
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 struct msm_ispif_params_entry {
 	enum msm_ispif_vfe_intf vfe_intf;
 	enum msm_ispif_intftype intftype;
@@ -124,8 +101,6 @@ struct msm_ispif_params_entry {
 	uint16_t crop_end_pixel;
 };
 
-<<<<<<< HEAD
-=======
 struct msm_ispif_right_param_entry {
 	enum msm_ispif_cid cids[MAX_CID_CH_v2];
 	enum msm_ispif_csid csid;
@@ -140,7 +115,6 @@ struct msm_ispif_param_data_ext {
 	uint16_t line_width[VFE_MAX];
 };
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 struct msm_ispif_param_data {
 	uint32_t num;
 	struct msm_ispif_params_entry entries[MAX_PARAM_ENTRIES];
@@ -169,11 +143,8 @@ enum ispif_cfg_type_t {
 	ISPIF_RELEASE,
 	ISPIF_ENABLE_REG_DUMP,
 	ISPIF_SET_VFE_INFO,
-<<<<<<< HEAD
-=======
 	ISPIF_CFG2,
 	ISPIF_CFG_STEREO,
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 struct ispif_cfg_data {
@@ -186,12 +157,6 @@ struct ispif_cfg_data {
 	};
 };
 
-<<<<<<< HEAD
-#define VIDIOC_MSM_ISPIF_CFG \
-	_IOWR('V', BASE_VIDIOC_PRIVATE, struct ispif_cfg_data)
-
-#endif /* MSM_CAM_ISPIF_H */
-=======
 struct ispif_cfg_data_ext {
 	enum ispif_cfg_type_t cfg_type;
 	void __user *data;
@@ -211,5 +176,3 @@ struct ispif_cfg_data_ext {
 	_IOWR('V', BASE_VIDIOC_PRIVATE+1, struct ispif_cfg_data_ext)
 
 #endif
-
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a

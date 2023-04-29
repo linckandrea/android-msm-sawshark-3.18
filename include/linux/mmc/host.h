@@ -553,10 +553,7 @@ struct mmc_host {
 	unsigned int		bus_resume_flags;
 #define MMC_BUSRESUME_MANUAL_RESUME	(1 << 0)
 #define MMC_BUSRESUME_NEEDS_RESUME	(1 << 1)
-<<<<<<< HEAD
-=======
 	bool ignore_bus_resume_flags;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	unsigned int		sdio_irqs;
 	struct task_struct	*sdio_irq_thread;
