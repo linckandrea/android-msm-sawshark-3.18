@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  * Copyright (C) 1994 Martin Schaller
  *
  * 2001 - Documented with DocBook
@@ -119,9 +123,15 @@ static unsigned int __do_compat_ioctl_nr(unsigned int cmd32)
 static void  __copy_atomic_commit_struct(struct mdp_layer_commit  *commit,
 	struct mdp_layer_commit32 *commit32)
 {
+<<<<<<< HEAD
 	unsigned int destSize = sizeof(commit->commit_v1.reserved);
 	unsigned int srcSize = sizeof(commit32->commit_v1.reserved);
 	unsigned int count = (destSize <= srcSize ? destSize : srcSize);
+=======
+	unsigned int destsize = sizeof(commit->commit_v1.reserved);
+	unsigned int srcsize = sizeof(commit32->commit_v1.reserved);
+	unsigned int count = (destsize <= srcsize ? destsize : srcsize);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	commit->version = commit32->version;
 	commit->commit_v1.flags = commit32->commit_v1.flags;
 	commit->commit_v1.input_layer_cnt =
@@ -130,7 +140,11 @@ static void  __copy_atomic_commit_struct(struct mdp_layer_commit  *commit,
 	commit->commit_v1.right_roi = commit32->commit_v1.right_roi;
 
 	memcpy(&commit->commit_v1.reserved, &commit32->commit_v1.reserved,
+<<<<<<< HEAD
 			count);
+=======
+		count);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 static struct mdp_input_layer32 *__create_layer_list32(
@@ -201,7 +215,7 @@ static struct mdp_input_layer *__create_layer_list(
 	struct mdp_input_layer32 *layer_list32,
 	u32 layer_count)
 {
-	int i, ret;
+	int i, ret = 0;
 	u32 buffer_size;
 	struct mdp_input_layer *layer, *layer_list;
 	struct mdp_input_layer32 *layer32;
@@ -229,6 +243,8 @@ static struct mdp_input_layer *__create_layer_list(
 		layer->transp_mask = layer32->transp_mask;
 		layer->bg_color = layer32->bg_color;
 		layer->blend_op = layer32->blend_op;
+		layer->alpha = layer32->alpha;
+		layer->color_space = layer32->color_space;
 		layer->src_rect = layer32->src_rect;
 		layer->dst_rect = layer32->dst_rect;
 		layer->buffer = layer32->buffer;
@@ -306,6 +322,7 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 	struct mdp_input_layer *layer_list = NULL;
 	struct mdp_input_layer32 *layer_list32 = NULL;
 	struct mdp_output_layer *output_layer = NULL;
+	struct mdp_frc_info *frc_info = NULL;
 
 	/* copy top level memory from 32 bit structure to kernel memory */
 	ret = copy_from_user(&commit32, (void __user *)argp,
@@ -316,6 +333,8 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 		ret = -EFAULT;
 		return ret;
 	}
+
+	memset(&commit, 0, sizeof(struct mdp_layer_commit));
 	__copy_atomic_commit_struct(&commit, &commit32);
 
 	if (commit32.commit_v1.output_layer) {
@@ -365,6 +384,29 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 		}
 	}
 
+	if (commit32.commit_v1.frc_info) {
+		int buffer_size = sizeof(struct mdp_frc_info);
+
+		frc_info = kzalloc(buffer_size, GFP_KERNEL);
+		if (!frc_info) {
+			ret = -ENOMEM;
+			goto frc_err;
+		}
+
+		ret = copy_from_user(frc_info,
+				compat_ptr(commit32.commit_v1.frc_info),
+				buffer_size);
+		if (ret) {
+			pr_err("fail to copy frc info from user, ptr %p\n",
+				compat_ptr(commit32.commit_v1.frc_info));
+			kfree(frc_info);
+			ret = -EFAULT;
+			goto frc_err;
+		}
+
+		commit.commit_v1.frc_info = frc_info;
+	}
+
 	ret = mdss_fb_atomic_commit(info, &commit, file);
 	if (ret)
 		pr_err("atomic commit failed ret:%d\n", ret);
@@ -377,6 +419,9 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 		kfree(layer_list[i].scale);
 		mdss_mdp_free_layer_pp_info(&layer_list[i]);
 	}
+
+	kfree(frc_info);
+frc_err:
 	kfree(layer_list);
 layer_list_err:
 	kfree(layer_list32);
@@ -1307,10 +1352,10 @@ static int __from_user_pgc_lut_data_legacy(
 		return -EFAULT;
 
 	if (num_r_stages > GC_LUT_SEGMENTS || num_b_stages > GC_LUT_SEGMENTS
-	    || num_r_stages > GC_LUT_SEGMENTS || !num_r_stages || !num_b_stages
+	    || num_g_stages > GC_LUT_SEGMENTS || !num_r_stages || !num_b_stages
 	    || !num_g_stages) {
 		pr_err("invalid number of stages r_stages %d b_stages %d g_stages %d\n",
-		       num_r_stages, num_b_stages, num_r_stages);
+		       num_r_stages, num_b_stages, num_g_stages);
 		return -EFAULT;
 	}
 
@@ -2848,26 +2893,28 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 			*pp = compat_alloc_user_space(alloc_size);
 			if (NULL == *pp)
 				return -ENOMEM;
-			memset(*pp, 0, alloc_size);
-
-			(*pp)->data.lut_cfg_data.data.pgc_lut_data.r_data =
-					(struct mdp_ar_gc_lut_data *)
-					((unsigned long) *pp +
-					sizeof(struct msmfb_mdp_pp));
-			(*pp)->data.lut_cfg_data.data.pgc_lut_data.g_data =
-					(struct mdp_ar_gc_lut_data *)
-					((unsigned long) *pp +
-					sizeof(struct msmfb_mdp_pp) +
-					pgc_size);
-			(*pp)->data.lut_cfg_data.data.pgc_lut_data.b_data =
-					(struct mdp_ar_gc_lut_data *)
+			if (clear_user(*pp, alloc_size))
+				return -EFAULT;
+			if (put_user((struct mdp_ar_gc_lut_data *)
+				((unsigned long) *pp +
+				sizeof(struct msmfb_mdp_pp)),
+			&(*pp)->data.lut_cfg_data.data.pgc_lut_data.r_data) ||
+				put_user((struct mdp_ar_gc_lut_data *)
 					((unsigned long) *pp +
 					sizeof(struct msmfb_mdp_pp) +
-					(2 * pgc_size));
-			(*pp)->data.lut_cfg_data.data.pgc_lut_data.cfg_payload
-					 = (void *)((unsigned long) *pp +
+					pgc_size),
+			&(*pp)->data.lut_cfg_data.data.pgc_lut_data.g_data) ||
+				put_user((struct mdp_ar_gc_lut_data *)
+					((unsigned long) *pp +
 					sizeof(struct msmfb_mdp_pp) +
-					(3 * pgc_size));
+					(2 * pgc_size)),
+			&(*pp)->data.lut_cfg_data.data.pgc_lut_data.b_data) ||
+				put_user((void *)((unsigned long) *pp +
+					sizeof(struct msmfb_mdp_pp) +
+					(3 * pgc_size)),
+					&(*pp)->data.lut_cfg_data.data.
+						pgc_lut_data.cfg_payload))
+				return -EFAULT;
 			break;
 		case mdp_lut_igc:
 			alloc_size += __pp_compat_size_igc();
@@ -2877,10 +2924,13 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 					alloc_size);
 				return -ENOMEM;
 			}
-			memset(*pp, 0, alloc_size);
-			(*pp)->data.lut_cfg_data.data.igc_lut_data.cfg_payload
-					= (void *)((unsigned long)(*pp) +
-					   sizeof(struct msmfb_mdp_pp));
+			if (clear_user(*pp, alloc_size))
+				return -EFAULT;
+			if (put_user((void *)((unsigned long)(*pp) +
+					sizeof(struct msmfb_mdp_pp)),
+					&(*pp)->data.lut_cfg_data.data.
+						igc_lut_data.cfg_payload))
+				return -EFAULT;
 			break;
 		case mdp_lut_hist:
 			alloc_size += __pp_compat_size_hist_lut();
@@ -2890,10 +2940,13 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 					alloc_size);
 				return -ENOMEM;
 			}
-			memset(*pp, 0, alloc_size);
-			(*pp)->data.lut_cfg_data.data.hist_lut_data.cfg_payload
-					= (void *)((unsigned long)(*pp) +
-					   sizeof(struct msmfb_mdp_pp));
+			if (clear_user(*pp, alloc_size))
+				return -EFAULT;
+			if (put_user((void *)((unsigned long)(*pp) +
+					sizeof(struct msmfb_mdp_pp)),
+					&(*pp)->data.lut_cfg_data.data.
+						hist_lut_data.cfg_payload))
+				return -EFAULT;
 			break;
 		default:
 			*pp = compat_alloc_user_space(alloc_size);
@@ -2902,7 +2955,8 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 					alloc_size, lut_type);
 				return -ENOMEM;
 			}
-			memset(*pp, 0, alloc_size);
+			if (clear_user(*pp, alloc_size))
+				return -EFAULT;
 			break;
 		}
 		break;
@@ -2914,10 +2968,12 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 				alloc_size);
 			return -ENOMEM;
 		}
-		memset(*pp, 0, alloc_size);
-		(*pp)->data.pcc_cfg_data.cfg_payload =
-				(void *)((unsigned long)(*pp) +
-				 sizeof(struct msmfb_mdp_pp));
+		if (clear_user(*pp, alloc_size))
+			return -EFAULT;
+		if (put_user((void *)((unsigned long)(*pp) +
+				sizeof(struct msmfb_mdp_pp)),
+			&(*pp)->data.pcc_cfg_data.cfg_payload))
+			return -EFAULT;
 		break;
 	case mdp_op_gamut_cfg:
 		alloc_size += __pp_compat_size_gamut();
@@ -2927,10 +2983,12 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 				alloc_size);
 			return -ENOMEM;
 		}
-		memset(*pp, 0, alloc_size);
-		(*pp)->data.gamut_cfg_data.cfg_payload =
-				(void *)((unsigned long)(*pp) +
-				 sizeof(struct msmfb_mdp_pp));
+		if (clear_user(*pp, alloc_size))
+			return -EFAULT;
+		if (put_user((void *)((unsigned long)(*pp) +
+				sizeof(struct msmfb_mdp_pp)),
+			&(*pp)->data.gamut_cfg_data.cfg_payload))
+			return -EFAULT;
 		break;
 	case mdp_op_pa_v2_cfg:
 		alloc_size += __pp_compat_size_pa();
@@ -2940,16 +2998,19 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 				alloc_size);
 			return -ENOMEM;
 		}
-		memset(*pp, 0, alloc_size);
-		(*pp)->data.pa_v2_cfg_data.cfg_payload =
-				(void *)((unsigned long)(*pp) +
-				sizeof(struct msmfb_mdp_pp));
+		if (clear_user(*pp, alloc_size))
+			return -EFAULT;
+		if (put_user((void *)((unsigned long)(*pp) +
+				sizeof(struct msmfb_mdp_pp)),
+			&(*pp)->data.pa_v2_cfg_data.cfg_payload))
+			return -EFAULT;
 		break;
 	default:
 		*pp = compat_alloc_user_space(alloc_size);
 		if (NULL == *pp)
 			return -ENOMEM;
-		memset(*pp, 0, alloc_size);
+		if (clear_user(*pp, alloc_size))
+			return -EFAULT;
 		break;
 	}
 	return 0;
@@ -3367,7 +3428,9 @@ static int mdss_histo_compat_ioctl(struct fb_info *info, unsigned int cmd,
 				 sizeof(struct mdp_histogram_start_req));
 			return -EINVAL;
 		}
-		memset(hist_req, 0, sizeof(struct mdp_histogram_start_req));
+		if (clear_user(hist_req,
+				 sizeof(struct mdp_histogram_start_req)))
+			return -EFAULT;
 		ret = __from_user_hist_start_req(hist_req32, hist_req);
 		if (ret)
 			goto histo_compat_err;
@@ -3387,7 +3450,8 @@ static int mdss_histo_compat_ioctl(struct fb_info *info, unsigned int cmd,
 				 sizeof(struct mdp_histogram_data));
 			return -EINVAL;
 		}
-		memset(hist, 0, sizeof(struct mdp_histogram_data));
+		if (clear_user(hist, sizeof(struct mdp_histogram_data)))
+			return -EFAULT;
 		ret = __from_user_hist_data(hist32, hist);
 		if (ret)
 			goto histo_compat_err;
@@ -3890,7 +3954,7 @@ static int __to_user_mdp_overlay(struct mdp_overlay32 __user *ov32,
 }
 
 
-static int __from_user_mdp_overlay(struct mdp_overlay *ov,
+static int __from_user_mdp_overlay(struct mdp_overlay __user *ov,
 				   struct mdp_overlay32 __user *ov32)
 {
 	__u32 data;
@@ -3949,12 +4013,12 @@ static int __from_user_mdp_overlay(struct mdp_overlay *ov,
 	return 0;
 }
 
-static int __from_user_mdp_overlaylist(struct mdp_overlay_list *ovlist,
-				   struct mdp_overlay_list32 *ovlist32,
+static int __from_user_mdp_overlaylist(struct mdp_overlay_list __user *ovlist,
+				   struct mdp_overlay_list32 __user *ovlist32,
 				   struct mdp_overlay **to_list_head)
 {
 	__u32 i, ret;
-	unsigned long data, from_list_head;
+	unsigned long data, from_list_head, num_overlays;
 	struct mdp_overlay32 *iter;
 
 	if (!to_list_head || !ovlist32 || !ovlist) {
@@ -3975,11 +4039,13 @@ static int __from_user_mdp_overlaylist(struct mdp_overlay_list *ovlist,
 			 sizeof(ovlist32->processed_overlays)))
 		return -EFAULT;
 
-	if (get_user(data, &ovlist32->overlay_list)) {
+	if (get_user(data, &ovlist32->overlay_list) ||
+		get_user(num_overlays, &ovlist32->num_overlays)) {
 		ret = -EFAULT;
 		goto validate_exit;
 	}
-	for (i = 0; i < ovlist32->num_overlays; i++) {
+
+	for (i = 0; i < num_overlays; i++) {
 		if (get_user(from_list_head, (__u32 *)data + i)) {
 			ret = -EFAULT;
 			goto validate_exit;
@@ -3992,7 +4058,8 @@ static int __from_user_mdp_overlaylist(struct mdp_overlay_list *ovlist,
 			goto validate_exit;
 		}
 	}
-	ovlist->overlay_list = to_list_head;
+	if (put_user(to_list_head, &ovlist->overlay_list))
+		return -EFAULT;
 
 	return 0;
 
@@ -4001,8 +4068,8 @@ validate_exit:
 	return -EFAULT;
 }
 
-static int __to_user_mdp_overlaylist(struct mdp_overlay_list32 *ovlist32,
-				   struct mdp_overlay_list *ovlist,
+static int __to_user_mdp_overlaylist(struct mdp_overlay_list32 __user *ovlist32,
+				   struct mdp_overlay_list __user *ovlist,
 				   struct mdp_overlay **l_ptr)
 {
 	__u32 i, ret;
@@ -4075,31 +4142,33 @@ static u32 __pp_sspp_size(void)
 	return size;
 }
 
-static int __pp_sspp_set_offsets(struct mdp_overlay *ov)
+static int __pp_sspp_set_offsets(struct mdp_overlay __user *ov)
 {
 	if (!ov) {
 		pr_err("invalid overlay pointer\n");
 		return -EFAULT;
 	}
-	ov->overlay_pp_cfg.igc_cfg.cfg_payload = (void *)((unsigned long)ov +
-				sizeof(struct mdp_overlay));
-	ov->overlay_pp_cfg.pa_v2_cfg_data.cfg_payload =
-		ov->overlay_pp_cfg.igc_cfg.cfg_payload +
-		sizeof(struct mdp_igc_lut_data_v1_7);
-	ov->overlay_pp_cfg.pcc_cfg_data.cfg_payload =
-		ov->overlay_pp_cfg.pa_v2_cfg_data.cfg_payload +
-		sizeof(struct mdp_pa_data_v1_7);
-	ov->overlay_pp_cfg.hist_lut_cfg.cfg_payload =
-		ov->overlay_pp_cfg.pcc_cfg_data.cfg_payload +
-		sizeof(struct mdp_pcc_data_v1_7);
+	if (put_user((void *)((unsigned long)ov + sizeof(struct mdp_overlay)),
+			 &(ov->overlay_pp_cfg.igc_cfg.cfg_payload)) ||
+		put_user(ov->overlay_pp_cfg.igc_cfg.cfg_payload +
+			sizeof(struct mdp_igc_lut_data_v1_7),
+			&(ov->overlay_pp_cfg.pa_v2_cfg_data.cfg_payload)) ||
+		put_user(ov->overlay_pp_cfg.pa_v2_cfg_data.cfg_payload +
+			 sizeof(struct mdp_pa_data_v1_7),
+			&(ov->overlay_pp_cfg.pcc_cfg_data.cfg_payload)) ||
+		put_user(ov->overlay_pp_cfg.pcc_cfg_data.cfg_payload +
+			sizeof(struct mdp_pcc_data_v1_7),
+			&(ov->overlay_pp_cfg.hist_lut_cfg.cfg_payload)))
+		return -EFAULT;
 	return 0;
 }
 
 int mdss_compat_overlay_ioctl(struct fb_info *info, unsigned int cmd,
 			 unsigned long arg, struct file *file)
 {
-	struct mdp_overlay *ov, **layers_head;
-	struct mdp_overlay32 *ov32;
+	struct mdp_overlay **layers_head;
+	struct mdp_overlay __user *ov;
+	struct mdp_overlay32 __user *ov32;
 	struct mdp_overlay_list __user *ovlist;
 	struct mdp_overlay_list32 __user *ovlist32;
 	size_t layers_refs_sz, layers_sz, prepare_sz;

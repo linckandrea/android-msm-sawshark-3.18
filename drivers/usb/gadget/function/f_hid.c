@@ -467,7 +467,11 @@ static void hidg_disable(struct usb_function *f)
 {
 	struct f_hidg *hidg = func_to_hidg(f);
 	struct f_hidg_req_list *list, *next;
+<<<<<<< HEAD
 	unsigned long flags;
+=======
+        unsigned long flags;
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	usb_ep_disable(hidg->in_ep);
 	hidg->in_ep->driver_data = NULL;

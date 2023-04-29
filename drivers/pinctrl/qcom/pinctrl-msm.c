@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013, Sony Mobile Communications AB.
- * Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -637,10 +637,6 @@ static void msm_gpio_irq_unmask(struct irq_data *d)
 
 	spin_lock_irqsave(&pctrl->lock, flags);
 
-	val = readl(pctrl->regs + g->intr_status_reg);
-	val &= ~BIT(g->intr_status_bit);
-	writel(val, pctrl->regs + g->intr_status_reg);
-
 	val = readl(pctrl->regs + g->intr_cfg_reg);
 	val |= BIT(g->intr_enable_bit);
 	writel(val, pctrl->regs + g->intr_cfg_reg);
@@ -957,7 +953,11 @@ static void msm_pinctrl_resume(void)
 	spin_lock_irqsave(&pctrl->lock, flags);
 	for_each_set_bit(i, pctrl->enabled_irqs, pctrl->chip.ngpio) {
 		g = &pctrl->soc->groups[i];
+<<<<<<< HEAD
 		val = readl(pctrl->regs + g->intr_status_reg);
+=======
+		val = readl_relaxed(pctrl->regs + g->intr_status_reg);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (val & BIT(g->intr_status_bit)) {
 			irq = irq_find_mapping(pctrl->chip.irqdomain, i);
 			desc = irq_to_desc(irq);
@@ -966,9 +966,13 @@ static void msm_pinctrl_resume(void)
 			else if (desc->action && desc->action->name)
 				name = desc->action->name;
 
+<<<<<<< HEAD
 			log_base_wakeup_reason(irq);
 			pr_warning("%s: %d triggered %s\n",
 				__func__, irq, name);
+=======
+			pr_warn("%s: %d triggered %s\n", __func__, irq, name);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		}
 	}
 	spin_unlock_irqrestore(&pctrl->lock, flags);

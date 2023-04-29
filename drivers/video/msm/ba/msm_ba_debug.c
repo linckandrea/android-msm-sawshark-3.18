@@ -65,17 +65,21 @@ static ssize_t dev_info_read(struct file *file, char __user *buf,
 	}
 
 	dbg_buf = kmalloc(sizeof(struct debug_buffer), GFP_KERNEL);
+<<<<<<< HEAD
 	if (NULL == dbg_buf) {
 		dprintk(BA_ERR, "%s: Memory allocation failed for dbg_buf", __func__);
 		return 0;
 	}
 
 	dbg_buf = kmalloc(sizeof(struct debug_buffer), GFP_KERNEL);
+=======
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (NULL == dbg_buf)
 		return 0;
 
 	INIT_DBG_BUF(dbg_buf);
 	write_str(dbg_buf, "===============================");
+<<<<<<< HEAD
 	write_str(dbg_buf, "DEV: 0x%p", dev_ctxt);
 	write_str(dbg_buf, "===============================");
 	write_str(dbg_buf, "state: %d", dev_ctxt->state);
@@ -85,6 +89,17 @@ static ssize_t dev_info_read(struct file *file, char __user *buf,
 
 	kfree(dbg_buf);
 
+=======
+	write_str(dbg_buf, "DEV: 0x%pK", dev_ctxt);
+	write_str(dbg_buf, "===============================");
+	write_str(dbg_buf, "state: %d", dev_ctxt->state);
+
+	size = simple_read_from_buffer(buf, count, ppos,
+			dbg_buf->ptr, dbg_buf->filled_size);
+
+	kfree(dbg_buf);
+
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return size;
 }
 
@@ -175,6 +190,7 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 
 	if (!inst) {
 		dprintk(BA_ERR, "Invalid params, dev: %pK", inst);
+<<<<<<< HEAD
 		return 0;
 	}
 
@@ -184,6 +200,15 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 		return 0;
 	}
 
+=======
+		return 0;
+	}
+
+	dbg_buf = kmalloc(sizeof(struct debug_buffer), GFP_KERNEL);
+	if (NULL == dbg_buf)
+		return 0;
+
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	INIT_DBG_BUF(dbg_buf);
 	write_str(dbg_buf, "===============================");
 	write_str(dbg_buf, "INSTANCE: %pK (%s)", inst,
@@ -191,10 +216,17 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 	write_str(dbg_buf, "===============================");
 	write_str(dbg_buf, "dev: %pK", inst->dev_ctxt);
 	write_str(dbg_buf, "state: %d", inst->state);
+<<<<<<< HEAD
 
 	size = simple_read_from_buffer(buf, count, ppos,
 		dbg_buf->ptr, dbg_buf->filled_size);
 
+=======
+
+	size = simple_read_from_buffer(buf, count, ppos,
+		dbg_buf->ptr, dbg_buf->filled_size);
+
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	kfree(dbg_buf);
 
 	return size;

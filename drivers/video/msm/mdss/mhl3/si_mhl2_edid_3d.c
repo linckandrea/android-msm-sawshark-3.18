@@ -4035,7 +4035,12 @@ static uint8_t parse_861_block(struct edid_3d_data_t *mhl_edid_3d_data,
 
 	mhl_edid_3d_data->parse_data.p_HDMI_vsdb = NULL;
 
+<<<<<<< HEAD
 	MHL_TX_EDID_INFO("tag:place holdr EDID block:%pK\n", p_EDID_block_data);
+=======
+	MHL_TX_EDID_INFO("tag:place holder EDID block:%pK\n",
+		p_EDID_block_data);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (EDID_EXTENSION_BLOCK_MAP == p_CEA_extension->tag) {
 		struct block_map_t *p_block_map;
 		int i;

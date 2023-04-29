@@ -469,7 +469,11 @@ bool msm_smem_compare_buffers(void *clt, int fd, void *priv)
 	bool ret = false;
 
 	if (!clt || !priv) {
+<<<<<<< HEAD
 		dprintk(VIDC_ERR, "Invalid params: %p, %p\n",
+=======
+		dprintk(VIDC_ERR, "Invalid params: %pK, %pK\n",
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			clt, priv);
 		return false;
 	}

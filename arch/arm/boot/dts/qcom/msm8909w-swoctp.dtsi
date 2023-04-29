@@ -49,6 +49,7 @@
 			ite,avdd-lpm-cur = <3000>;
 		};
 	};
+<<<<<<< HEAD
 
 	i2c@78b6000 { /* BLSP1 QUP2 */
 		nq@28 {
@@ -74,6 +75,8 @@
         qcom,msm-ssc-sensors {
                 compatible = "qcom,msm-ssc-sensors";
         };
+=======
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 &blsp1_uart1 {
@@ -91,11 +94,15 @@
 };
 
 &i2c_3 {
+<<<<<<< HEAD
 	status = "ok";
 };
 
 &i2c_2 {
 	status = "ok";
+=======
+	status = "disabled";
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 /* Charger/FG configuration */

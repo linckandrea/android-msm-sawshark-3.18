@@ -47,7 +47,12 @@
 			avdd-supply = <&pm8916_l17>;
 			vdd-supply = <&pm8916_l6>;
 			/* pins used by touchscreen */
+<<<<<<< HEAD
 			pinctrl-names = "pmx_ts_active","pmx_ts_suspend","pmx_ts_release";
+=======
+			pinctrl-names = "pmx_ts_active","pmx_ts_suspend",
+					"pmx_ts_release";
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			pinctrl-0 = <&ts_int_active &ts_ite_reset_active>;
 			pinctrl-1 = <&ts_int_suspend &ts_ite_reset_suspend>;
 			pinctrl-2 = <&ts_release>;
@@ -80,11 +85,15 @@
 };
 
 &i2c_3 {
+<<<<<<< HEAD
 	status = "ok";
 };
 
 &i2c_2 {
 	status = "ok";
+=======
+	status = "disabled";
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 &blsp1_uart1 {

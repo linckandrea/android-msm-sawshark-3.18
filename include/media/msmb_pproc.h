@@ -1,6 +1,7 @@
 #ifndef __MSMB_PPROC_H
 #define __MSMB_PPROC_H
 
+<<<<<<< HEAD
 #ifdef MSM_CAMERA_BIONIC
 #include <sys/types.h>
 #endif
@@ -245,17 +246,13 @@ struct msm_cpp_clock_settings_t {
 
 #define VIDIOC_MSM_CPP_DELETE_STREAM_BUFF\
 	_IOWR('V', BASE_VIDIOC_PRIVATE + 20, struct msm_camera_v4l2_ioctl_t)
+=======
+#include <uapi/media/msmb_pproc.h>
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
+#include <linux/compat.h>
 
-#define V4L2_EVENT_CPP_FRAME_DONE  (V4L2_EVENT_PRIVATE_START + 0)
-#define V4L2_EVENT_VPE_FRAME_DONE  (V4L2_EVENT_PRIVATE_START + 1)
-
-struct msm_camera_v4l2_ioctl_t {
-	uint32_t id;
-	size_t len;
-	int32_t trans_code;
-	void __user *ioctl_ptr;
-};
+#define MSM_OUTPUT_BUF_CNT 8
 
 #ifdef CONFIG_COMPAT
 struct msm_cpp_frame_info32_t {
@@ -401,4 +398,5 @@ struct msm_camera_v4l2_ioctl32_t {
 };
 #endif
 
-#endif /* __MSMB_PPROC_H */
+#endif
+

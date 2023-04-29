@@ -131,6 +131,11 @@ out:
 
 static void sdcardfs_d_release(struct dentry *dentry)
 {
+<<<<<<< HEAD
+=======
+	if (!dentry || !dentry->d_fsdata)
+		return;
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	/* release and reset the lower paths */
 	if (has_graft_path(dentry))
 		sdcardfs_put_reset_orig_path(dentry);

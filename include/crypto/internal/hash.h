@@ -91,6 +91,11 @@ static inline bool crypto_shash_alg_has_setkey(struct shash_alg *alg)
 	return alg->setkey != shash_no_setkey;
 }
 
+<<<<<<< HEAD
+=======
+bool crypto_hash_alg_has_setkey(struct hash_alg_common *halg);
+
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 int crypto_init_ahash_spawn(struct crypto_ahash_spawn *spawn,
 			    struct hash_alg_common *alg,
 			    struct crypto_instance *inst);
@@ -179,6 +184,16 @@ static inline struct ahash_instance *ahash_alloc_instance(
 	const char *name, struct crypto_alg *alg)
 {
 	return crypto_alloc_instance2(name, alg, ahash_instance_headroom());
+}
+
+static inline void ahash_request_complete(struct ahash_request *req, int err)
+{
+	req->base.complete(&req->base, err);
+}
+
+static inline u32 ahash_request_flags(struct ahash_request *req)
+{
+	return req->base.flags;
 }
 
 static inline struct crypto_ahash *crypto_spawn_ahash(

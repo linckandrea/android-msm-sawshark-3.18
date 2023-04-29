@@ -51,8 +51,19 @@ unsigned long arch_mmap_rnd(void)
 {
 	unsigned long rnd;
 
+<<<<<<< HEAD
 	rnd = get_random_long() & STACK_RND_MASK;
 
+=======
+	if (current->flags & PF_RANDOMIZE) {
+#ifdef CONFIG_COMPAT
+		if (test_thread_flag(TIF_32BIT))
+			rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
+		else
+#endif
+			rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
+	}
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return rnd << PAGE_SHIFT;
 }
 

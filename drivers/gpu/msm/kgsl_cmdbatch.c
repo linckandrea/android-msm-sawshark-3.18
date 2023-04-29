@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -327,6 +327,11 @@ static void kgsl_cmdbatch_sync_fence_func(void *priv)
 	 * other function does not dereference a invalid pointer.
 	 */
 	event->handle = NULL;
+<<<<<<< HEAD
+=======
+
+	spin_unlock_irqrestore(&event->handle_lock, flags);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	spin_unlock_irqrestore(&event->handle_lock, flags);
 	kgsl_cmdbatch_put(event->cmdbatch);
@@ -344,8 +349,17 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 {
 	struct kgsl_cmd_syncpoint_fence *sync = priv;
 	struct kgsl_cmdbatch_sync_event *event;
+	struct sync_fence *fence = NULL;
 	unsigned int id;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	int ret = 0;
+
+	fence = sync_fence_fdget(sync->fd);
+	if (fence == NULL)
+		return -EINVAL;
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	kref_get(&cmdbatch->refcount);
 
@@ -362,13 +376,18 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 	spin_lock_init(&event->handle_lock);
 	set_bit(event->id, &cmdbatch->pending);
 
+<<<<<<< HEAD
+=======
+	trace_syncpoint_fence(cmdbatch, fence->name);
+
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	spin_lock_irqsave(&event->handle_lock, flags);
 
 	event->handle = kgsl_sync_fence_async_wait(sync->fd,
 		kgsl_cmdbatch_sync_fence_func, event);
 
 	if (IS_ERR_OR_NULL(event->handle)) {
-		int ret = PTR_ERR(event->handle);
+		ret = PTR_ERR(event->handle);
 
 		event->handle = NULL;
 		spin_unlock_irqrestore(&event->handle_lock, flags);
@@ -377,6 +396,7 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 		kgsl_cmdbatch_put(cmdbatch);
 
 		/*
+<<<<<<< HEAD
 		 * If ret == 0 the fence was already signaled - print a trace
 		 * message so we can track that
 		 */
@@ -384,13 +404,20 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 			trace_syncpoint_fence_expire(cmdbatch, "signaled");
 
 		return ret;
+=======
+		* Print a syncpoint_fence_expire trace if
+		* fence is already signaled or there is
+		* a failure in registering the fence waiter.
+		*/
+		trace_syncpoint_fence_expire(cmdbatch, (ret < 0) ?
+				"error" : fence->name);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	} else {
 		spin_unlock_irqrestore(&event->handle_lock, flags);
 	}
 
-	trace_syncpoint_fence(cmdbatch, event->handle->name);
-
-	return 0;
+	sync_fence_put(fence);
+	return ret;
 }
 
 /* kgsl_cmdbatch_add_sync_timestamp() - Add a new sync point for a cmdbatch
@@ -555,13 +582,28 @@ static void add_profiling_buffer(struct kgsl_device *device,
 		return;
 	}
 
-	cmdbatch->profiling_buf_entry = entry;
+	if (!id) {
+		cmdbatch->profiling_buffer_gpuaddr = gpuaddr;
+	} else {
+		u64 off =
+			offset + sizeof(struct kgsl_cmdbatch_profiling_buffer);
 
-	if (id != 0)
+		/*
+		 * Make sure there is enough room in the object to store the
+		 * entire profiling buffer object
+		 */
+		if (off < offset || off >= entry->memdesc.size) {
+			dev_err(device->dev,
+				"ignore invalid profile offset ctxt %d id %d offset %lld gpuaddr %llx size %lld\n",
+			cmdbatch->context->id, id, offset, gpuaddr, size);
+			kgsl_mem_entry_put(entry);
+			return;
+		}
+
 		cmdbatch->profiling_buffer_gpuaddr =
 			entry->memdesc.gpuaddr + offset;
-	else
-		cmdbatch->profiling_buffer_gpuaddr = gpuaddr;
+	}
+	cmdbatch->profiling_buf_entry = entry;
 }
 
 /**

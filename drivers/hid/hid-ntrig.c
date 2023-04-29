@@ -866,7 +866,11 @@ static int ntrig_input_configured(struct hid_device *hid,
 	struct input_dev *input = hidinput->input;
 
 	if (hidinput->report->maxfield < 1)
+<<<<<<< HEAD
 		return -EINVAL;
+=======
+		return 0;
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	switch (hidinput->report->field[0]->application) {
 	case HID_DG_PEN:

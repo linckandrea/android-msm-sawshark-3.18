@@ -105,20 +105,33 @@ int __fsnotify_parent(struct path *path, struct dentry *dentry, __u32 mask)
 	if (unlikely(!fsnotify_inode_watches_children(p_inode)))
 		__fsnotify_update_child_dentry_flags(p_inode);
 	else if (p_inode->i_fsnotify_mask & mask) {
+<<<<<<< HEAD
         struct name_snapshot name;
 		
+=======
+		struct name_snapshot name;
+
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		/* we are notifying a parent so come up with the new mask which
 		 * specifies these are events which came from a child. */
 		mask |= FS_EVENT_ON_CHILD;
 
+<<<<<<< HEAD
         take_dentry_name_snapshot(&name, dentry);
+=======
+		take_dentry_name_snapshot(&name, dentry);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (path)
 			ret = fsnotify(p_inode, mask, path, FSNOTIFY_EVENT_PATH,
 				       name.name, 0);
 		else
 			ret = fsnotify(p_inode, mask, dentry->d_inode, FSNOTIFY_EVENT_INODE,
 				       name.name, 0);
+<<<<<<< HEAD
         release_dentry_name_snapshot(&name);
+=======
+		release_dentry_name_snapshot(&name);
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 
 	dput(parent);

@@ -12,6 +12,10 @@
  */
 
 #define CREATE_TRACE_POINTS
+<<<<<<< HEAD
+=======
+#include "msm_vidc_common.h"
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #define MAX_SSR_STRING_LEN 10
 #include "msm_vidc_debug.h"
 #include "vidc_hfi_api.h"
@@ -23,9 +27,14 @@ int msm_vidc_fw_debug_mode = 1;
 int msm_vidc_fw_low_power_mode = 1;
 int msm_vidc_hw_rsp_timeout = 1000;
 int msm_vidc_fw_coverage = 0;
+<<<<<<< HEAD
 int msm_vidc_vpe_csc_601_to_709 = 0;
 int msm_vidc_dec_dcvs_mode = 0;
 int msm_vidc_enc_dcvs_mode = 0;
+=======
+int msm_vidc_dec_dcvs_mode = 1;
+int msm_vidc_enc_dcvs_mode = 1;
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 int msm_vidc_sys_idle_indicator = 0;
 int msm_vidc_firmware_unload_delay = 15000;
 int msm_vidc_thermal_mitigation_disabled = 0;
@@ -199,8 +208,6 @@ struct dentry *msm_vidc_debugfs_init_drv(void)
 			&msm_vidc_fw_low_power_mode) &&
 	__debugfs_create(u32, "debug_output", &msm_vidc_debug_out) &&
 	__debugfs_create(u32, "hw_rsp_timeout", &msm_vidc_hw_rsp_timeout) &&
-	__debugfs_create(bool, "enable_vpe_csc_601_709",
-			&msm_vidc_vpe_csc_601_to_709) &&
 	__debugfs_create(bool, "sys_idle_indicator",
 			&msm_vidc_sys_idle_indicator) &&
 	__debugfs_create(u32, "firmware_unload_delay",
@@ -296,7 +303,11 @@ static int publish_unreleased_reference(struct msm_vidc_inst *inst,
 	return 0;
 }
 
+<<<<<<< HEAD
 void put_inst_helper(struct kref *kref)
+=======
+static void put_inst_helper(struct kref *kref)
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 {
 	struct msm_vidc_inst *inst = container_of(kref,
 			struct msm_vidc_inst, kref);
@@ -363,11 +374,19 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 		cur += write_str(cur, end - cur, "capability: %s\n",
 			i == OUTPUT_PORT ? "Output" : "Capture");
 		cur += write_str(cur, end - cur, "name : %s\n",
+<<<<<<< HEAD
 			inst->fmts[i]->name);
 		cur += write_str(cur, end - cur, "planes : %d\n",
 			inst->fmts[i]->num_planes);
 		cur += write_str(cur, end - cur,
 			"type: %s\n", inst->fmts[i]->type == OUTPUT_PORT ?
+=======
+			inst->fmts[i].name);
+		cur += write_str(cur, end - cur, "planes : %d\n",
+			inst->fmts[i].num_planes);
+		cur += write_str(cur, end - cur,
+			"type: %s\n", inst->fmts[i].type == OUTPUT_PORT ?
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			"Output" : "Capture");
 
 		switch (inst->buffer_mode_set[i]) {
@@ -391,7 +410,11 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 		cur += write_str(cur, end - cur, "count: %u\n",
 				inst->bufq[i].vb2_bufq.num_buffers);
 
+<<<<<<< HEAD
 		for (j = 0; j < inst->fmts[i]->num_planes; j++)
+=======
+		for (j = 0; j < inst->fmts[i].num_planes; j++)
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			cur += write_str(cur, end - cur,
 			"size for plane %d: %u\n", j,
 			inst->bufq[i].vb2_bufq.plane_sizes[j]);
@@ -445,7 +468,10 @@ struct dentry *msm_vidc_debugfs_init_inst(struct msm_vidc_inst *inst,
 		dprintk(VIDC_ERR, "Invalid params, inst: %pK\n", inst);
 		goto exit;
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	snprintf(debugfs_name, MAX_DEBUGFS_NAME, "inst_%pK", inst);
 
 	idata = kzalloc(sizeof(struct core_inst_pair), GFP_KERNEL);

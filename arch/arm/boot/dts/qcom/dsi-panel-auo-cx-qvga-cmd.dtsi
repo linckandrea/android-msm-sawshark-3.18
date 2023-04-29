@@ -108,7 +108,10 @@
 		qcom,mdss-dsi-te-pin-select = <1>;
 		qcom,mdss-dsi-te-dcs-command = <1>;
 		qcom,mdss-dsi-te-using-te-pin;
+<<<<<<< HEAD
 		/* qcom,mdss-dsi-te-check-enable; */
+=======
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		qcom,mdss-dsi-panel-timings = [5F 12 0A 00 32 34 10 16 0F 03 04 00];
 		qcom,mdss-dsi-t-clk-post = <0x05>;
 		qcom,mdss-dsi-t-clk-pre = <0x11>;
@@ -118,7 +121,12 @@
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
 		qcom,mdss-dsi-reset-sequence = <1 20>, <0 20>, <1 20>;
+<<<<<<< HEAD
 		/* clk = totlaH * totalV * bpp* 84fps */
 		qcom,mdss-dsi-panel-clockrate = <230243328>;
+=======
+		/* clk = totlaH * totalV * bpp* 66fps */
+		qcom,mdss-dsi-panel-clockrate = <180905472>;
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	};
 };

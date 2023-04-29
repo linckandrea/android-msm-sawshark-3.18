@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -13,6 +17,8 @@
 #define __MSMB_ISP__
 
 #include <uapi/media/msmb_isp.h>
+<<<<<<< HEAD
+=======
 
 #ifdef CONFIG_COMPAT
 struct msm_isp_event_data32 {
@@ -28,7 +34,26 @@ struct msm_isp_event_data32 {
 		struct msm_isp_sof_info sof_info;
 	} u;
 };
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+
+struct msm_isp32_event_data32 {
+	struct compat_timeval timestamp;
+	struct compat_timeval mono_timestamp;
+	enum msm_vfe_input_src input_intf;
+	uint32_t frame_id;
+	union {
+		struct msm_isp_stats_event stats;
+		struct msm_isp_buf_event buf_done;
+		struct msm_isp32_error_info error_info;
+	} u;
+};
+<<<<<<< HEAD
 #endif
 
 #endif
 
+=======
+
+#endif
+#endif /* __MSMB_ISP__ */
+>>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
