@@ -1597,17 +1597,8 @@ static int debug_mtp_read_stats(struct seq_file *s, void *unused)
 		}
 	}
 
-<<<<<<< HEAD
-	if (0 != iteration)
-	{
-		seq_printf(s, "vfs_write(time in usec) min:%d\t max:%d\t avg:%d\n",
-							min, max, sum / iteration);
-	}
-
-=======
 	seq_printf(s, "vfs_write(time in usec) min:%d\t max:%d\t avg:%d\n",
 				min, max, (iteration ? (sum / iteration) : 0));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	min = max = sum = iteration = 0;
 	seq_puts(s, "\n=======================\n");
 	seq_puts(s, "MTP Read Stats:\n");
@@ -1628,17 +1619,8 @@ static int debug_mtp_read_stats(struct seq_file *s, void *unused)
 		}
 	}
 
-<<<<<<< HEAD
-	if (0 != iteration)
-	{
-		seq_printf(s, "vfs_read(time in usec) min:%d\t max:%d\t avg:%d\n",
-							min, max, sum / iteration);
-	}
-
-=======
 	seq_printf(s, "vfs_read(time in usec) min:%d\t max:%d\t avg:%d\n",
 				min, max, (iteration ? (sum / iteration) : 0));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	spin_unlock_irqrestore(&dev->lock, flags);
 	return 0;
 }

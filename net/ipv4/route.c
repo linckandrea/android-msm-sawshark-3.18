@@ -802,11 +802,7 @@ static void ip_do_redirect(struct dst_entry *dst, struct sock *sk, struct sk_buf
 
 	rt = (struct rtable *) dst;
 
-<<<<<<< HEAD
-	__build_flow_key(sock_net(sk), &fl4, sk, iph, oif, tos, prot, mark, 0);
-=======
 	__build_flow_key(net, &fl4, sk, iph, oif, tos, prot, mark, 0);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	__ip_do_redirect(rt, skb, &fl4, true);
 }
 

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1239,10 +1235,7 @@ static void ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx)
 		goto fail_file;
 	}
 
-<<<<<<< HEAD
-=======
 	ECM_IPA_DEBUG("debugfs entries were created\n");
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	ECM_IPA_LOG_EXIT();
 
 	return;

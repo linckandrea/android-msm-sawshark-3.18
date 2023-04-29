@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2012-2014, 2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2012-2014, 2016-2017 The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -103,19 +99,11 @@ static int msm_rpm_master_copy_stats(
 	struct msm_rpm_master_stats_platform_data *pdata;
 	int count, j = 0;
 	char *buf;
-<<<<<<< HEAD
-
-	/* Iterate possible number of masters */
-	if (prvdata->master_cnt > prvdata->num_masters - 1) {
-		prvdata->master_cnt = 0;
-		mutex_unlock(&msm_rpm_master_stats_mutex);
-=======
 	unsigned long active_cores;
 
 	/* Iterate possible number of masters */
 	if (master_cnt > prvdata->num_masters - 1) {
 		master_cnt = 0;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return 0;
 	}
 
@@ -160,44 +148,28 @@ static int msm_rpm_master_copy_stats(
 			record.bringup_ack);
 
 		record.xo_last_entered_at = readq_relaxed(prvdata->reg_base +
-<<<<<<< HEAD
-			(prvdata->master_cnt * pdata->master_offset +
-			offsetof(struct msm_rpm_master_stats, xo_last_entered_at)));
-=======
 			(master_cnt * pdata->master_offset +
 			offsetof(struct msm_rpm_master_stats,
 			xo_last_entered_at)));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 		SNPRINTF(buf, count, "\t%s:0x%llX\n",
 			GET_FIELD(record.xo_last_entered_at),
 			record.xo_last_entered_at);
 
 		record.xo_last_exited_at = readq_relaxed(prvdata->reg_base +
-<<<<<<< HEAD
-			(prvdata->master_cnt * pdata->master_offset +
-			offsetof(struct msm_rpm_master_stats, xo_last_exited_at)));
-=======
 			(master_cnt * pdata->master_offset +
 			offsetof(struct msm_rpm_master_stats,
 			xo_last_exited_at)));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 		SNPRINTF(buf, count, "\t%s:0x%llX\n",
 			GET_FIELD(record.xo_last_exited_at),
 			record.xo_last_exited_at);
 
-<<<<<<< HEAD
-		record.xo_accumulated_duration = readq_relaxed(prvdata->reg_base +
-			(prvdata->master_cnt * pdata->master_offset +
-			offsetof(struct msm_rpm_master_stats, xo_accumulated_duration)));
-=======
 		record.xo_accumulated_duration =
 				readq_relaxed(prvdata->reg_base +
 				(master_cnt * pdata->master_offset +
 				offsetof(struct msm_rpm_master_stats,
 				xo_accumulated_duration)));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 		SNPRINTF(buf, count, "\t%s:0x%llX\n",
 			GET_FIELD(record.xo_accumulated_duration),
@@ -225,11 +197,7 @@ static int msm_rpm_master_copy_stats(
 
 		record.xo_count =
 				readl_relaxed(prvdata->reg_base +
-<<<<<<< HEAD
-				(prvdata->master_cnt * pdata->master_offset +
-=======
 				(master_cnt * pdata->master_offset +
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 				offsetof(struct msm_rpm_master_stats,
 				xo_count)));
 
@@ -290,12 +258,7 @@ static int msm_rpm_master_copy_stats(
 		j = find_next_bit(&active_cores, BITS_PER_LONG, j + 1);
 	}
 
-<<<<<<< HEAD
-	prvdata->master_cnt++;
-	mutex_unlock(&msm_rpm_master_stats_mutex);
-=======
 	master_cnt++;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return RPM_MASTERS_BUF_LEN - count;
 }
 
@@ -373,10 +336,6 @@ static int msm_rpm_master_stats_file_open(struct inode *inode,
 	prvdata->num_masters = pdata->num_masters;
 	prvdata->master_names = pdata->masters;
 	prvdata->platform_data = pdata;
-<<<<<<< HEAD
-	prvdata->master_cnt = 0;
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 exit:
 	mutex_unlock(&msm_rpm_master_stats_mutex);
 	return ret;

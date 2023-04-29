@@ -666,13 +666,8 @@ static struct bin_attribute dev_attr_data = {
 
 static struct device_attribute attrs[] = {
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE_EXTRA_SYSFS
-<<<<<<< HEAD
-	__ATTR(dorecovery, S_IWUGO,
-			synaptics_rmi4_show_error,
-=======
 	__ATTR(dorecovery, S_IWUSR | S_IWGRP,
 			NULL,
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			fwu_sysfs_do_recovery_store),
 	__ATTR(doreflash, S_IWUSR | S_IWGRP,
 			NULL,

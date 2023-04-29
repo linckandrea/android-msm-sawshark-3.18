@@ -2,11 +2,7 @@
  * Core MDSS framebuffer driver.
  *
  * Copyright (C) 2007 Google Incorporated
-<<<<<<< HEAD
- * Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
-=======
  * Copyright (c) 2008-2019, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -58,12 +54,9 @@
 #include "mdss_debug.h"
 #include "mdss_smmu.h"
 #include "mdss_mdp.h"
-<<<<<<< HEAD
 #include "mdss_dsi.h"
 
-=======
 #include "mdp3_ctrl.h"
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MDSS_FB_NUM 3

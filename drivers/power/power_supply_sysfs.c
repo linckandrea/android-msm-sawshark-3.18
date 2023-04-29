@@ -72,10 +72,8 @@ static ssize_t power_supply_show_property(struct device *dev,
 	static char *scope_text[] = {
 		"Unknown", "System", "Device"
 	};
-<<<<<<< HEAD
 	static char *battery_id[] = {
 		"Unknown", "GUANGYU", "DESAY"
-=======
 	static const char * const typec_text[] = {
 		"Nothing attached", "Sink attached", "Powered cable w/ sink",
 		"Debug Accessory", "Audio Adapter", "Powered cable w/o sink",
@@ -86,7 +84,6 @@ static ssize_t power_supply_show_property(struct device *dev,
 	};
 	static const char * const typec_pr_text[] = {
 		"none", "dual power role", "sink", "source"
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	};
 	ssize_t ret = 0;
 	struct power_supply *psy = dev_get_drvdata(dev);
@@ -139,7 +136,6 @@ static ssize_t power_supply_show_property(struct device *dev,
 		return sprintf(buf, "%s\n", type_text[value.intval]);
 	else if (off == POWER_SUPPLY_PROP_SCOPE)
 		return sprintf(buf, "%s\n", scope_text[value.intval]);
-<<<<<<< HEAD
 	else if (off == POWER_SUPPLY_PROP_USB_INPUT_CURRENT)
 		return sprintf(buf, "%d\n", value.intval);
 	else if (off == POWER_SUPPLY_PROP_BATTERY_ID)
@@ -152,7 +148,6 @@ static ssize_t power_supply_show_property(struct device *dev,
 		return sprintf(buf, "%d\n", value.intval);
 	else if (off == POWER_SUPPLY_PROP_VBUS_ONLINE_STATUS)
 		return sprintf(buf, "%d\n", value.intval);
-=======
 	else if (off == POWER_SUPPLY_PROP_TYPEC_MODE)
 		return snprintf(buf, PAGE_SIZE,
 					"%s\n", typec_text[value.intval]);
@@ -165,7 +160,6 @@ static ssize_t power_supply_show_property(struct device *dev,
 	else if (off == POWER_SUPPLY_PROP_CONNECTOR_HEALTH)
 		return snprintf(buf, PAGE_SIZE,
 					"%s\n", health_text[value.intval]);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
 		return sprintf(buf, "%s\n", value.strval);
 

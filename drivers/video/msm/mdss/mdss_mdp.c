@@ -3444,10 +3444,7 @@ static int mdss_mdp_cdm_addr_setup(struct mdss_data_type *mdata,
 		head[i].base = (mdata->mdss_io.base) + cdm_offsets[i];
 		atomic_set(&head[i].kref.refcount, 0);
 		mutex_init(&head[i].lock);
-<<<<<<< HEAD
-=======
 		init_completion(&head[i].free_comp);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		pr_debug("%s: cdm off (%d) = %pK\n", __func__, i, head[i].base);
 	}
 

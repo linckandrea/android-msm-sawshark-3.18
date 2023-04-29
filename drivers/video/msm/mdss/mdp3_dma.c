@@ -767,12 +767,7 @@ retry_dma_done:
 }
 
 static int mdp3_dmap_update(struct mdp3_dma *dma, void *buf,
-<<<<<<< HEAD
-				struct mdp3_intf *intf, int first_commit,
-				void *data)
-=======
 				struct mdp3_intf *intf, void *data, bool secure)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 {
 	unsigned long flag;
 	int cb_type = MDP3_DMA_CALLBACK_TYPE_VSYNC;
@@ -787,28 +782,6 @@ static int mdp3_dmap_update(struct mdp3_dma *dma, void *buf,
 	MDSS_XLOG(XLOG_FUNC_ENTRY, __LINE__);
 	if (dma->output_config.out_sel == MDP3_DMA_OUTPUT_SEL_DSI_CMD) {
 		cb_type = MDP3_DMA_CALLBACK_TYPE_DMA_DONE;
-<<<<<<< HEAD
-		if ((intf->active) && !(first_commit)) {
-			ATRACE_BEGIN("mdp3_wait_for_dma_comp");
-retry_dma_done:
-			rc = wait_for_completion_timeout(&dma->dma_comp,
-				KOFF_TIMEOUT);
-			if (rc <= 0 && --retry_count) {
-				int  vsync_status;
-
-				vsync_status = (1 << MDP3_INTR_DMA_P_DONE) &
-					MDP3_REG_READ(MDP3_REG_INTR_STATUS);
-				if (!vsync_status) {
-					pr_err("%s: cmd timeout retry cnt %d\n",
-						__func__, retry_count);
-					goto retry_dma_done;
-				}
-				rc = -1;
-			}
-				ATRACE_END("mdp3_wait_for_dma_comp");
-		}
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 
 	if (dma->update_src_cfg) {
@@ -857,11 +830,7 @@ retry_dma_done:
 		ATRACE_BEGIN("mdp3_wait_for_vsync_comp");
 retry_vsync:
 		rc = wait_for_completion_timeout(&dma->vsync_comp,
-<<<<<<< HEAD
-			KOFF_TIMEOUT);
-=======
 			 dma_timeout_value(dma));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (rc <= 0 && --retry_count) {
 			vsync = MDP3_REG_READ(MDP3_REG_INTR_STATUS) &
 					(1 << MDP3_INTR_LCDC_START_OF_FRAME);
@@ -884,12 +853,7 @@ retry_vsync:
 }
 
 static int mdp3_dmas_update(struct mdp3_dma *dma, void *buf,
-<<<<<<< HEAD
-				struct mdp3_intf *intf, int first_commit,
-				void *data)
-=======
 				struct mdp3_intf *intf, void *data, bool secure)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 {
 	unsigned long flag;
 	int cb_type = MDP3_DMA_CALLBACK_TYPE_VSYNC;

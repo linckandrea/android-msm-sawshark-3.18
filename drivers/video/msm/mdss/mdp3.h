@@ -293,8 +293,6 @@ void mdp3_calc_dma_res(struct mdss_panel_info *panel_info, u64 *clk_rate,
 		u64 *ab, u64 *ib, uint32_t bpp);
 void mdp3_clear_irq(u32 interrupt_mask);
 int mdp3_enable_panic_ctrl(void);
-<<<<<<< HEAD
-=======
 
 void mdss_spi_panel_bl_ctrl_update(struct mdss_panel_data *pdata, u32 bl_level);
 
@@ -302,7 +300,6 @@ int mdp3_layer_pre_commit(struct msm_fb_data_type *mfd,
 	struct file *file, struct mdp_layer_commit_v1 *commit);
 int mdp3_layer_atomic_validate(struct msm_fb_data_type *mfd,
 	struct file *file, struct mdp_layer_commit_v1 *commit);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #define MDP3_REG_WRITE(addr, val) writel_relaxed(val, mdp3_res->mdp_base + addr)
 #define MDP3_REG_READ(addr) readl_relaxed(mdp3_res->mdp_base + addr)

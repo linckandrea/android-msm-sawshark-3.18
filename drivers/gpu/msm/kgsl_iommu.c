@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -517,12 +513,7 @@ static int _iommu_map_sg_sync_pc(struct kgsl_pagetable *pt,
 
 	if (mapped == 0) {
 		KGSL_CORE_ERR("map err: 0x%016llX, %d, %x, %zd\n",
-<<<<<<< HEAD
-			addr, memdesc->sgt->nents,
-			flags, mapped);
-=======
 			addr, nents, flags, mapped);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return  -ENODEV;
 	}
 
@@ -1755,17 +1746,8 @@ kgsl_iommu_map(struct kgsl_pagetable *pt,
 	int ret;
 	uint64_t addr = memdesc->gpuaddr;
 	uint64_t size = memdesc->size;
-<<<<<<< HEAD
-	unsigned int flags;
-	struct sg_table *sgt = NULL;
-
-	BUG_ON(NULL == pt->priv);
-
-	flags = IOMMU_READ | IOMMU_WRITE | IOMMU_NOEXEC;
-=======
 	unsigned int flags = _get_protection_flags(memdesc);
 	struct sg_table *sgt = NULL;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	/*
 	 * For paged memory allocated through kgsl, memdesc->pages is not NULL.
@@ -1780,26 +1762,8 @@ kgsl_iommu_map(struct kgsl_pagetable *pt,
 	if (IS_ERR(sgt))
 		return PTR_ERR(sgt);
 
-<<<<<<< HEAD
-	/*
-	 * For paged memory allocated through kgsl, memdesc->pages is not NULL.
-	 * Allocate sgt here just for its map operation. Contiguous memory
-	 * already has its sgt, so no need to allocate it here.
-	 */
-	if (memdesc->pages != NULL) {
-		sgt = kgsl_alloc_sgt_from_pages(memdesc);
-		memdesc->sgt = sgt;
-	}
-
-	if (IS_ERR(sgt))
-		return PTR_ERR(sgt);
-
-	ret = _iommu_map_sg_sync_pc(pt, addr, memdesc, flags);
-
-=======
 	ret = _iommu_map_sg_sync_pc(pt, addr, memdesc, sgt->sgl,
 				sgt->nents, flags);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (ret)
 		goto done;
 
@@ -1808,12 +1772,6 @@ kgsl_iommu_map(struct kgsl_pagetable *pt,
 		_iommu_unmap_sync_pc(pt, memdesc, addr, size);
 
 done:
-<<<<<<< HEAD
-	if (memdesc->pages != NULL) {
-		kgsl_free_sgt(sgt);
-		memdesc->sgt = NULL;
-	}
-=======
 	if (memdesc->pages != NULL)
 		kgsl_free_sgt(sgt);
 
@@ -1856,7 +1814,6 @@ static int kgsl_iommu_map_offset(struct kgsl_pagetable *pt,
 
 	if (memdesc->pages != NULL)
 		kgsl_free_sgt(sgt);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	return ret;
 }

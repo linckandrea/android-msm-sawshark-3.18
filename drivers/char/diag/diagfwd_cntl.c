@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -600,13 +596,10 @@ static void diag_build_time_mask_update(uint8_t *buf,
 	num_items = range->ssid_last - range->ssid_first + 1;
 
 	for (i = 0; i < driver->bt_msg_mask_tbl_count; i++, build_mask++) {
-<<<<<<< HEAD
-=======
 		if (!build_mask->ptr) {
 			found = 1;
 			break;
 		}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (build_mask->ssid_first != range->ssid_first)
 			continue;
 		found = 1;
@@ -626,10 +619,8 @@ static void diag_build_time_mask_update(uint8_t *buf,
 
 	if (found)
 		goto end;
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+
 	new_size = (driver->bt_msg_mask_tbl_count + 1) *
 		   sizeof(struct diag_msg_mask_t);
 	DIAG_LOG(DIAG_DEBUG_MASKS,

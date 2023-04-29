@@ -733,19 +733,11 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
-	if (!dep->endpoint.desc) {
-		dev_err(mdwc->dev,
-			"%s: trying to queue request %pK to disabled ep %s\n",
-			__func__, request, ep->name);
-		return -EPERM;
-=======
 	/* HW restriction regarding TRB size (8KB) */
 	if (req->request.length < 0x2000) {
 		dev_err(mdwc->dev, "%s: Min TRB size is 8KB\n", __func__);
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		return -EINVAL;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 
 	if (dep->number == 0 || dep->number == 1) {
@@ -973,13 +965,8 @@ static void gsi_ring_db(struct usb_ep *ep, struct usb_gsi_request *request)
 	}
 
 	offset = dwc3_trb_dma_offset(dep, &dep->trb_pool[num_trbs-1]);
-<<<<<<< HEAD
-	dev_dbg(mdwc->dev, "Writing link TRB addr: %pKa to %pK (%x)\n",
-	&offset, gsi_dbl_address_lsb, dbl_lo_addr);
-=======
 	dev_dbg(mdwc->dev, "Writing link TRB addr:%pKa to %pK (%x) for ep:%s\n",
 		&offset, gsi_dbl_address_lsb, dbl_lo_addr, ep->name);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	writel_relaxed(offset, gsi_dbl_address_lsb);
 	writel_relaxed(0, gsi_dbl_address_msb);

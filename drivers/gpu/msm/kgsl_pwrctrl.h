@@ -146,10 +146,7 @@ struct kgsl_regulator {
  * @l2pc_cpus_qos - qos structure to avoid L2PC on CPUs
  * @pm_qos_req_dma - the power management quality of service structure
  * @pm_qos_active_latency - allowed CPU latency in microseconds when active
-<<<<<<< HEAD
-=======
  * @pm_qos_cpu_mask_latency - allowed CPU mask latency in microseconds
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  * @input_disable - To disable GPU wakeup on touch input event
  * @pm_qos_wakeup_latency - allowed CPU latency in microseconds during wakeup
  * @bus_control - true if the bus calculation is independent

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2014-2015,2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -459,8 +455,6 @@ static int update_userspace_power(struct sched_params __user *argp)
 	}
 	spin_unlock(&update_lock);
 	mutex_unlock(&policy_update_mutex);
-<<<<<<< HEAD
-=======
 
 	for_each_possible_cpu(cpu) {
 		if (!pdata_valid[cpu])
@@ -469,7 +463,6 @@ static int update_userspace_power(struct sched_params __user *argp)
 		blocking_notifier_call_chain(
 			&msm_core_stats_notifier_list, cpu, NULL);
 	}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	activate_power_table = true;
 	return 0;

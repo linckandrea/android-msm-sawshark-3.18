@@ -391,11 +391,7 @@ static int diagchar_open(struct inode *inode, struct file *file)
 fail:
 	driver->num_clients--;
 	mutex_unlock(&driver->diagchar_mutex);
-<<<<<<< HEAD
-	pr_alert("diag: Insufficient memory for new client");
-=======
 	pr_err_ratelimited("diag: Insufficient memory for new client");
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return -ENOMEM;
 }
 
@@ -1489,12 +1485,8 @@ static int diag_md_session_check(int curr_mode, int req_mode,
 				 const struct diag_logging_mode_param_t *param,
 				 uint8_t *change_mode)
 {
-<<<<<<< HEAD
-	int err = 0;
-=======
 	int i, bit = 0, err = 0, peripheral_mask = 0;
 	int change_mask = 0;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	struct diag_md_session_t *session_info = NULL;
 
 	if (!param || !change_mode)
@@ -1535,30 +1527,8 @@ static int diag_md_session_check(int curr_mode, int req_mode,
 			if (bit & driver->logging_mask)
 				change_mask |= bit;
 		}
-<<<<<<< HEAD
-		DIAG_LOG(DIAG_DEBUG_USERSPACE,
-			 "an instance of mdlog is active\n");
-		*change_mode = 0;
-		return -EINVAL;
-	} else if (curr_mode == DIAG_MEMORY_DEVICE_MODE) {
-		if (req_mode == DIAG_USB_MODE) {
-			if (driver->md_session_mask != 0 &&
-				driver->md_session_mode == DIAG_MD_PERIPHERAL) {
-				/*
-				 * An instance of mdlog is still running, Return
-				 * error.
-				 */
-				DIAG_LOG(DIAG_DEBUG_USERSPACE,
-					 "another instance running\n");
-				*change_mode = 0;
-				return -EINVAL;
-			}
-			session_info = diag_md_session_get_pid(current->tgid);
-			diag_md_session_close(session_info);
-=======
 		if (!change_mask) {
 			mutex_unlock(&driver->md_session_lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			return 0;
 		}
 
@@ -1869,15 +1839,10 @@ static int diag_ioctl_lsm_deinit(void)
 		mutex_unlock(&driver->diagchar_mutex);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
-
-	driver->data_ready[i] |= DEINIT_TYPE;
-=======
 	if (!(driver->data_ready[i] & DEINIT_TYPE)) {
 		driver->data_ready[i] |= DEINIT_TYPE;
 		atomic_inc(&driver->data_ready_notif[i]);
 	}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	mutex_unlock(&driver->diagchar_mutex);
 	wake_up_interruptible(&driver->wait_q);
 
@@ -3013,12 +2978,8 @@ static ssize_t diagchar_read(struct file *file, char __user *buf, size_t count,
 		pr_err("diag: bad address from user side\n");
 		return -EFAULT;
 	}
-<<<<<<< HEAD
-	wait_event_interruptible(driver->wait_q, (check_data_ready(index)) > 0);
-=======
 	wait_event_interruptible(driver->wait_q,
 			atomic_read(&driver->data_ready_notif[index]) > 0);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	mutex_lock(&driver->diagchar_mutex);
 
@@ -3714,11 +3675,8 @@ static int __init diagchar_init(void)
 	mutex_init(&apps_data_mutex);
 	mutex_init(&driver->msg_mask_lock);
 	mutex_init(&driver->hdlc_recovery_mutex);
-<<<<<<< HEAD
-=======
 	for (i = 0; i < NUM_PERIPHERALS; i++)
 		mutex_init(&driver->diagfwd_channel_mutex[i]);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	init_waitqueue_head(&driver->wait_q);
 	INIT_WORK(&(driver->diag_drain_work), diag_drain_work_fn);
 	INIT_WORK(&(driver->update_user_clients),

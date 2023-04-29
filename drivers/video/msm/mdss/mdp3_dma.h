@@ -323,14 +323,8 @@ struct mdp3_dma {
 			struct mdp3_dma_lut_config *config,
 			struct fb_cmap *cmap);
 
-<<<<<<< HEAD
-	int (*update)(struct mdp3_dma *dma,
-			void *buf, struct mdp3_intf *intf, int first_commit,
-			void *data);
-=======
 	int (*update)(struct mdp3_dma *dma, void *buf, struct mdp3_intf *intf,
 			void *data, bool secure);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	int (*update_cursor)(struct mdp3_dma *dma, int x, int y);
 

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -382,10 +378,6 @@ static int mdss_dsi_panel_power_ulp(struct mdss_panel_data *pdata,
 		 */
 		if (DSI_CORE_PM == i)
 			continue;
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (DSI_PANEL_PM == i)
 			ret = msm_dss_config_vreg_opt_mode(
 				ctrl_pdata->panel_power_data.vreg_config,
@@ -394,16 +386,6 @@ static int mdss_dsi_panel_power_ulp(struct mdss_panel_data *pdata,
 			ret = msm_dss_config_vreg_opt_mode(
 				sdata->power_data[i].vreg_config,
 				sdata->power_data[i].num_vreg, mode);
-<<<<<<< HEAD
-
-		if (ret) {
-			pr_err("%s: failed to config ulp opt mode for %s.rc=%d\n",
-				__func__, __mdss_dsi_pm_name(i), ret);
-			goto error;
-		}
-	}
-error:
-=======
 		if (ret) {
 			pr_err("%s: failed to config ulp opt mode for %s.rc=%d\n",
 				__func__, __mdss_dsi_pm_name(i), ret);
@@ -411,7 +393,6 @@ error:
 		}
 	}
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (ret) {
 		mode = enable ? DSS_REG_MODE_ENABLE : DSS_REG_MODE_ULP;
 		for (; i >= 0; i--)
@@ -419,10 +400,6 @@ error:
 				ctrl_pdata->power_data[i].vreg_config,
 				ctrl_pdata->power_data[i].num_vreg, mode);
 	}
-<<<<<<< HEAD
-	pr_debug("%s: -\n", __func__);
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return ret;
 }
 
@@ -450,11 +427,7 @@ int mdss_dsi_panel_power_ctrl(struct mdss_panel_data *pdata,
 
 	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
-<<<<<<< HEAD
-	if (ctrl_pdata->ulps_mode) return 0;
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	/*
 	 * If a dynamic mode switch is pending, the regulators should not
 	 * be turned off or on.
@@ -501,10 +474,6 @@ int mdss_dsi_panel_power_ctrl(struct mdss_panel_data *pdata,
 
 	if (!ret)
 		pinfo->panel_power_state = power_state;
-<<<<<<< HEAD
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 end:
 	return ret;
 }
@@ -984,11 +953,7 @@ static int mdss_dsi_cmd_flush(struct file *file, fl_owner_t id)
 	while (len >= sizeof(*dchdr)) {
 		dchdr = (struct dsi_ctrl_hdr *)bp;
 		dchdr->dlen = ntohs(dchdr->dlen);
-<<<<<<< HEAD
-		if (dchdr->dlen > len || dchdr->dlen < 0) {
-=======
 		if (dchdr->dlen > (len - sizeof(*dchdr)) || dchdr->dlen < 0) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			pr_err("%s: dtsi cmd=%x error, len=%d\n",
 				__func__, dchdr->dtype, dchdr->dlen);
 			kfree(buf);
@@ -1643,20 +1608,12 @@ static int mdss_dsi_unblank(struct mdss_panel_data *pdata)
 		mdss_dsi_clk_ctrl(sctrl, sctrl->dsi_clk_handle,
 				  MDSS_DSI_ALL_CLKS, MDSS_DSI_CLK_ON);
 
-<<<<<<< HEAD
-	if (pdata->panel_info.blank_state == MDSS_PANEL_BLANK_LOW_POWER) {
-		pr_debug("%s: dsi_unblank with panel always on\n", __func__);
-		if (ctrl_pdata->low_power_config)
-			ret = ctrl_pdata->low_power_config(pdata, false);
-		pdata->panel_info.panel_power_state = MDSS_PANEL_POWER_ON;
-=======
 	if (ctrl_pdata->ctrl_state & CTRL_STATE_PANEL_LP) {
 		pr_debug("%s: dsi_unblank with panel always on\n", __func__);
 		if (ctrl_pdata->low_power_config)
 			ret = ctrl_pdata->low_power_config(pdata, false);
 		if (!ret)
 			ctrl_pdata->ctrl_state &= ~CTRL_STATE_PANEL_LP;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		goto error;
 	}
 
@@ -2535,14 +2492,11 @@ static void mdss_dsi_dba_work(struct work_struct *work)
 				&ctrl_pdata->dba_work, HZ);
 	}
 }
-<<<<<<< HEAD
-=======
 #else
 static void mdss_dsi_dba_work(struct work_struct *work)
 {
 	(void)(*work);
 }
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #endif
 static int mdss_dsi_reset_write_ptr(struct mdss_panel_data *pdata)
 {
@@ -3168,11 +3122,6 @@ static int mdss_dsi_cont_splash_config(struct mdss_panel_info *pinfo,
 		mdss_dsi_read_hw_revision(ctrl_pdata);
 		mdss_dsi_read_phy_revision(ctrl_pdata);
 		ctrl_pdata->is_phyreg_enabled = 1;
-<<<<<<< HEAD
-		mdss_dsi_get_hw_revision(ctrl_pdata);
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (pinfo->type == MIPI_CMD_PANEL)
 			mdss_dsi_set_burst_mode(ctrl_pdata);
 	} else {
@@ -3230,10 +3179,7 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 	struct mdss_util_intf *util;
 	static int te_irq_registered;
 	struct mdss_panel_data *pdata;
-<<<<<<< HEAD
-=======
 	struct mdss_panel_cfg *pan_cfg = NULL;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (!pdev || !pdev->dev.of_node) {
 		pr_err("%s: pdev not found for DSI controller\n", __func__);
@@ -3398,18 +3344,11 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 		rc = -EPERM;
 		goto error_pan_node;
 	}
-#ifdef TARGET_HW_MDSS_HDMI
-	INIT_DELAYED_WORK(&ctrl_pdata->dba_work, mdss_dsi_dba_work);
-<<<<<<< HEAD
-#endif
-	pr_debug("%s: Dsi Ctrl->%d initialized\n", __func__, index);
-=======
 
 	pr_info("%s: Dsi Ctrl->%d initialized, DSI rev:0x%x, PHY rev:0x%x\n",
 		__func__, index, ctrl_pdata->shared_data->hw_rev,
 		ctrl_pdata->shared_data->phy_rev);
 	mdss_dsi_pm_qos_add_request(ctrl_pdata);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (index == 0)
 		ctrl_pdata->shared_data->dsi0_active = true;
@@ -3519,19 +3458,7 @@ static void mdss_dsi_res_deinit(struct platform_device *pdev)
 
 	for (i = 0; i < DSI_CTRL_MAX; i++) {
 		if (dsi_res->ctrl_pdata[i]) {
-<<<<<<< HEAD
-#ifdef TARGET_HW_MDSS_HDMI
-			if (dsi_res->ctrl_pdata[i]->ds_registered) {
-				struct mdss_panel_info *pinfo =
-					&dsi_res->ctrl_pdata[i]->
-						panel_data.panel_info;
-				if (pinfo)
-					mdss_dba_utils_deinit(pinfo->dba_data);
-			}
-#endif
-=======
 			mdss_dsi_res_deinit_hdmi(pdev, i);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			devm_kfree(&pdev->dev, dsi_res->ctrl_pdata[i]);
 		}
 	}
@@ -4169,16 +4096,7 @@ static int mdss_dsi_parse_gpio_params(struct platform_device *ctrl_pdev,
 		if (!gpio_is_valid(ctrl_pdata->disp_en_gpio))
 			pr_debug("%s:%d, Disp_en gpio not specified\n",
 					__func__, __LINE__);
-<<<<<<< HEAD
-		else {
-			int ret = gpio_direction_output(ctrl_pdata->disp_en_gpio, 1);
-			if (ret){
-				pr_err("%s: Set direction for gpio_panel_en failed, ret=%d\n",__func__, ret);
-			}
-		}
-=======
 		pdata->panel_en_gpio = ctrl_pdata->disp_en_gpio;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 	ctrl_pdata->disp_te_gpio = of_get_named_gpio(ctrl_pdev->dev.of_node,
 		"qcom,platform-te-gpio", 0);

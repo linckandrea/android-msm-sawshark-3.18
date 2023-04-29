@@ -1308,12 +1308,8 @@ emsgsize:
 	skb = skb_peek_tail(&sk->sk_write_queue);
 	cork->length += length;
 	if ((skb && skb_is_gso(skb)) ||
-<<<<<<< HEAD
-	    ((length > mtu) &&
-=======
 	    (((length + fragheaderlen) > mtu) &&
 	    (skb_queue_len(&sk->sk_write_queue) <= 1) &&
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	    (sk->sk_protocol == IPPROTO_UDP) &&
 	    (rt->dst.dev->features & NETIF_F_UFO) &&
 	    (sk->sk_type == SOCK_DGRAM))) {

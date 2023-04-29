@@ -668,11 +668,8 @@ int scm_call2(u32 fn_id, struct scm_desc *desc)
 
 		desc->ret[0] = desc->ret[1] = desc->ret[2] = 0;
 
-<<<<<<< HEAD
-=======
 		trace_scm_call_start(x0, desc);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (scm_version == SCM_ARMV8_64)
 			ret = __scm_call_armv8_64(x0, desc->arginfo,
 						  desc->args[0], desc->args[1],

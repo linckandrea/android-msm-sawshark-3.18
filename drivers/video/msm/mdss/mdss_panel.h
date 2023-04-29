@@ -762,16 +762,12 @@ struct mdss_panel_info {
 
 	/* debugfs structure for the panel */
 	struct mdss_panel_debugfs_info *debugfs_info;
-<<<<<<< HEAD
-	u32 bl_pre;
-=======
 
 	/* persistence mode on/off */
 	bool persist_mode;
 
 	/* HDR properties of display panel*/
 	struct mdss_panel_hdr_properties hdr_properties;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 };
 
 struct mdss_panel_timing {
@@ -840,10 +836,7 @@ struct mdss_panel_data {
 	struct mdss_panel_data *next;
 
 	int panel_te_gpio;
-<<<<<<< HEAD
-=======
 	int panel_en_gpio;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	struct completion te_done;
 };
 
@@ -865,15 +858,9 @@ static inline u32 mdss_panel_get_framerate(struct mdss_panel_info *panel_info,
 	u32 frame_rate, pixel_total;
 	u64 rate;
 	struct mdss_panel_data *panel_data =
-<<<<<<< HEAD
-			container_of(panel_info, typeof(*panel_data), panel_info);
-	int idle = 0;
-
-=======
 			container_of(panel_info, typeof(*panel_data),
 					panel_info);
 	bool idle = false;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (panel_info == NULL) {
 		frame_rate = DEFAULT_FRAME_RATE;
@@ -884,13 +871,8 @@ static inline u32 mdss_panel_get_framerate(struct mdss_panel_info *panel_info,
 	case MIPI_VIDEO_PANEL:
 	case MIPI_CMD_PANEL:
 		frame_rate = panel_info->mipi.frame_rate;
-<<<<<<< HEAD
-		 if (panel_data->get_idle)
-			 idle = panel_data->get_idle(panel_data);
-=======
 		if (panel_data->get_idle)
 			idle = panel_data->get_idle(panel_data);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		if (idle)
 			frame_rate = panel_info->mipi.frame_rate_idle;
 		else

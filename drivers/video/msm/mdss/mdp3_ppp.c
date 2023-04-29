@@ -1782,12 +1782,8 @@ int mdp3_ppp_res_init(struct msm_fb_data_type *mfd)
 
 	if (IS_ERR(ppp_stat->blit_thread)) {
 		rc = PTR_ERR(ppp_stat->blit_thread);
-<<<<<<< HEAD
-		pr_err("ERROR: unable to start ppp blit thread, err = %d\n", rc);
-=======
 		pr_err("ERROR: unable to start ppp blit thread,err = %d\n",
 							rc);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		ppp_stat->blit_thread = NULL;
 		return rc;
 	}

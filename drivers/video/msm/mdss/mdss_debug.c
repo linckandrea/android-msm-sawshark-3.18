@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2009-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2009-2018, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -203,12 +199,8 @@ static ssize_t panel_debug_base_reg_write(struct file *file,
 			break;
 		}
 		/* End of a hex value in given string */
-<<<<<<< HEAD
-		bufp[NEXT_VALUE_OFFSET - 1] = 0;
-=======
 		if ((bufp + NEXT_VALUE_OFFSET - 1) < (buf + count))
 			bufp[NEXT_VALUE_OFFSET - 1] = 0;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 	if (len < PANEL_CMD_MIN_TX_COUNT) {
 		pr_err("wrong input reg len\n");
@@ -250,14 +242,8 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 	char *panel_reg_buf, *rx_buf;
 	struct mdss_data_type *mdata = mdss_res;
 	struct mdss_mdp_ctl *ctl = mdata->ctl_off + 0;
-<<<<<<< HEAD
-	struct mdss_panel_data *panel_data = ctl->panel_data;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = container_of(panel_data,
-					struct mdss_dsi_ctrl_pdata, panel_data);
-=======
 	struct mdss_panel_data *panel_data = NULL;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	int rc = -EFAULT;
 
 	if (!dbg)
@@ -314,14 +300,7 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 	if (mdata->debug_inf.debug_enable_clock)
 		mdata->debug_inf.debug_enable_clock(0);
 
-<<<<<<< HEAD
-	if (len < 0 || len >= sizeof(panel_reg_buf))
-		return 0;
-
-	if ((count < sizeof(panel_reg_buf))
-=======
 	if ((count < reg_buf_len)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			|| (copy_to_user(user_buf, panel_reg_buf, len)))
 		goto read_reg_fail;
 
@@ -499,12 +478,8 @@ static ssize_t mdss_debug_base_offset_write(struct file *file,
 	if (off % sizeof(u32))
 		return -EINVAL;
 
-<<<<<<< HEAD
-	sscanf(buf, "%5x %x", &off, &cnt);
-=======
 	if (sscanf(buf, "%5x %x", &off, &cnt) != 2)
 		return -EFAULT;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (off > dbg->max_offset)
 		return -EINVAL;
@@ -512,12 +487,9 @@ static ssize_t mdss_debug_base_offset_write(struct file *file,
 	if (cnt > (dbg->max_offset - off))
 		cnt = dbg->max_offset - off;
 
-<<<<<<< HEAD
-=======
 	if (!mdss_debug_base_is_valid_range(off, cnt))
 		return -EINVAL;
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	mutex_lock(&mdss_debug_lock);
 	dbg->off = off;
 	dbg->cnt = cnt;
@@ -1577,11 +1549,6 @@ int mdss_misr_set(struct mdss_data_type *mdata,
 	}
 	pr_debug("req[block:%d frame:%d op_mode:%d]\n",
 		req->block_id, req->frame_count, req->crc_op_mode);
-<<<<<<< HEAD
-
-	map = mdss_misr_get_map(req->block_id, ctl, mdata);
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	map = mdss_misr_get_map(req->block_id, ctl, mdata,
 		ctl->is_video_mode);

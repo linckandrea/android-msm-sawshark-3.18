@@ -686,11 +686,7 @@ static void cleanup_stats(struct lpm_stats *stats)
 
 	centry = &stats->child;
 	list_for_each_entry_safe_reverse(pos, n, centry, sibling) {
-<<<<<<< HEAD
-		if (!list_empty(&pos->child))
-=======
 		if (!list_empty(&pos->child)) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			cleanup_stats(pos);
 			continue;
 		}

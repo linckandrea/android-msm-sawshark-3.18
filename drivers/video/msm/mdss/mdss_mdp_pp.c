@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2766,11 +2762,7 @@ int mdss_mdp_pp_resume(struct msm_fb_data_type *mfd)
 			mfd->index);
 		return 0;
 	} else if (ret || !ad) {
-<<<<<<< HEAD
-		pr_err("Failed to get ad info: ret = %d, ad = 0x%pK.\n",
-=======
 		pr_err("Failed to get ad info: ret = %d, ad = 0x%pK\n",
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			ret, ad);
 		return ret;
 	}
@@ -3118,11 +3110,7 @@ static int pp_ad_calc_bl(struct msm_fb_data_type *mfd, int bl_in, int *bl_out,
 			mfd->index);
 		return 0;
 	} else if (ret || !ad) {
-<<<<<<< HEAD
-		pr_err("Failed to get ad info: ret = %d, ad = 0x%pK\n",
-=======
 		pr_err("Failed to get ad info: ret = %d, ad = 0x%pK.\n",
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			ret, ad);
 		return ret;
 	}
@@ -6869,31 +6857,19 @@ static int is_valid_calib_addr(void *addr, u32 operation)
 				goto valid_addr;
 		}
 		if (mdss_res->vig_pipes &&
-<<<<<<< HEAD
-		    ptr >= mdss_res->vig_pipes->base) {
-=======
 		  ptr >= mdss_res->vig_pipes->base) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			ret = is_valid_calib_vig_addr(ptr);
 			if (ret)
 				goto valid_addr;
 		}
 		if (mdss_res->rgb_pipes &&
-<<<<<<< HEAD
-		    ptr >= mdss_res->rgb_pipes->base) {
-=======
 		  ptr >= mdss_res->rgb_pipes->base) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			ret = is_valid_calib_rgb_addr(ptr);
 			if (ret)
 				goto valid_addr;
 		}
 		if (mdss_res->dma_pipes &&
-<<<<<<< HEAD
-		    mdss_res->dma_pipes->base) {
-=======
 		  ptr >= mdss_res->dma_pipes->base) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			ret = is_valid_calib_dma_addr(ptr);
 			if (ret)
 				goto valid_addr;

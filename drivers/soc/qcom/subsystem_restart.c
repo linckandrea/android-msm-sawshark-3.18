@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -642,11 +638,6 @@ static int subsystem_shutdown(struct subsys_device *dev, void *data)
 
 	pr_info("[%s:%d]: Shutting down %s\n",
 			current->comm, current->pid, name);
-<<<<<<< HEAD
-	if (dev->desc->shutdown(dev->desc, true) < 0)
-		panic("subsys-restart: [%s:%d]: Failed to shutdown %s!",
-			current->comm, current->pid, name);
-=======
 	ret = dev->desc->shutdown(dev->desc, true);
 	if (ret < 0) {
 		if (!dev->desc->ignore_ssr_failure)
@@ -657,7 +648,6 @@ static int subsystem_shutdown(struct subsys_device *dev, void *data)
 			return ret;
 		}
 	}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	dev->crash_count++;
 	subsys_set_state(dev, SUBSYS_OFFLINE);
 	disable_all_irqs(dev);
@@ -696,10 +686,6 @@ static int subsystem_powerup(struct subsys_device *dev, void *data)
 	if (ret < 0) {
 		notify_each_subsys_device(&dev, 1, SUBSYS_POWERUP_FAILURE,
 								NULL);
-<<<<<<< HEAD
-		panic("[%s:%d]: Powerup error: %s!",
-			current->comm, current->pid, name);
-=======
 		if (system_state == SYSTEM_RESTART
 			|| system_state == SYSTEM_POWER_OFF)
 			WARN(1, "SSR aborted: %s, system reboot/shutdown is under way\n",
@@ -710,7 +696,6 @@ static int subsystem_powerup(struct subsys_device *dev, void *data)
 		else
 			pr_err("Powerup failure on %s\n", name);
 		return ret;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 	enable_all_irqs(dev);
 
@@ -718,16 +703,11 @@ static int subsystem_powerup(struct subsys_device *dev, void *data)
 	if (ret) {
 		notify_each_subsys_device(&dev, 1, SUBSYS_POWERUP_FAILURE,
 								NULL);
-<<<<<<< HEAD
-		panic("[%s:%d]: Timed out waiting for error ready: %s!",
-			current->comm, current->pid, name);
-=======
 		if (!dev->desc->ignore_ssr_failure)
 			panic("[%s:%d]: Timed out waiting for error ready: %s!",
 				current->comm, current->pid, name);
 		else
 			return ret;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 	subsys_set_state(dev, SUBSYS_ONLINE);
 	subsys_set_crash_status(dev, false);
@@ -1045,14 +1025,11 @@ static void subsystem_restart_wq_func(struct work_struct *work)
 
 	pr_info("[%s:%d]: Restart sequence for %s completed.\n",
 			current->comm, current->pid, desc->name);
-<<<<<<< HEAD
-=======
 
 err:
 	/* Reset subsys count */
 	if (ret)
 		dev->count = 0;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	mutex_unlock(&soc_order_reg_lock);
 	mutex_unlock(&track->lock);

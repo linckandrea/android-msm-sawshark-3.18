@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2013-2015, 2017-2018, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -155,27 +151,17 @@ void mdp3_check_dsi_ctrl_status(struct work_struct *work,
 	if (mipi->mode == DSI_CMD_MODE &&
 		mipi->hw_vsync_mode &&
 		mdss_dsi_is_te_based_esd(ctrl_pdata)) {
-<<<<<<< HEAD
-		int frame_rate = mdss_panel_get_framerate(&pdata->panel_info);
-
-		if (mdp3_check_te_status(ctrl_pdata, pdsi_status,
-					 frame_rate) > 0)
-=======
 		uint32_t fps = mdss_panel_get_framerate(&pdata->panel_info,
 					FPS_RESOLUTION_HZ);
 		uint32_t timeout = ((1000 / fps) + 1) *
 					MDSS_STATUS_TE_WAIT_MAX;
 
 		if (mdp3_check_te_status(ctrl_pdata, pdsi_status, timeout) > 0)
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			goto sim;
 		goto status_dead;
 	}
 
-<<<<<<< HEAD
-=======
 	mutex_lock(&mdp3_session->lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (!mdp3_session->status) {
 		pr_debug("%s: display off already\n", __func__);
 		return;
@@ -189,8 +175,6 @@ void mdp3_check_dsi_ctrl_status(struct work_struct *work,
 		ret = ctrl_pdata->check_status(ctrl_pdata);
 	else
 		pr_err("%s: wait_for_dma_done error\n", __func__);
-<<<<<<< HEAD
-=======
 
 	if (mdss_fb_is_power_on_interactive(pdsi_status->mfd)) {
 		if (ret > 0)
@@ -267,16 +251,10 @@ void mdp3_check_spi_panel_status(struct work_struct *work, uint32_t interval)
 	else
 		pr_err("%s:wait_for_dma_done error\n", __func__);
 	mutex_unlock(&mdp3_session->lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (mdss_fb_is_power_on(pdsi_status->mfd)) {
 		if (ret > 0)
 			schedule_delayed_work(&pdsi_status->check_status,
-<<<<<<< HEAD
-						msecs_to_jiffies(interval));
-		else
-			goto status_dead;
-=======
 				msecs_to_jiffies(interval));
 		} else {
 			char *envp[2] = {"PANEL_ALIVE=0", NULL};
@@ -287,7 +265,6 @@ void mdp3_check_spi_panel_status(struct work_struct *work, uint32_t interval)
 			pr_err("%s:panel has gone bad, sending uevent - %s\n",
 			__func__, envp[0]);
 		}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 sim:
 	if (pdata->panel_info.panel_force_dead) {

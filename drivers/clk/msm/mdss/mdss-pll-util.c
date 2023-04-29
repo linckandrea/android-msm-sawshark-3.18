@@ -269,18 +269,6 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 		mp->vreg_config[i].post_off_sleep = (!rc ? tmp : 0);
 
 		pr_debug("%s min=%d, max=%d, enable=%d, disable=%d, ulp=%d, preonsleep=%d, postonsleep=%d, preoffsleep=%d, postoffsleep=%d\n",
-<<<<<<< HEAD
-					mp->vreg_config[i].vreg_name,
-					mp->vreg_config[i].min_voltage,
-					mp->vreg_config[i].max_voltage,
-					mp->vreg_config[i].load[DSS_REG_MODE_ENABLE],
-					mp->vreg_config[i].load[DSS_REG_MODE_DISABLE],
-					mp->vreg_config[i].load[DSS_REG_MODE_ULP],
-					mp->vreg_config[i].pre_on_sleep,
-					mp->vreg_config[i].post_on_sleep,
-					mp->vreg_config[i].pre_off_sleep,
-					mp->vreg_config[i].post_off_sleep);
-=======
 			mp->vreg_config[i].vreg_name,
 			mp->vreg_config[i].min_voltage,
 			mp->vreg_config[i].max_voltage,
@@ -291,7 +279,6 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 			mp->vreg_config[i].post_on_sleep,
 			mp->vreg_config[i].pre_off_sleep,
 			mp->vreg_config[i].post_off_sleep);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		++i;
 
 		rc = 0;

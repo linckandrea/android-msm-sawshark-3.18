@@ -423,11 +423,7 @@ static void process_ctl_event(struct work_struct *work)
 						__func__, cmd.id);
 				continue;
 			}
-<<<<<<< HEAD
-
-=======
 			reinit_completion(&ch->open_notifier);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			add_platform_driver(ch);
 			mutex_lock(&einfo->rx_cmd_lock);
 			einfo->xprt_if.glink_core_if_ptr->rx_cmd_ch_open_ack(
@@ -435,10 +431,7 @@ static void process_ctl_event(struct work_struct *work)
 								cmd.id,
 								cmd.priority);
 			mutex_unlock(&einfo->rx_cmd_lock);
-<<<<<<< HEAD
-=======
 			complete_all(&ch->open_notifier);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		} else if (cmd.cmd == CMD_CLOSE) {
 			SMDXPRT_INFO(einfo, "%s RX REMOTE CLOSE rcid %u\n",
 					__func__, cmd.id);

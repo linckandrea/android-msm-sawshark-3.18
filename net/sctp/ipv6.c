@@ -682,8 +682,6 @@ static struct sock *sctp_v6_create_accept_sk(struct sock *sk,
 	newnp->ipv6_mc_list = NULL;
 	newnp->ipv6_ac_list = NULL;
 	newnp->ipv6_fl_list = NULL;
-<<<<<<< HEAD
-=======
 
 	rcu_read_lock();
 	opt = rcu_dereference(np->opt);
@@ -691,7 +689,6 @@ static struct sock *sctp_v6_create_accept_sk(struct sock *sk,
 		opt = ipv6_dup_options(newsk, opt);
 	RCU_INIT_POINTER(newnp->opt, opt);
 	rcu_read_unlock();
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	/* Initialize sk's sport, dport, rcv_saddr and daddr for getsockname()
 	 * and getpeername().

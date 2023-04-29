@@ -959,15 +959,11 @@ static void neigh_timer_handler(unsigned long arg)
 	}
 
 	if (neigh_probe_enable) {
-		if (neigh->nud_state & (NUD_INCOMPLETE | NUD_PROBE | NUD_STALE))
+		if (neigh->nud_state & (NUD_INCOMPLETE | NUD_PROBE | NUD_STALE)) {
 			neigh_probe(neigh);
-<<<<<<< HEAD
-	} else if (neigh->nud_state & (NUD_INCOMPLETE | NUD_PROBE)) {
-		neigh_probe(neigh);
-=======
-		else
+		} else {
 			write_unlock(&neigh->lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+		}
 	} else {
 		if (neigh->nud_state & (NUD_INCOMPLETE | NUD_PROBE)) {
 			neigh_probe(neigh);

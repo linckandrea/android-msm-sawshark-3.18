@@ -13,10 +13,7 @@
 
 #include <linux/kernel.h>
 #include <linux/pm_runtime.h>
-<<<<<<< HEAD
-=======
 #include <linux/iopoll.h>
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #include <linux/delay.h>
 
 #include "mdss_mdp.h"

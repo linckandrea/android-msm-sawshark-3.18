@@ -547,8 +547,6 @@ int msm_spm_set_low_power_mode(unsigned int mode, bool notify_rpm)
 }
 EXPORT_SYMBOL(msm_spm_set_low_power_mode);
 
-<<<<<<< HEAD
-=======
 void msm_spm_set_rpm_hs(bool allow_rpm_hs)
 {
 	struct msm_spm_device *dev = &__get_cpu_var(msm_cpu_spm_device);
@@ -557,7 +555,6 @@ void msm_spm_set_rpm_hs(bool allow_rpm_hs)
 }
 EXPORT_SYMBOL(msm_spm_set_rpm_hs);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 int msm_spm_config_low_power_mode_addr(struct msm_spm_device *dev,
 		unsigned int mode, bool notify_rpm)
 {

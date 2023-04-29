@@ -24,10 +24,7 @@
 #include <linux/string.h>
 
 #include "mdss_dsi.h"
-<<<<<<< HEAD
-=======
 #include "mdss_debug.h"
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #ifdef TARGET_HW_MDSS_HDMI
 #include "mdss_dba_utils.h"
 #endif
@@ -616,7 +613,6 @@ int mdss_dsi_panel_reset(struct mdss_panel_data *pdata, int enable)
 			gpio_set_value((ctrl_pdata->bklt_en_gpio), 0);
 			gpio_free(ctrl_pdata->bklt_en_gpio);
 		}
-<<<<<<< HEAD
 		pr_info("power off the panel!\n");
 		if(ctrl_pdata->ulps_mode){
 			pr_info("Nothing to be done for panel GPIOs in ULPM mode!\n");
@@ -628,12 +624,6 @@ int mdss_dsi_panel_reset(struct mdss_panel_data *pdata, int enable)
 			}
 			mdelay(15);    /*15ms delay for pull reset pin low*/
 			gpio_free(ctrl_pdata->rst_gpio);
-=======
-		if (gpio_is_valid(ctrl_pdata->disp_en_gpio)) {
-			gpio_set_value((ctrl_pdata->disp_en_gpio), 0);
-			usleep_range(100, 110);
-			gpio_free(ctrl_pdata->disp_en_gpio);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		}
 
 		if (gpio_is_valid(ctrl_pdata->mode_gpio))
@@ -1040,19 +1030,12 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 
 	if (pinfo->compression_mode == COMPRESSION_DSC)
 		mdss_dsi_panel_dsc_pps_send(ctrl, pinfo);
-<<<<<<< HEAD
-#ifdef TARGET_HW_MDSS_HDMI
-	if (ctrl->ds_registered)
-		mdss_dba_utils_video_on(pinfo->dba_data, pinfo);
-#endif
-=======
 
 	mdss_dsi_panel_on_hdmi(ctrl, pinfo);
 
 	/* Ensure low persistence mode is set as before */
 	mdss_dsi_panel_apply_display_setting(pdata, pinfo->persist_mode);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 end:
 	pinfo->blank_state = MDSS_PANEL_BLANK_UNBLANK;
 	if( ctrl->acl_enable )
@@ -1087,13 +1070,7 @@ static int mdss_dsi_post_panel_on(struct mdss_panel_data *pdata)
 	struct mdss_dsi_ctrl_pdata *ctrl = NULL;
 	struct mdss_panel_info *pinfo;
 	struct dsi_panel_cmds *cmds;
-<<<<<<< HEAD
-#ifdef TARGET_HW_MDSS_HDMI
-	u32 vsync_period = 0;
-#endif
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (pdata == NULL) {
 		pr_err("%s: Invalid input data\n", __func__);
 		return -EINVAL;
@@ -1115,19 +1092,8 @@ static int mdss_dsi_post_panel_on(struct mdss_panel_data *pdata)
 		mdss_dsi_panel_cmds_send(ctrl, cmds, CMD_REQ_COMMIT);
 	}
 
-<<<<<<< HEAD
-#ifdef TARGET_HW_MDSS_HDMI
-	if (pinfo->is_dba_panel && pinfo->is_pluggable) {
-		/* ensure at least 1 frame transfers to down stream device */
-		vsync_period = (MSEC_PER_SEC / pinfo->mipi.frame_rate) + 1;
-		msleep(vsync_period);
-		mdss_dba_utils_hdcp_enable(pinfo->dba_data, true);
-	}
-#endif
-=======
 	mdss_dsi_post_panel_on_hdmi(pinfo);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 end:
 	pr_debug("%s:-\n", __func__);
 	return 0;
@@ -1174,25 +1140,12 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 
 	if (ctrl->off_cmds.cmd_cnt)
 		mdss_dsi_panel_cmds_send(ctrl, &ctrl->off_cmds, CMD_REQ_COMMIT);
-<<<<<<< HEAD
-#ifdef TARGET_HW_MDSS_HDMI
-	if (ctrl->ds_registered && pinfo->is_pluggable) {
-		mdss_dba_utils_video_off(pinfo->dba_data);
-		mdss_dba_utils_hdcp_enable(pinfo->dba_data, false);
-	}
-#endif
-end:
-	pinfo->blank_state = MDSS_PANEL_BLANK_BLANK;
-	/*clear idle state*/
-	ctrl->idle = 0;
-=======
 
 	mdss_dsi_panel_off_hdmi(ctrl, pinfo);
 
 end:
 	/* clear idle state */
 	ctrl->idle = false;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	pr_debug("%s:-\n", __func__);
 	return 0;
 }
@@ -1259,7 +1212,6 @@ static int mdss_dsi_panel_low_power_config(struct mdss_panel_data *pdata,
 		enable);
 
 	/* Any panel specific low power commands/config */
-<<<<<<< HEAD
 	if(ctrl->idle == enable){
 		pr_debug("%s: idle: no change(%d)\n",__func__,enable);
 		return 0;
@@ -1282,13 +1234,6 @@ static int mdss_dsi_panel_low_power_config(struct mdss_panel_data *pdata,
 			mdss_dsi_panel_cmds_send(ctrl, &ctrl->idle_off_cmds, CMD_REQ_COMMIT);}
 	}
 
-=======
-	/* Control idle mode for panel */
-	if (enable)
-		mdss_dsi_panel_set_idle_mode(pdata, true);
-	else
-		mdss_dsi_panel_set_idle_mode(pdata, false);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	pr_debug("%s:-\n", __func__);
 	return 0;
 }
@@ -2240,15 +2185,8 @@ static void mdss_dsi_parse_esd_params(struct device_node *np,
 			goto error;
 		}
 	}
-<<<<<<< HEAD
-	pr_info("ESD status check mode : %s\n", string);
-	if ((ctrl->status_mode == ESD_BTA) ||
-		(ctrl->status_mode == ESD_TE))
-=======
-
 	if ((ctrl->status_mode == ESD_BTA) || (ctrl->status_mode == ESD_TE) ||
 			(ctrl->status_mode == ESD_MAX))
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return;
 
 	mdss_dsi_parse_dcs_cmds(np, &ctrl->status_cmds,
@@ -2308,11 +2246,8 @@ static void mdss_dsi_parse_esd_params(struct device_node *np,
 
 	return;
 
-<<<<<<< HEAD
-=======
 error2:
 	kfree(ctrl->status_value);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 error1:
 	kfree(ctrl->status_value);
 error:
@@ -2900,10 +2835,7 @@ static int mdss_panel_parse_dt(struct device_node *np,
 			struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 {
 	u32 tmp;
-<<<<<<< HEAD
-=======
 	u8 lanes = 0;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	int rc = 0;
 	const char *data;
 	static const char *pdest;
@@ -3116,7 +3048,6 @@ static int mdss_panel_parse_dt(struct device_node *np,
 		"qcom,mdss-dsi-off-command", "qcom,mdss-dsi-off-command-state");
 
 	mdss_dsi_parse_dcs_cmds(np, &ctrl_pdata->idle_on_cmds,
-<<<<<<< HEAD
 		"qcom,mdss-dsi-idle-on-command", "qcom,mdss-dsi-idle-on-command-state");
 
 	mdss_dsi_parse_dcs_cmds(np, &ctrl_pdata->idle_off_cmds,
@@ -3129,17 +3060,6 @@ static int mdss_panel_parse_dt(struct device_node *np,
 
 	mdss_dsi_parse_dcs_cmds(np, &ctrl_pdata->boost_off_cmds,
 		"qcom,mdss-dsi-boost-off-command", "qcom,mdss-dsi-boost-off-command-state");
-=======
-		"qcom,mdss-dsi-idle-on-command",
-		"qcom,mdss-dsi-idle-on-command-state");
-
-	mdss_dsi_parse_dcs_cmds(np, &ctrl_pdata->idle_off_cmds,
-		"qcom,mdss-dsi-idle-off-command",
-		"qcom,mdss-dsi-idle-off-command-state");
-
-	rc = of_property_read_u32(np, "qcom,mdss-dsi-idle-fps", &tmp);
-	pinfo->mipi.frame_rate_idle = (!rc ? tmp : 60);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	rc = of_property_read_u32(np, "qcom,adjust-timer-wakeup-ms", &tmp);
 	pinfo->adjust_timer_delay_ms = (!rc ? tmp : 0);
@@ -3157,30 +3077,10 @@ static int mdss_panel_parse_dt(struct device_node *np,
 
 	mdss_dsi_parse_dfps_config(np, ctrl_pdata);
 
-<<<<<<< HEAD
-#ifdef TARGET_HW_MDSS_HDMI
-	pinfo->is_dba_panel = of_property_read_bool(np,
-			"qcom,dba-panel");
-
-	if (pinfo->is_dba_panel) {
-		bridge_chip_name = of_get_property(np,
-			"qcom,bridge-name", &len);
-		if (!bridge_chip_name || len <= 0) {
-			pr_err("%s:%d Unable to read qcom,bridge_name, data=%pK,len=%d\n",
-				__func__, __LINE__, bridge_chip_name, len);
-			rc = -EINVAL;
-			goto error;
-		}
-		strlcpy(ctrl_pdata->bridge_name, bridge_chip_name,
-			MSM_DBA_CHIP_NAME_MAX_LEN);
-	}
-#endif
-=======
 	rc = mdss_panel_parse_dt_hdmi(np, ctrl_pdata);
 	if (rc)
 		goto error;
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return 0;
 
 error:
@@ -3240,7 +3140,6 @@ int mdss_dsi_panel_init(struct device_node *node,
 	ctrl_pdata->panel_data.apply_display_setting =
 			mdss_dsi_panel_apply_display_setting;
 	ctrl_pdata->switch_mode = mdss_dsi_panel_switch_mode;
-<<<<<<< HEAD
 	ctrl_pdata->panel_data.set_idle = mdss_dsi_panel_set_idle_mode;
 	ctrl_pdata->panel_data.get_idle = mdss_dsi_panel_get_idle_mode;
 	ctrl_pdata->set_acl = mdss_dsi_panel_acl_dcs;
@@ -3252,8 +3151,5 @@ int mdss_dsi_panel_init(struct device_node *node,
 	wake_lock_init(&ctrl_pdata->idle_on_wakelock, WAKE_LOCK_SUSPEND,
                         "IDLE_ON_WAKELOCK");
 
-=======
-	ctrl_pdata->panel_data.get_idle = mdss_dsi_panel_get_idle_mode;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return 0;
 }

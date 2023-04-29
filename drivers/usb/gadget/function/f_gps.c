@@ -608,11 +608,7 @@ gps_send_cpkt_response(void *gr, void *buf, size_t len)
 
 	dev = port_to_gps(gr);
 
-<<<<<<< HEAD
-	pr_debug("%s: dev:%pK\n", __func__, dev);
-=======
 	pr_debug_ratelimited("%s: dev:%pK\n", __func__, dev);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (!atomic_read(&dev->online) || !atomic_read(&dev->ctrl_online)) {
 		gps_free_ctrl_pkt(cpkt);

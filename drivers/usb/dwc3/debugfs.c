@@ -634,11 +634,7 @@ static ssize_t dwc3_store_ep_num(struct file *file, const char __user *ubuf,
 	unsigned int		num, dir, temp;
 	unsigned long		flags;
 
-<<<<<<< HEAD
-	if (copy_from_user(kbuf, ubuf, count > 10 ? 10 : count))
-=======
 	if (copy_from_user(kbuf, ubuf, min_t(size_t, sizeof(kbuf) - 1, count)))
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EFAULT;
 
 	if (sscanf(kbuf, "%u %u", &num, &dir) != 2)
@@ -890,80 +886,8 @@ void dwc3_dbg_setup(struct dwc3 *dwc, u8 ep_num,
  */
 void dwc3_dbg_print_reg(struct dwc3 *dwc, const char *name, int reg)
 {
-<<<<<<< HEAD
-	unsigned long flags;
-
-	write_lock_irqsave(&dbg_dwc3_data.lck, flags);
-
-	scnprintf(dbg_dwc3_data.buf[dbg_dwc3_data.idx], DBG_DATA_MSG,
-		  "%s = 0x%08x\n", name, reg);
-
-	dbg_inc(&dbg_dwc3_data.idx);
-
-	write_unlock_irqrestore(&dbg_dwc3_data.lck, flags);
-
-	if (dbg_dwc3_data.tty != 0)
-		pr_notice("%s = 0x%08x\n", name, reg);
-}
-
-/**
- * store_events: configure if events are going to be also printed to console
- *
- */
-static ssize_t dwc3_store_events(struct file *file,
-			    const char __user *buf, size_t count, loff_t *ppos)
-{
-	int ret;
-	u8 tty;
-
-	if (buf == NULL) {
-		pr_err("[%s] EINVAL\n", __func__);
-		ret = -EINVAL;
-		return ret;
-	}
-
-	ret = kstrtou8_from_user(buf, count, 0, &tty);
-	if (ret < 0) {
-		pr_err("can't get enter value.\n");
-		return ret;
-	}
-
-	if (tty > 1) {
-		pr_err("<1|0>: enable|disable console log\n");
-		ret = -EINVAL;
-		return ret;
-	}
-
-	dbg_dwc3_data.tty = tty;
-	pr_info("tty = %u", dbg_dwc3_data.tty);
-
-	return count;
-}
-
-static int dwc3_gadget_data_events_show(struct seq_file *s, void *unused)
-{
-	unsigned long	flags;
-	unsigned	i;
-
-	read_lock_irqsave(&dbg_dwc3_data.lck, flags);
-
-	i = dbg_dwc3_data.idx;
-	if (strnlen(dbg_dwc3_data.buf[i], DBG_DATA_MSG))
-		seq_printf(s, "%s\n", dbg_dwc3_data.buf[i]);
-	for (dbg_inc(&i); i != dbg_dwc3_data.idx; dbg_inc(&i)) {
-		if (!strnlen(dbg_dwc3_data.buf[i], DBG_DATA_MSG))
-			continue;
-		seq_printf(s, "%s\n", dbg_dwc3_data.buf[i]);
-	}
-
-	read_unlock_irqrestore(&dbg_dwc3_data.lck, flags);
-
-	return 0;
-}
-=======
 	if (name == NULL)
 		return;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	ipc_log_string(dwc->dwc_ipc_log_ctxt, "%s = 0x%08x", name, reg);
 }

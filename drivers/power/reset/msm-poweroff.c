@@ -60,15 +60,10 @@ static void scm_disable_sdi(void);
 * There is no API from TZ to re-enable the registers.
 * So the SDI cannot be re-enabled when it already by-passed.
 */
-<<<<<<< HEAD
-static int download_mode = 0;
-static struct kobject dload_kobj;
-=======
 static int download_mode = 1;
 #else
-static const int download_mode;
+static const int download_mode  = 0;
 #endif
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #ifdef CONFIG_MSM_DLOAD_MODE
 #define EDL_MODE_PROP "qcom,msm-imem-emergency_download_mode"

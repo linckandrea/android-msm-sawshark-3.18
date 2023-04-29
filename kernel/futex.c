@@ -402,7 +402,6 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
 	struct page *page, *page_head;
 	struct address_space *mapping;
 	int err, ro = 0;
-	struct address_space *mapping;
 	/*
 	 * The futex address must be "naturally" aligned.
 	 */

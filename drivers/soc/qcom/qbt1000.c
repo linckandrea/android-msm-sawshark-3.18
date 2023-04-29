@@ -86,10 +86,7 @@ struct qbt1000_drvdata {
 	uint32_t	ssc_subsys_id;
 	uint32_t	ssc_spi_port;
 	uint32_t	ssc_spi_port_slave_index;
-<<<<<<< HEAD
-=======
 	struct wakeup_source w_lock;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	struct qseecom_handle *app_handle;
 };
 #define W_LOCK_DELAY_MS (2000)
@@ -766,10 +763,7 @@ static long qbt1000_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
-=======
 	pm_runtime_get_sync(drvdata->dev);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	mutex_lock(&drvdata->mutex);
 	if (((drvdata->sensor_conn_type == SPI) && (!drvdata->clock_state)) ||
 	    ((drvdata->sensor_conn_type == SSC_SPI) && (!drvdata->ssc_state))) {
@@ -843,21 +837,6 @@ static long qbt1000_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 				"%s: Failed copy 2us LOAD rc:%d\n",
 				 __func__, rc);
 			rc = -ENOMEM;
-<<<<<<< HEAD
-			goto end;
-		}
-
-		/* copy the app handle to user */
-		rc = copy_to_user((void __user *)app.app_handle, &app_handle,
-			sizeof(*app.app_handle));
-
-		if (rc != 0) {
-			dev_err(drvdata->dev,
-				"%s: Failed copy 2us LOAD rc:%d\n",
-				 __func__, rc);
-			rc = -ENOMEM;
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			goto end;
 		}
 
