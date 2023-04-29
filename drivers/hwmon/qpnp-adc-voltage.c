@@ -1704,12 +1704,6 @@ int32_t qpnp_get_vadc_gain_and_offset(struct qpnp_vadc_chip *vadc,
 		return rc;
 
 	if (!vadc->vadc_init_calib) {
-<<<<<<< HEAD
-		rc = qpnp_vadc_read(vadc, REF_125V, &result);
-		if (rc) {
-			pr_debug("vadc read failed with rc = %d\n", rc);
-			return rc;
-=======
 		if (vadc->vadc_hc) {
 			rc = qpnp_vadc_hc_read(vadc, VADC_CALIB_VREF_1P25,
 								&result);
@@ -1723,7 +1717,6 @@ int32_t qpnp_get_vadc_gain_and_offset(struct qpnp_vadc_chip *vadc,
 				pr_debug("vadc read failed with rc = %d\n", rc);
 				return rc;
 			}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		}
 	}
 

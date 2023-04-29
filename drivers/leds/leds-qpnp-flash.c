@@ -405,21 +405,12 @@ static ssize_t flash_led_dfs_fault_reg_read(struct file *fp, char __user *buf,
 		return -EFAULT;
 	}
 	led = log->led;
-<<<<<<< HEAD
 
 	mutex_lock(&log->debugfs_lock);
 	if ((log->rpos >= log->wpos && log->buffer_cnt == 0) ||
 			((log->len - log->wpos) < MIN_BUFFER_WRITE_LEN))
 		goto unlock_mutex;
 
-=======
-
-	mutex_lock(&log->debugfs_lock);
-	if ((log->rpos >= log->wpos && log->buffer_cnt == 0) ||
-			((log->len - log->wpos) < MIN_BUFFER_WRITE_LEN))
-		goto unlock_mutex;
-
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	log->buffer_cnt--;
 
 	rc = print_to_log(log, "0x%05X ", FLASH_LED_FAULT_STATUS(led->base));

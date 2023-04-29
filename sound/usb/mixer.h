@@ -23,10 +23,7 @@ struct usb_mixer_interface {
 
 	u8 audigy2nx_leds[3];
 	u8 xonar_u1_status;
-<<<<<<< HEAD
-	
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+
 	bool disconnected;
 };
 
