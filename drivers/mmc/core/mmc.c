@@ -2414,11 +2414,8 @@ static int _mmc_suspend(struct mmc_host *host, bool is_suspend)
 	if (mmc_card_doing_bkops(host->card)) {
 		err = mmc_stop_bkops(host->card);
 		if (err)
-<<<<<<< HEAD
-			goto out;
-=======
+
 			goto out_err;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 
 	err = mmc_flush_cache(host->card);

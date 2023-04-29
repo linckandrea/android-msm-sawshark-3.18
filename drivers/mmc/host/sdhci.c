@@ -270,10 +270,6 @@ static void sdhci_dumpregs(struct sdhci_host *host)
 		host->ops->dump_vendor_regs(host);
 	sdhci_dump_state(host);
 	pr_info(DRIVER_NAME ": ===========================================\n");
-<<<<<<< HEAD
-	sdhci_dump_irq_buffer(host);
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 /*****************************************************************************\
@@ -1165,19 +1161,11 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_command *cmd)
 	/* Set the DMA boundary value and block size */
 	sdhci_set_blk_size_reg(host, data->blksz, SDHCI_DEFAULT_BOUNDARY_ARG);
 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
-<<<<<<< HEAD
-	SDHCI_TRACE(host, "%lld: %s: %s: 0x28=0x%08x 0x3E=0x%08x\n",
-			ktime_to_ms(ktime_get()), __func__,
-			mmc_hostname(host->mmc),
-			sdhci_readb(host, SDHCI_HOST_CONTROL),
-			sdhci_readw(host, SDHCI_HOST_CONTROL2));
-=======
 	MMC_TRACE(host->mmc,
 		"%s: 0x28=0x%08x 0x3E=0x%08x 0x06=0x%08x\n", __func__,
 		sdhci_readb(host, SDHCI_HOST_CONTROL),
 		sdhci_readw(host, SDHCI_HOST_CONTROL2),
 		sdhci_readw(host, SDHCI_BLOCK_COUNT));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 }
 
 static void sdhci_set_transfer_mode(struct sdhci_host *host,
@@ -1247,15 +1235,8 @@ static void sdhci_finish_data(struct sdhci_host *host)
 	data = host->data;
 	host->data = NULL;
 
-<<<<<<< HEAD
-	SDHCI_TRACE(host, "%lld: %s: %s: 0x24=0x%08x",
-			ktime_to_ms(ktime_get()), __func__,
-			mmc_hostname(host->mmc),
-			sdhci_readl(host, SDHCI_PRESENT_STATE));
-=======
 	MMC_TRACE(host->mmc, "%s: 0x24=0x%08x\n", __func__,
 		sdhci_readl(host, SDHCI_PRESENT_STATE));
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (host->flags & SDHCI_REQ_USE_DMA) {
 		if (host->flags & SDHCI_USE_ADMA)
 			sdhci_adma_table_post(host, data);
@@ -3165,18 +3146,6 @@ static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
 		 * above in sdhci_cmd_irq().
 		 */
 		if (host->cmd && (host->cmd->flags & MMC_RSP_BUSY)) {
-<<<<<<< HEAD
-			if (intmask & SDHCI_INT_DATA_TIMEOUT) {
-				host->cmd->error = -ETIMEDOUT;
-				pr_err("%s: Got INT_DATA_TIMEOUT for busy command (%d)\n",
-						mmc_hostname(host->mmc),
-						host->cmd->opcode);
-				sdhci_dumpregs(host);
-				tasklet_schedule(&host->finish_tasklet);
-				return;
-			}
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			if (intmask & SDHCI_INT_DATA_END) {
 				/*
 				 * Some cards handle busy-end interrupt
@@ -3412,14 +3381,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
 				goto out;
 		}
 
-<<<<<<< HEAD
-		SDHCI_TRACE_IRQ(host, "%s: %s: intmask: 0x%x\n",
-				__func__,
-				mmc_hostname(host->mmc), intmask);
-=======
 		MMC_TRACE(host->mmc,
 			"%s: intmask: 0x%x\n", __func__, intmask);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 		if (intmask & SDHCI_INT_AUTO_CMD_ERR)
 			host->auto_cmd_err_sts = sdhci_readw(host,

@@ -60,11 +60,7 @@ obj-y			+=	qdsp6v2/
 obj-$(CONFIG_MSM_RPM_RBCPR_STATS_V2_LOG) += rpm_rbcpr_stats_v2.o
 obj-$(CONFIG_MEM_SHARE_QMI_SERVICE)		+= memshare/
 obj-$(CONFIG_CP_ACCESS64) += cpaccess64.o
-<<<<<<< HEAD
-obj-$(CONFIG_MSM_RPM_STATS_LOG) += rpm_stats.o rpm_master_stat.o rpm_rail_stats.o
-=======
 obj-$(CONFIG_MSM_RPM_STATS_LOG) += rpm_stats.o rpm_master_stat.o rpm_rail_stats.o system_stats.o
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 ifdef CONFIG_ARCH_MSM8996
 obj-$(CONFIG_HW_PERF_EVENTS) += perf_event_kryo.o perf_event_l2.o
 else

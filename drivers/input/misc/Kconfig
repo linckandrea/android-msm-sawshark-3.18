@@ -789,10 +789,6 @@ config INPUT_DRV2667_HAPTICS
 	  To compile this driver as a module, choose M here: the
 	  module will be called drv260x-haptics.
 
-source "drivers/input/misc/ots_pat9125/Kconfig"
-
-<<<<<<< HEAD
-=======
 config SENSORS_LTR553
 	tristate "LTR553 light and proximity device driver"
 	depends on I2C
@@ -838,5 +834,7 @@ config DOUBLE_TAP
 	help
 	 If you say yes here, you get support Bosch double tap sensor function
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+
+source "drivers/input/misc/ots_pat9125/Kconfig"
+
 endif

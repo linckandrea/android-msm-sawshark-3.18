@@ -1486,11 +1486,8 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 		list_add(&match->list, &fanout_list);
 	}
 	err = -EINVAL;
-<<<<<<< HEAD
-	
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
+
 	spin_lock(&po->bind_lock);
 	if (po->running &&
 	    match->type == type &&
@@ -1531,16 +1528,6 @@ static struct packet_fanout *fanout_release(struct sock *sk)
 
 	mutex_lock(&fanout_mutex);
 	f = po->fanout;
-<<<<<<< HEAD
-	if (f){
-		po->fanout = NULL;
-
-		if (atomic_dec_and_test(&f->sk_ref)) {
-			list_del(&f->list);
-			dev_remove_pack(&f->prot_hook);
-			kfree(f);
-		}
-=======
 	if (f) {
 		po->fanout = NULL;
 
@@ -1549,7 +1536,6 @@ static struct packet_fanout *fanout_release(struct sock *sk)
 		else
 			f = NULL;
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	}
 	mutex_unlock(&fanout_mutex);
 
@@ -3912,11 +3898,7 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 		if (unlikely(req->tp_block_size & (PAGE_SIZE - 1)))
 			goto out;
 		if (po->tp_version >= TPACKET_V3 &&
-<<<<<<< HEAD
-			req->tp_block_size <=
-=======
 		    req->tp_block_size <=
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			  BLK_PLUS_PRIV((u64)req_u->req3.tp_sizeof_priv))
 			goto out;
 		if (unlikely(req->tp_frame_size < po->tp_hdrlen +

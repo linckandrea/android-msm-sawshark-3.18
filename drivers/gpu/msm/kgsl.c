@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2008-2018, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2008-2019, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -256,10 +252,6 @@ kgsl_mem_entry_create(void)
 
 	if (entry != NULL) {
 		kref_init(&entry->refcount);
-<<<<<<< HEAD
-		INIT_WORK(&entry->work, _deferred_put);
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		/* put this ref in the caller functions after init */
 		kref_get(&entry->refcount);
 	}
@@ -354,15 +346,10 @@ static int kgsl_mem_entry_track_gpuaddr(struct kgsl_device *device,
 	/*
 	 * If SVM is enabled for this object then the address needs to be
 	 * assigned elsewhere
-<<<<<<< HEAD
-	 */
-	if (kgsl_memdesc_use_cpu_map(&entry->memdesc))
-=======
 	 * Also do not proceed further in case of NoMMU.
 	 */
 	if (kgsl_memdesc_use_cpu_map(&entry->memdesc) ||
 		(kgsl_mmu_get_mmutype(device) == KGSL_MMU_TYPE_NONE))
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return 0;
 
 	pagetable = kgsl_memdesc_is_secured(&entry->memdesc) ?
@@ -444,15 +431,10 @@ static void kgsl_mem_entry_detach_process(struct kgsl_mem_entry *entry)
 	if (entry == NULL)
 		return;
 
-<<<<<<< HEAD
-	kgsl_mmu_put_gpuaddr(&entry->memdesc);
-
-=======
 	/*
 	 * First remove the entry from mem_idr list
 	 * so that no one can operate on obsolete values
 	 */
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	spin_lock(&entry->priv->mem_lock);
 	if (entry->id != 0)
 		idr_remove(&entry->priv->mem_idr, entry->id);
@@ -540,11 +522,8 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 		return -ENOSPC;
 	}
 
-<<<<<<< HEAD
-=======
 	atomic_inc(&proc_priv->ctxt_count);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	id = _kgsl_get_context_id(device);
 	if (id == -ENOSPC) {
 		/*
@@ -2345,10 +2324,7 @@ long kgsl_ioctl_gpuobj_import(struct kgsl_device_private *dev_priv,
 	trace_kgsl_mem_map(entry, fd);
 
 	kgsl_mem_entry_commit_process(entry);
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	/* put the extra refcount for kgsl_mem_entry_create() */
 	kgsl_mem_entry_put(entry);
 	return 0;
@@ -2657,10 +2633,7 @@ long kgsl_ioctl_map_user_mem(struct kgsl_device_private *dev_priv,
 	trace_kgsl_mem_map(entry, param->fd);
 
 	kgsl_mem_entry_commit_process(entry);
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	/* put the extra refcount for kgsl_mem_entry_create() */
 	kgsl_mem_entry_put(entry);
 	return result;
@@ -2937,11 +2910,6 @@ long kgsl_ioctl_gpuobj_sync(struct kgsl_device_private *dev_priv,
 			ret = _kgsl_gpumem_sync_cache(entries[i],
 					objs[i].offset, objs[i].length,
 					objs[i].op);
-<<<<<<< HEAD
-
-out:
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 out:
 	for (i = 0; i < param->count; i++)
@@ -3101,10 +3069,7 @@ long kgsl_ioctl_gpuobj_alloc(struct kgsl_device_private *dev_priv,
 	param->flags = entry->memdesc.flags;
 	param->mmapsize = kgsl_memdesc_footprint(&entry->memdesc);
 	param->id = entry->id;
-<<<<<<< HEAD
-=======
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	/* put the extra refcount for kgsl_mem_entry_create() */
 	kgsl_mem_entry_put(entry);
 	return 0;
@@ -4031,13 +3996,8 @@ int kgsl_device_platform_probe(struct kgsl_device *device)
 				PM_QOS_DEFAULT_VALUE);
 	}
 
-<<<<<<< HEAD
-
-	device->events_wq = create_singlethread_workqueue("kgsl-events");
-=======
 	device->events_wq = alloc_workqueue("kgsl-events",
 		WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_SYSFS, 0);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	/* Initalize the snapshot engine */
 	kgsl_device_snapshot_init(device);

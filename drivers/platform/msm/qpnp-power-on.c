@@ -29,14 +29,10 @@
 #include <linux/regulator/machine.h>
 #include <linux/regulator/of_regulator.h>
 #include <linux/qpnp/power-on.h>
-<<<<<<< HEAD
 #include <linux/proc_fs.h>
 #include <asm/uaccess.h>
-
-=======
 #include <linux/qpnp/qpnp-pbs.h>
 #include <linux/qpnp-misc.h>
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #define CREATE_MASK(NUM_BITS, POS) \
 	((unsigned char) (((1 << (NUM_BITS)) - 1) << (POS)))
@@ -2021,7 +2017,6 @@ static int read_gen2_pon_off_reason(struct qpnp_pon *pon, u16 *reason,
 	return 0;
 }
 
-<<<<<<< HEAD
 static int qpnp_pmic_register_show(struct seq_file *s, void *p)
 {
     char buf[2] ={0};
@@ -2103,7 +2098,6 @@ static const struct file_operations qpnp_pon_pmic_register_fops = {
 	.release = seq_release,
 
 };
-=======
 static int pon_twm_notifier_cb(struct notifier_block *nb,
 				unsigned long action, void *data)
 {
@@ -2132,7 +2126,6 @@ static int pon_register_twm_notifier(struct qpnp_pon *pon)
 
 	return rc;
 }
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 static int qpnp_pon_probe(struct spmi_device *spmi)
 {

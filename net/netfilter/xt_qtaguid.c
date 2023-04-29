@@ -2225,11 +2225,7 @@ static int ctrl_cmd_tag(const char *input)
 			from_kuid(&init_user_ns, current_fsuid()));
 		goto err;
 	}
-<<<<<<< HEAD
-	CT_DEBUG("qtaguid: ctrl_tag(%s): socket->...->sk_refcnt=%d ->sk=%p\n",
-=======
 	CT_DEBUG("qtaguid: ctrl_tag(%s): socket->...->sk_refcnt=%d ->sk=%pk\n",
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		 input, atomic_read(&el_socket->sk->sk_refcnt),
 		 el_socket->sk);
 	if (argc < 3) {
@@ -2335,11 +2331,7 @@ static int ctrl_cmd_tag(const char *input)
 	spin_unlock_bh(&uid_tag_data_tree_lock);
 	spin_unlock_bh(&sock_tag_list_lock);
 	/* We keep the ref to the sk until it is untagged */
-<<<<<<< HEAD
-	CT_DEBUG("qtaguid: ctrl_tag(%s): done st@%p ...->sk_refcnt=%d\n",
-=======
 	CT_DEBUG("qtaguid: ctrl_tag(%s): done st@%pk ...->sk_refcnt=%d\n",
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		 input, sock_tag_entry,
 		 atomic_read(&el_socket->sk->sk_refcnt));
 	sockfd_put(el_socket);
@@ -2444,11 +2436,7 @@ int qtaguid_untag(struct socket *el_socket, bool kernel)
 	 * Release the sock_fd that was grabbed at tag time.
 	 */
 	sock_put(sock_tag_entry->sk);
-<<<<<<< HEAD
-	CT_DEBUG("qtaguid: done. st@%p ...->sk_refcnt=%d\n",
-=======
 	CT_DEBUG("qtaguid: done. st@%pk ...->sk_refcnt=%d\n",
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		 sock_tag_entry,
 		 atomic_read(&el_socket->sk->sk_refcnt));
 

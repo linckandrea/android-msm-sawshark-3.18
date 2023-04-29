@@ -996,8 +996,6 @@ config TOUCHSCREEN_FT5X06_GESTURE
 
          If unsure, say N.
 
-<<<<<<< HEAD
-=======
 config TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE_EXTRA_SYSFS
 	bool "Synaptics DSX firmware update extra sysfs attributes"
 	depends on TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE
@@ -1008,7 +1006,6 @@ config TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE_EXTRA_SYSFS
 
 	  If unsure, say N.
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 config SECURE_TOUCH
 	bool "Secure Touch"
 	depends on (TOUCHSCREEN_SYNAPTICS_I2C_RMI4 || \

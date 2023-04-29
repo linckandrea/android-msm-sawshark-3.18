@@ -231,12 +231,6 @@ static int mmc_runtime_resume(struct device *dev)
 
 	if (mmc_bus_needs_resume(host))
 		host->bus_resume_flags &= ~MMC_BUSRESUME_NEEDS_RESUME;
-<<<<<<< HEAD
-
-	return host->bus_ops->runtime_resume(host);
-}
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	return host->bus_ops->runtime_resume(host);
 }

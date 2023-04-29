@@ -2593,11 +2593,6 @@ static void sdhci_msm_check_power_status(struct sdhci_host *host, u32 req_type)
 	if (done)
 		init_completion(&msm_host->pwr_irq_completion);
 	else if (!wait_for_completion_timeout(&msm_host->pwr_irq_completion,
-<<<<<<< HEAD
-				msecs_to_jiffies(MSM_PWR_IRQ_TIMEOUT_MS)))
-		__WARN_printf("%s: request(%d) timed out waiting for pwr_irq\n",
-					mmc_hostname(host->mmc), req_type);
-=======
 				msecs_to_jiffies(MSM_PWR_IRQ_TIMEOUT_MS))) {
 		__WARN_printf("%s: request(%d) timed out waiting for pwr_irq\n",
 					mmc_hostname(host->mmc), req_type);
@@ -2609,7 +2604,6 @@ static void sdhci_msm_check_power_status(struct sdhci_host *host, u32 req_type)
 			readl_relaxed(msm_host->core_mem + CORE_PWRCTL_CTL));
 		mmc_stop_tracing(host->mmc);
 		}
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	pr_debug("%s: %s: request %d done\n", mmc_hostname(host->mmc),
 			__func__, req_type);
@@ -4221,12 +4215,8 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	host->quirks2 |= SDHCI_QUIRK2_IGNORE_DATATOUT_FOR_R1BCMD;
 	host->quirks2 |= SDHCI_QUIRK2_BROKEN_PRESET_VALUE;
 	host->quirks2 |= SDHCI_QUIRK2_USE_RESERVED_MAX_TIMEOUT;
-<<<<<<< HEAD
-	host->quirks2 |= SDHCI_QUIRK2_TRACE_ON;
-=======
 	host->quirks2 |= SDHCI_QUIRK2_NON_STANDARD_TUNING;
 	host->quirks2 |= SDHCI_QUIRK2_USE_PIO_FOR_EMMC_TUNING;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (host->quirks2 & SDHCI_QUIRK2_ALWAYS_USE_BASE_CLOCK)
 		host->quirks2 |= SDHCI_QUIRK2_DIVIDE_TOUT_BY_4;

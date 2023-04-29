@@ -1019,19 +1019,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
 		goto nla_put_failure;
 
 	if (1) {
-<<<<<<< HEAD
-		struct rtnl_link_ifmap map = {
-			.mem_start   = dev->mem_start,
-			.mem_end     = dev->mem_end,
-			.base_addr   = dev->base_addr,
-			.irq         = dev->irq,
-			.dma         = dev->dma,
-			.port        = dev->if_port,
-		};
-=======
 		struct rtnl_link_ifmap map;
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		memset(&map, 0, sizeof(map));
 		map.mem_start   = dev->mem_start;
 		map.mem_end     = dev->mem_end;

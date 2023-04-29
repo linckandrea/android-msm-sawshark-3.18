@@ -2145,15 +2145,6 @@ static void _dispatcher_power_down(struct adreno_device *adreno_dev)
 	mutex_unlock(&device->mutex);
 }
 
-<<<<<<< HEAD
-/**
- * adreno_dispatcher_work() - Master work handler for the dispatcher
- * @work: Pointer to the work struct for the current work queue
- *
- * Process expired commands and send new ones.
- */
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 static void adreno_dispatcher_work(struct kthread_work *work)
 {
 	struct adreno_dispatcher *dispatcher =
@@ -2510,12 +2501,6 @@ int adreno_dispatcher_init(struct adreno_device *adreno_dev)
 	setup_timer(&dispatcher->fault_timer, adreno_dispatcher_fault_timer,
 		(unsigned long) adreno_dev);
 
-<<<<<<< HEAD
-	setup_timer(&dispatcher->preempt_timer, adreno_dispatcher_preempt_timer,
-		(unsigned long) adreno_dev);
-
-=======
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	init_kthread_work(&dispatcher->work, adreno_dispatcher_work);
 
 	init_completion(&dispatcher->idle_gate);

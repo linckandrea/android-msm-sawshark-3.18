@@ -4232,12 +4232,9 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 
 		spin_lock_irqsave(&host->lock, flags);
 		host->rescan_disable = 0;
-<<<<<<< HEAD
-		if (mmc_bus_manual_resume(host)) {
-=======
+
 		if (mmc_bus_manual_resume(host) &&
 				!host->ignore_bus_resume_flags) {
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 			spin_unlock_irqrestore(&host->lock, flags);
 			break;
 		}

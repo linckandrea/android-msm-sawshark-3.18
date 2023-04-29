@@ -1031,11 +1031,7 @@ static int mmc_sdio_pre_suspend(struct mmc_host *host)
  */
 static int mmc_sdio_suspend(struct mmc_host *host)
 {
-<<<<<<< HEAD
-	mmc_claim_host(host);
-=======
 	MMC_TRACE(host, "%s: Enter\n", __func__);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (mmc_card_keep_power(host) && mmc_card_wake_sdio_irq(host)) {
 		sdio_disable_wide(host->card);
 	}

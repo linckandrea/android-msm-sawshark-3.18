@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2002,2007-2015,2017, The Linux Foundation. All rights
- * reserved.
-=======
 /* Copyright (c) 2002,2007-2017, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -273,9 +268,6 @@ static inline int kgsl_allocate_global(struct kgsl_device *device,
 	memdesc->flags = flags;
 	memdesc->priv = priv;
 
-<<<<<<< HEAD
-	ret = kgsl_sharedmem_alloc_contig(device, memdesc, (size_t) size);
-=======
 	if (((memdesc->priv & KGSL_MEMDESC_CONTIG) != 0) ||
 		(kgsl_mmu_get_mmutype(device) == KGSL_MMU_TYPE_NONE))
 		ret = kgsl_sharedmem_alloc_contig(device, memdesc,
@@ -286,7 +278,6 @@ static inline int kgsl_allocate_global(struct kgsl_device *device,
 			kgsl_memdesc_map(memdesc);
 	}
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	if (ret == 0)
 		kgsl_mmu_add_global(device, memdesc, name);
 
@@ -356,8 +347,6 @@ static inline void kgsl_free_sgt(struct sg_table *sgt)
 	}
 }
 
-<<<<<<< HEAD
-=======
 #include "kgsl_pool.h"
 
 /**
@@ -389,5 +378,4 @@ static inline int kgsl_get_page_size(size_t size, unsigned int align)
 }
 #endif
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 #endif /* __KGSL_SHAREDMEM_H */

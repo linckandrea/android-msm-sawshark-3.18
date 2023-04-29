@@ -327,11 +327,8 @@ static void kgsl_cmdbatch_sync_fence_func(void *priv)
 	 * other function does not dereference a invalid pointer.
 	 */
 	event->handle = NULL;
-<<<<<<< HEAD
-=======
 
 	spin_unlock_irqrestore(&event->handle_lock, flags);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	spin_unlock_irqrestore(&event->handle_lock, flags);
 	kgsl_cmdbatch_put(event->cmdbatch);
@@ -352,14 +349,11 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 	struct sync_fence *fence = NULL;
 	unsigned int id;
 	unsigned long flags;
-<<<<<<< HEAD
-=======
 	int ret = 0;
 
 	fence = sync_fence_fdget(sync->fd);
 	if (fence == NULL)
 		return -EINVAL;
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	kref_get(&cmdbatch->refcount);
 
@@ -376,11 +370,8 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 	spin_lock_init(&event->handle_lock);
 	set_bit(event->id, &cmdbatch->pending);
 
-<<<<<<< HEAD
-=======
 	trace_syncpoint_fence(cmdbatch, fence->name);
 
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	spin_lock_irqsave(&event->handle_lock, flags);
 
 	event->handle = kgsl_sync_fence_async_wait(sync->fd,
@@ -396,22 +387,12 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 		kgsl_cmdbatch_put(cmdbatch);
 
 		/*
-<<<<<<< HEAD
-		 * If ret == 0 the fence was already signaled - print a trace
-		 * message so we can track that
-		 */
-		if (ret == 0)
-			trace_syncpoint_fence_expire(cmdbatch, "signaled");
-
-		return ret;
-=======
 		* Print a syncpoint_fence_expire trace if
 		* fence is already signaled or there is
 		* a failure in registering the fence waiter.
 		*/
 		trace_syncpoint_fence_expire(cmdbatch, (ret < 0) ?
 				"error" : fence->name);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	} else {
 		spin_unlock_irqrestore(&event->handle_lock, flags);
 	}

@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
- * Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
-=======
  * Copyright (c) 2015-2017,2019, The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -28,9 +24,6 @@
 #include <linux/dma-contiguous.h>
 #include <soc/qcom/secure_buffer.h>
 #include <linux/qcom_iommu.h>
-<<<<<<< HEAD
-#include "iommu-debug.h"
-=======
 #include <linux/dma-mapping.h>
 #include <asm/cacheflush.h>
 #include <asm/dma-iommu.h>
@@ -86,7 +79,6 @@ static const char *iommu_debug_attr_to_string(enum iommu_attr attr)
 	}
 }
 #endif
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #ifdef CONFIG_IOMMU_DEBUG_TRACKING
 
@@ -140,15 +132,6 @@ void iommu_debug_domain_remove(struct iommu_domain *domain)
 		iommu_group_put(it->group);
 		kfree(it);
 	}
-<<<<<<< HEAD
-
-	list_add(&attach->list, &iommu_debug_attachments);
-out_unlock:
-	mutex_unlock(&iommu_debug_attachments_lock);
-}
-
-#endif
-=======
 
 	mutex_unlock(&iommu_debug_attachments_lock);
 }
@@ -164,7 +147,6 @@ out_unlock:
 #define kstrtosize_t kstrtoul
 
 #else
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 #define kstrtoux kstrtou32
 #define kstrtox_from_user kstrtoint_from_user

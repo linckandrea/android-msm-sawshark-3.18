@@ -155,14 +155,9 @@ static int print_mem_entry(void *data, void *ptr)
 			(uint64_t *)(uintptr_t) m->gpuaddr,
 			(unsigned long *) m->useraddr,
 			m->size, entry->id, flags,
-<<<<<<< HEAD
-			memtype_str(kgsl_memdesc_usermem_type(m)),
-			usage, (m->sgt ? m->sgt->nents : 0), m->mapsize);
-=======
 			memtype_str(usermem_type),
 			usage, (m->sgt ? m->sgt->nents : 0), m->mapsize,
 			egl_surface_count, egl_image_count);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 	if (entry->metadata[0] != 0)
 		seq_printf(s, " %s", entry->metadata);

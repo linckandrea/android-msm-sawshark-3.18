@@ -551,11 +551,8 @@ static struct sock *dccp_v6_request_recv_sock(struct sock *sk,
 	newnp->ipv6_mc_list = NULL;
 	newnp->ipv6_ac_list = NULL;
 	newnp->ipv6_fl_list = NULL;
-<<<<<<< HEAD
-=======
 
 	/* Clone pktoptions received with SYN */
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	newnp->pktoptions = NULL;
 	if (ireq->pktopts != NULL) {
 		newnp->pktoptions = skb_clone(ireq->pktopts, GFP_ATOMIC);

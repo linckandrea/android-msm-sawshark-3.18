@@ -42,15 +42,12 @@ mdss-dsi-objs += mdss_dsi_phy.o
 mdss-dsi-objs += mdss_dsi_clk.o
 obj-$(CONFIG_FB_MSM_MDSS) += mdss-dsi.o
 obj-$(CONFIG_FB_MSM_MDSS) += mdss_panel.o
-<<<<<<< HEAD
 obj-$(CONFIG_FB_MSM_MDSS) += mdss_io_util.o
-=======
 
 ifeq ($(CONFIG_SPI_QUP), y)
 obj-$(CONFIG_FB_MSM_MDSS_SPI_PANEL) += mdss_spi_client.o
 obj-$(CONFIG_FB_MSM_MDSS_SPI_PANEL) += mdss_spi_panel.o
 endif
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 
 ifneq ($(CONFIG_FB_MSM_MDSS_MDP3), y)
 obj-$(CONFIG_FB_MSM_MDSS) += mdss_hdmi_util.o
