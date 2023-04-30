@@ -1,3 +1,4 @@
+CONFIG_DEBUG_SECTION_MISMATCH=y
 #
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm 3.18.24 Kernel Configuration

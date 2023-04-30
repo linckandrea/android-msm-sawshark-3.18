@@ -1,4 +1,5 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/*
+ * Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -8,18 +9,23 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
-#ifndef _ANDROID_ASHMEM_H
-#define _ANDROID_ASHMEM_H
+#ifndef _LINUX_COMPAT_ION_H
+#define _LINUX_COMPAT_ION_H
 
-#include <linux/compat.h>
+#include <linux/ion.h>
 
-/* support of 32bit userspace on 64bit platforms */
-#ifdef CONFIG_COMPAT
-#define COMPAT_ASHMEM_SET_SIZE		_IOW(__ASHMEMIOC, 3, compat_size_t)
-#define COMPAT_ASHMEM_SET_PROT_MASK	_IOW(__ASHMEMIOC, 5, unsigned int)
+#if IS_ENABLED(CONFIG_COMPAT)
+
+long compat_msm_ion_ioctl(struct ion_client *client, unsigned int cmd,
+					unsigned long arg);
+
+#define compat_ion_user_handle_t compat_int_t
+
+#else
+
+#define compat_msm_ion_ioctl  msm_ion_custom_ioctl
+
 #endif
-
 #endif

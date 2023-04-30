@@ -270,15 +270,8 @@ static int __netlink_deliver_tap_skb(struct sk_buff *skb,
 	struct sock *sk = skb->sk;
 	int ret = -ENOMEM;
 
-<<<<<<< HEAD
-	if (!net_eq(dev_net(dev), sock_net(sk)) &&
-	    !net_eq(dev_net(dev), &init_net)) {
-		return 0;
-	}
-=======
 	if (!net_eq(dev_net(dev), sock_net(sk)))
 		return 0;
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 
 	dev_hold(dev);
 
@@ -1983,12 +1976,8 @@ static int netlink_dump(struct sock *sk)
 	struct sk_buff *skb = NULL;
 	struct nlmsghdr *nlh;
 	struct module *module;
-<<<<<<< HEAD
-	int len, err = -ENOBUFS;
-=======
 	int err = -ENOBUFS;
 	int alloc_min_size;
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 	int alloc_size;
 
 	mutex_lock(nlk->cb_mutex);
