@@ -8560,13 +8560,12 @@ static void perf_event_exit_cpu_context(int cpu)
 	srcu_read_unlock(&pmus_srcu, idx);
 }
 
-static void perf_event_start_swclock(int cpu)
+static void perf_event_exit_cpu(int cpu)
 {
 	perf_event_exit_cpu_context(cpu);
 }
 #else
 static inline void perf_event_exit_cpu(int cpu) { }
-static inline void perf_event_start_swclock(int cpu) { }
 #endif
 
 static int
@@ -8605,11 +8604,6 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
 	case CPU_DOWN_PREPARE:
 		perf_event_exit_cpu(cpu);
 		break;
-
-	case CPU_STARTING:
-		perf_event_start_swclock(cpu);
-		break;
-
 	default:
 		break;
 	}

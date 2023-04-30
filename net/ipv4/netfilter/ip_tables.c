@@ -574,28 +574,6 @@ static void cleanup_match(struct xt_entry_match *m, struct net *net)
 }
 
 static int
-<<<<<<< HEAD
-check_entry(const struct ipt_entry *e)
-{
-	const struct xt_entry_target *t;
-
-	if (!ip_checkentry(&e->ip))
-		return -EINVAL;
-
-	if (e->target_offset + sizeof(struct xt_entry_target) >
-	    e->next_offset)
-		return -EINVAL;
-
-	t = ipt_get_target_c(e);
-	if (e->target_offset + t->u.target_size > e->next_offset)
-		return -EINVAL;
-
-	return 0;
-}
-
-static int
-=======
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 check_match(struct xt_entry_match *m, struct xt_mtchk_param *par)
 {
 	const struct ipt_ip *ip = par->entryinfo;
@@ -752,15 +730,11 @@ check_entry_size_and_hooks(struct ipt_entry *e,
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
-	err = check_entry(e);
-=======
 	if (!ip_checkentry(&e->ip))
 		return -EINVAL;
 
 	err = xt_check_entry_offsets(e, e->elems, e->target_offset,
 				     e->next_offset);
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 	if (err)
 		return err;
 
@@ -1495,16 +1469,11 @@ check_compat_entry_size_and_hooks(struct compat_ipt_entry *e,
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
-	/* For purposes of check_entry casting the compat entry is fine */
-	ret = check_entry((struct ipt_entry *)e);
-=======
 	if (!ip_checkentry(&e->ip))
 		return -EINVAL;
 
 	ret = xt_compat_check_entry_offsets(e, e->elems,
 					    e->target_offset, e->next_offset);
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 	if (ret)
 		return ret;
 

@@ -59,9 +59,6 @@ void dvb_ringbuffer_init(struct dvb_ringbuffer *rbuf, void *data, size_t len)
 
 int dvb_ringbuffer_empty(struct dvb_ringbuffer *rbuf)
 {
-<<<<<<< HEAD
-	return (rbuf->pread == rbuf->pwrite);
-=======
 	/* smp_load_acquire() to load write pointer on reader side
 	 * this pairs with smp_store_release() in dvb_ringbuffer_write(),
 	 * dvb_ringbuffer_write_user(), or dvb_ringbuffer_reset()
@@ -69,7 +66,6 @@ int dvb_ringbuffer_empty(struct dvb_ringbuffer *rbuf)
 	 * for memory barriers also see Documentation/circular-buffers.txt
 	 */
 	return (rbuf->pread == smp_load_acquire(&rbuf->pwrite));
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 }
 
 
@@ -239,21 +235,11 @@ ssize_t dvb_ringbuffer_write_user(struct dvb_ringbuffer *rbuf,
 		 */
 		smp_store_release(&rbuf->pwrite, 0);
 	}
-<<<<<<< HEAD
-
-	if (copy_from_user(rbuf->data + rbuf->pwrite, buf, todo)) {
-		rbuf->pwrite = oldpwrite;
-		return -EFAULT;
-	}
-
-	rbuf->pwrite = (rbuf->pwrite + todo) % rbuf->size;
-=======
 	status = copy_from_user(rbuf->data+rbuf->pwrite, buf, todo);
 	if (status)
 		return len - todo;
 	/* smp_store_release() for write pointer update, see above */
 	smp_store_release(&rbuf->pwrite, (rbuf->pwrite + todo) % rbuf->size);
->>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 
 	return len;
 }
