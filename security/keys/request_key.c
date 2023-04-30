@@ -336,7 +336,7 @@ static int construct_get_dest_keyring(struct key **_dest_keyring)
 				return ret;
 			}
 		}
-  	}
+	}
 
 	*_dest_keyring = dest_keyring;
 	kleave(" [dk %d]", key_serial(dest_keyring));
@@ -437,6 +437,7 @@ link_check_failed:
 
 link_prealloc_failed:
 	mutex_unlock(&user->cons_lock);
+	key_put(key);
 	kleave(" = %d [prelink]", ret);
 	return ret;
 
@@ -466,12 +467,14 @@ static struct key *construct_key_and_link(struct keyring_search_context *ctx,
 	if (ret)
 		goto error;
 
+	if (ctx->index_key.type == &key_type_keyring)
+		return ERR_PTR(-EPERM);
+
 	user = key_user_lookup(current_fsuid());
 	if (!user) {
 		ret = -ENOMEM;
 		goto error_put_dest_keyring;
 	}
-
 
 	ret = construct_alloc_key(ctx, dest_keyring, flags, user, &key);
 	key_user_put(user);
@@ -541,6 +544,7 @@ struct key *request_key_and_link(struct key_type *type,
 	struct keyring_search_context ctx = {
 		.index_key.type		= type,
 		.index_key.description	= description,
+		.index_key.desc_len	= strlen(description),
 		.cred			= current_cred(),
 		.match_data.cmp		= key_default_cmp,
 		.match_data.raw_data	= description,

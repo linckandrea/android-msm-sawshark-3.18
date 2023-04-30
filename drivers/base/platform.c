@@ -729,7 +729,8 @@ static ssize_t driver_override_store(struct device *dev,
 	struct platform_device *pdev = to_platform_device(dev);
 	char *driver_override, *old, *cp;
 
-	if (count > PATH_MAX)
+	/* We need to keep extra room for a newline */
+	if (count >= (PAGE_SIZE - 1))
 		return -EINVAL;
 
 	driver_override = kstrndup(buf, count, GFP_KERNEL);
@@ -760,6 +761,7 @@ static ssize_t driver_override_show(struct device *dev,
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	ssize_t len;
+
 	device_lock(dev);
 	len = sprintf(buf, "%s\n", pdev->driver_override);
 	device_unlock(dev);

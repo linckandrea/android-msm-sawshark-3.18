@@ -24,6 +24,7 @@
 #define ARM64_WORKAROUND_CLEAN_CACHE		0
 #define ARM64_WORKAROUND_DEVICE_LOAD_ACQUIRE	1
 #define ARM64_WORKAROUND_845719			2
+<<<<<<< HEAD
 #define ARM64_HAS_SYSREG_GIC_CPUIF		3
 #define ARM64_HAS_PAN				4
 #define ARM64_NCAPS				5
@@ -48,6 +49,13 @@ struct arm64_cpu_capabilities {
 	};
 };
 
+=======
+
+#define ARM64_NCAPS				3
+
+#ifndef __ASSEMBLY__
+
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 extern DECLARE_BITMAP(cpu_hwcaps, ARM64_NCAPS);
 
 static inline bool cpu_have_feature(unsigned int num)

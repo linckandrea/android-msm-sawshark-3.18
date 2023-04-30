@@ -17,6 +17,10 @@
  */
 
 #include <linux/atomic.h>
+<<<<<<< HEAD
+=======
+#include <linux/device.h>
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 #include <linux/err.h>
 #include <linux/file.h>
 #include <linux/freezer.h>
@@ -409,7 +413,12 @@ static void ion_handle_get(struct ion_handle *handle)
 }
 
 /* Must hold the client lock */
+<<<<<<< HEAD
 static struct ion_handle* ion_handle_get_check_overflow(struct ion_handle *handle)
+=======
+static struct ion_handle *ion_handle_get_check_overflow(
+					struct ion_handle *handle)
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 {
 	if (atomic_read(&handle->ref.refcount) + 1 == 0)
 		return ERR_PTR(-EOVERFLOW);
@@ -507,6 +516,7 @@ static struct ion_handle *ion_handle_get_by_id_nolock(struct ion_client *client,
 	handle = idr_find(&client->idr, id);
 	if (handle)
 		return ion_handle_get_check_overflow(handle);
+<<<<<<< HEAD
 
 	return ERR_PTR(-EINVAL);
 }
@@ -521,6 +531,10 @@ struct ion_handle *ion_handle_get_by_id(struct ion_client *client,
 	mutex_unlock(&client->lock);
 
 	return handle;
+=======
+
+	return ERR_PTR(-EINVAL);
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 }
 
 
@@ -679,7 +693,10 @@ struct ion_handle *ion_alloc(struct ion_client *client, size_t len,
 }
 EXPORT_SYMBOL(ion_alloc);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 static void ion_free_nolock(struct ion_client *client, struct ion_handle *handle)
 {
 	bool valid_handle;
@@ -695,6 +712,7 @@ static void ion_free_nolock(struct ion_client *client, struct ion_handle *handle
 	ion_handle_put_nolock(handle);
 }
 
+<<<<<<< HEAD
 static void user_ion_free_nolock(struct ion_client *client, struct ion_handle *handle)
 {
 	bool valid_handle;
@@ -713,6 +731,8 @@ static void user_ion_free_nolock(struct ion_client *client, struct ion_handle *h
 	user_ion_handle_put_nolock(handle);
 }
 
+=======
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 void ion_free(struct ion_client *client, struct ion_handle *handle)
 {
 	BUG_ON(client != handle->client);
@@ -1411,23 +1431,27 @@ static struct dma_buf_ops dma_buf_ops = {
 	.kunmap = ion_dma_buf_kunmap,
 };
 
-struct dma_buf *ion_share_dma_buf(struct ion_client *client,
-						struct ion_handle *handle)
+static struct dma_buf *__ion_share_dma_buf(struct ion_client *client,
+					   struct ion_handle *handle,
+					   bool lock_client)
 {
 	struct ion_buffer *buffer;
 	struct dma_buf *dmabuf;
 	bool valid_handle;
 
-	mutex_lock(&client->lock);
+	if (lock_client)
+		mutex_lock(&client->lock);
 	valid_handle = ion_handle_validate(client, handle);
 	if (!valid_handle) {
 		WARN(1, "%s: invalid handle passed to share.\n", __func__);
-		mutex_unlock(&client->lock);
+		if (lock_client)
+			mutex_unlock(&client->lock);
 		return ERR_PTR(-EINVAL);
 	}
 	buffer = handle->buffer;
 	ion_buffer_get(buffer);
-	mutex_unlock(&client->lock);
+	if (lock_client)
+		mutex_unlock(&client->lock);
 
 	dmabuf = dma_buf_export(buffer, &dma_buf_ops, buffer->size, O_RDWR,
 				NULL);
@@ -1438,14 +1462,21 @@ struct dma_buf *ion_share_dma_buf(struct ion_client *client,
 
 	return dmabuf;
 }
+
+struct dma_buf *ion_share_dma_buf(struct ion_client *client,
+				  struct ion_handle *handle)
+{
+	return __ion_share_dma_buf(client, handle, true);
+}
 EXPORT_SYMBOL(ion_share_dma_buf);
 
-int ion_share_dma_buf_fd(struct ion_client *client, struct ion_handle *handle)
+static int __ion_share_dma_buf_fd(struct ion_client *client,
+				  struct ion_handle *handle, bool lock_client)
 {
 	struct dma_buf *dmabuf;
 	int fd;
 
-	dmabuf = ion_share_dma_buf(client, handle);
+	dmabuf = __ion_share_dma_buf(client, handle, lock_client);
 	if (IS_ERR(dmabuf))
 		return PTR_ERR(dmabuf);
 
@@ -1454,7 +1485,18 @@ int ion_share_dma_buf_fd(struct ion_client *client, struct ion_handle *handle)
 		dma_buf_put(dmabuf);
 	return fd;
 }
+
+int ion_share_dma_buf_fd(struct ion_client *client, struct ion_handle *handle)
+{
+	return __ion_share_dma_buf_fd(client, handle, true);
+}
 EXPORT_SYMBOL(ion_share_dma_buf_fd);
+
+static int ion_share_dma_buf_fd_nolock(struct ion_client *client,
+				       struct ion_handle *handle)
+{
+	return __ion_share_dma_buf_fd(client, handle, false);
+}
 
 struct ion_handle *ion_import_dma_buf(struct ion_client *client, int fd)
 {
@@ -1592,7 +1634,11 @@ static long ion_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			mutex_unlock(&client->lock);
 			return PTR_ERR(handle);
 		}
+<<<<<<< HEAD
 		user_ion_free_nolock(client, handle);
+=======
+		ion_free_nolock(client, handle);
+>>>>>>> 6b1ae527b1fdee86e81da0cb26ced75731c6c0fa
 		ion_handle_put_nolock(handle);
 		mutex_unlock(&client->lock);
 		break;
@@ -1602,11 +1648,15 @@ static long ion_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	{
 		struct ion_handle *handle;
 
-		handle = ion_handle_get_by_id(client, data.handle.handle);
-		if (IS_ERR(handle))
+		mutex_lock(&client->lock);
+		handle = ion_handle_get_by_id_nolock(client, data.handle.handle);
+		if (IS_ERR(handle)) {
+			mutex_unlock(&client->lock);
 			return PTR_ERR(handle);
-		data.fd.fd = ion_share_dma_buf_fd(client, handle);
-		ion_handle_put(handle);
+		}
+		data.fd.fd = ion_share_dma_buf_fd_nolock(client, handle);
+		ion_handle_put_nolock(handle);
+		mutex_unlock(&client->lock);
 		if (data.fd.fd < 0)
 			ret = data.fd.fd;
 		break;
