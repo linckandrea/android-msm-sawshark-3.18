@@ -112,17 +112,12 @@ static int pp_hist_lut_cache_params_v1_7(struct mdp_hist_lut_data *config,
 		pr_err("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
 	if (!mdss_pp_res->pp_data_res) {
 		pr_err("invalid pp_data_res %pK\n", mdss_pp_res->pp_data_res);
-=======
-	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
 
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 	if (config->ops & MDP_PP_OPS_READ) {
 		pr_err("read op is not supported\n");
 		return -EINVAL;
@@ -304,17 +299,12 @@ int pp_dither_cache_params_v1_7(struct mdp_dither_cfg_data *config,
 		pr_err("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
 	if (!mdss_pp_res->pp_data_res) {
 		pr_err("invalid pp_data_res %pK\n", mdss_pp_res->pp_data_res);
-=======
-	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
 
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 
 	if ((config->flags & MDSS_PP_SPLIT_MASK) == MDSS_PP_SPLIT_MASK) {
 		pr_warn("Can't set both split bits\n");
@@ -411,16 +401,11 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 		pr_err("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
 	if (!mdss_pp_res->pp_data_res) {
 		pr_err("invalid pp_data_res %pK\n", mdss_pp_res->pp_data_res);
-=======
-	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 	if (config->flags & MDP_PP_OPS_READ) {
 		pr_err("read op is not supported\n");
 		return -EINVAL;
@@ -669,17 +654,12 @@ static int pp_pcc_cache_params_v1_7(struct mdp_pcc_cfg_data *config,
 		pr_err("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
 	if (!mdss_pp_res->pp_data_res) {
 		pr_err("invalid pp_data_res %pK\n", mdss_pp_res->pp_data_res);
-=======
-	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
 
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 	if (config->ops & MDP_PP_OPS_READ) {
 		pr_err("read op is not supported\n");
 		return -EINVAL;
@@ -772,16 +752,11 @@ static int pp_igc_lut_cache_params_v1_7(struct mdp_igc_lut_data *config,
 		pr_err("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
-<<<<<<< HEAD
 	if (!mdss_pp_res->pp_data_res) {
 		pr_err("invalid pp_data_res %pK\n", mdss_pp_res->pp_data_res);
-=======
-	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 	if (config->ops & MDP_PP_OPS_READ) {
 		pr_err("read op is not supported\n");
 		return -EINVAL;
@@ -1056,7 +1031,7 @@ static int pp_pgc_lut_cache_params_v1_7(struct mdp_pgc_lut_data *config,
 		pr_err("invalid disp_num %d\n", disp_num);
 		return -EINVAL;
 	}
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 	if (!res_cache) {
 		pr_err("invalid resource payload\n");
 		return -EINVAL;
@@ -1176,17 +1151,12 @@ static int pp_pa_cache_params_v1_7(struct mdp_pa_v2_cfg_data *config,
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
 	if (!mdss_pp_res->pp_data_res) {
 		pr_err("Invalid pp_data_res %pK\n", mdss_pp_res->pp_data_res);
-=======
-	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("Invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 		return -EINVAL;
 	}
 
-	res_cache = mdss_pp_res->pp_data_v1_7;
+	res_cache = mdss_pp_res->pp_data_res;
 	if (config->flags & MDP_PP_OPS_READ) {
 		pr_err("Read op is not supported\n");
 		return -EINVAL;

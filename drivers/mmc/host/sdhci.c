@@ -167,33 +167,6 @@ static void sdhci_trace_init(struct sdhci_host *host)
 static void sdhci_trace_init(struct sdhci_host *host) {}
 #endif
 
-static void sdhci_dump_irq_buffer(struct sdhci_host *host)
-{
-	unsigned int idx, l;
-	unsigned int N = SDHCI_TRACE_RBUF_NUM_EVENTS - 1;
-	struct sdhci_trace_event *event;
-
-	if (!(host->quirks2 & SDHCI_QUIRK2_TRACE_ON))
-		return;
-
-	if (!host->trace_buf.rbuf)
-		return;
-
-	idx = ((unsigned int)atomic_read(&host->trace_buf.wr_idx)) & N;
-	l = (idx + 1) & N;
-
-	do {
-		event = &host->trace_buf.rbuf[l];
-		pr_crit("%s", (char *)event->data);
-		l = (l + 1) & N;
-		if (l == idx) {
-			event = &host->trace_buf.rbuf[l];
-			pr_crit("%s", (char *)event->data);
-			break;
-		}
-	} while (1);
-}
-
 static void sdhci_dumpregs(struct sdhci_host *host)
 {
 	MMC_TRACE(host->mmc,

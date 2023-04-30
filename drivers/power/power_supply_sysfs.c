@@ -74,6 +74,7 @@ static ssize_t power_supply_show_property(struct device *dev,
 	};
 	static char *battery_id[] = {
 		"Unknown", "GUANGYU", "DESAY"
+	};
 	static const char * const typec_text[] = {
 		"Nothing attached", "Sink attached", "Powered cable w/ sink",
 		"Debug Accessory", "Audio Adapter", "Powered cable w/o sink",

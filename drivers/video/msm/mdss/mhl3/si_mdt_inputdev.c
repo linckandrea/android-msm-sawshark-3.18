@@ -84,11 +84,7 @@ static void destroy_mouse(struct mhl_dev_context *dev_context)
 			dev_context->mdt_devs.dev_mouse);
 	input_unregister_device(dev_context->mdt_devs.dev_mouse);
 	MHL_TX_DBG_INFO("Freeing mouse: %pK\n",
-<<<<<<< HEAD
 			 dev_context->mdt_devs.dev_mouse);
-=======
-		dev_context->mdt_devs.dev_mouse);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	input_free_device(dev_context->mdt_devs.dev_mouse);
 	dev_context->mdt_devs.dev_mouse = NULL;
 }

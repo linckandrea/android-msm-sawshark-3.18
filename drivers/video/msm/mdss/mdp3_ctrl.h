@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 /* Copyright (c) 2013-2014, 2016-2017 The Linux Foundation. All rights reserved.
-=======
-/* Copyright (c) 2013-2014, 2016-2019 The Linux Foundation. All rights reserved.
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -40,9 +36,6 @@ struct mdp3_buffer_queue {
 	int pop_idx;
 };
 
-/*struct mdp3_session_data is MDP3 fb private data */
-#define mfd_to_mdp3_data(mfd)	(mfd->mdp.private1)
-
 struct mdp3_session_data {
 	struct mutex lock;
 	int status;
@@ -52,8 +45,8 @@ struct mdp3_session_data {
 	struct msm_fb_data_type *mfd;
 	ktime_t vsync_time;
 	struct timer_list vsync_timer;
+	int vsync_period;
 	struct kernfs_node *vsync_event_sd;
-	struct kernfs_node *bl_event_sd;
 	struct mdp_overlay overlay;
 	struct mdp_overlay req_overlay;
 	struct mdp3_buffer_queue bufq_in;
@@ -64,13 +57,6 @@ struct mdp3_session_data {
 	struct kthread_worker worker;
 	struct task_struct *thread;
 
-<<<<<<< HEAD
-=======
-	struct kthread_work retire_work;
-	struct kthread_worker retire_worker;
-	struct task_struct *retire_thread;
-
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	atomic_t dma_done_cnt;
 	int histo_status;
 	struct mutex histo_lock;
@@ -85,31 +71,12 @@ struct mdp3_session_data {
 	bool in_splash_screen;
 	bool esd_recovery;
 	int dyn_pu_state; /* dynamic partial update status */
-	u32 bl_events;
 
 	bool dma_active;
 	struct completion dma_completion;
-	struct completion secure_completion;
-
 	int (*wait_for_dma_done)(struct mdp3_session_data *session);
-
-	/* For retire fence */
-	struct sw_sync_timeline *vsync_timeline;
-	int retire_cnt;
-	atomic_t secure_display;
-	int transition_state;
 };
 
-void mdp3_bufq_deinit(struct mdp3_buffer_queue *bufq, int client);
 int mdp3_ctrl_init(struct msm_fb_data_type *mfd);
-int mdp3_bufq_push(struct mdp3_buffer_queue *bufq,
-			struct mdp3_img_data *data);
-int mdp3_ctrl_get_source_format(u32 imgType);
-int mdp3_ctrl_get_pack_pattern(u32 imgType);
-int mdp3_ctrl_reset(struct msm_fb_data_type *mfd);
-int mdp3_get_ion_client(struct msm_fb_data_type *mfd);
-int config_secure_display(struct mdp3_session_data *mdp3_session);
-void mdp3_flush_dma_done(struct mdp3_session_data *mdp3_session);
-void mdp3_vsync_retire_signal(struct msm_fb_data_type *mfd, int val);
 
 #endif /* MDP3_CTRL_H */

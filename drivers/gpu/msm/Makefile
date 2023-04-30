@@ -10,8 +10,7 @@ msm_kgsl_core-y = \
 	kgsl_pwrscale.o \
 	kgsl_mmu.o \
 	kgsl_snapshot.o \
-	kgsl_events.o \
-	kgsl_pool.o
+	kgsl_events.o
 
 msm_kgsl_core-$(CONFIG_MSM_KGSL_IOMMU) += kgsl_iommu.o
 msm_kgsl_core-$(CONFIG_DEBUG_FS) += kgsl_debugfs.o
@@ -33,8 +32,6 @@ msm_adreno-y += \
 	adreno_a3xx_snapshot.o \
 	adreno_a4xx_snapshot.o \
 	adreno_a5xx_snapshot.o \
-	adreno_a4xx_preempt.o \
-	adreno_a5xx_preempt.o \
 	adreno_sysfs.o \
 	adreno.o \
 	adreno_cp_parser.o \

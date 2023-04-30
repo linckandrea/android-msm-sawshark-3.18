@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2007-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -23,7 +23,6 @@
 #include "mdss_debug.h"
 
 #define MDSS_SMMU_COMPATIBLE "qcom,smmu"
-#define SMMU_CBN_FSYNR1		0x6c
 
 struct mdss_iommu_map_type {
 	char *client_name;
@@ -61,15 +60,14 @@ static inline bool is_mdss_smmu_compatible_device(const char *str)
  * mdss_smmu_is_valid_domain_type()
  *
  * Used to check if rotator smmu domain is defined or not by checking if
- * vbif base is defined and wb rotator exists. As those are associated.
+ * vbif base is defined. As those are associated.
  */
 static inline bool mdss_smmu_is_valid_domain_type(struct mdss_data_type *mdata,
 		int domain_type)
 {
 	if ((domain_type == MDSS_IOMMU_DOMAIN_ROT_UNSECURE ||
 			domain_type == MDSS_IOMMU_DOMAIN_ROT_SECURE) &&
-			(!mdss_mdp_is_wb_rotator_supported(mdata) ||
-			!mdss_mdp_is_nrt_vbif_base_defined(mdata)))
+			!mdss_mdp_is_nrt_vbif_base_defined(mdata))
 		return false;
 	return true;
 }
@@ -119,26 +117,18 @@ static inline int mdss_smmu_attach(struct mdss_data_type *mdata)
 {
 	int rc;
 
-	mdata->mdss_util->iommu_lock();
 	MDSS_XLOG(mdata->iommu_attached);
-
 	if (mdata->iommu_attached) {
 		pr_debug("mdp iommu already attached\n");
-		rc = 0;
-		goto end;
+		return 0;
 	}
 
-	if (!mdata->smmu_ops.smmu_attach) {
-		rc = -ENOSYS;
-		goto end;
-	}
+	if (!mdata->smmu_ops.smmu_attach)
+		return -ENOSYS;
 
 	rc =  mdata->smmu_ops.smmu_attach(mdata);
 	if (!rc)
 		mdata->iommu_attached = true;
-
-end:
-	mdata->mdss_util->iommu_unlock();
 	return rc;
 }
 
@@ -146,26 +136,19 @@ static inline int mdss_smmu_detach(struct mdss_data_type *mdata)
 {
 	int rc;
 
-	mdata->mdss_util->iommu_lock();
 	MDSS_XLOG(mdata->iommu_attached);
 
 	if (!mdata->iommu_attached) {
 		pr_debug("mdp iommu already dettached\n");
-		rc = 0;
-		goto end;
+		return 0;
 	}
 
-	if (!mdata->smmu_ops.smmu_detach) {
-		rc = -ENOSYS;
-		goto end;
-	}
+	if (!mdata->smmu_ops.smmu_detach)
+		return -ENOSYS;
 
 	rc = mdata->smmu_ops.smmu_detach(mdata);
 	if (!rc)
 		mdata->iommu_attached = false;
-
-end:
-	mdata->mdss_util->iommu_unlock();
 	return rc;
 }
 
@@ -231,7 +214,7 @@ static inline void mdss_smmu_dma_free_coherent(struct device *dev, size_t size,
 		void *cpu_addr, dma_addr_t phys, dma_addr_t iova, int domain)
 {
 	struct mdss_data_type *mdata = mdss_mdp_get_mdata();
-	if (mdata && mdata->smmu_ops.smmu_dma_free_coherent)
+	if (mdata->smmu_ops.smmu_dma_free_coherent)
 		mdata->smmu_ops.smmu_dma_free_coherent(dev, size, cpu_addr,
 			phys, iova, domain);
 }
@@ -290,18 +273,6 @@ static inline void mdss_smmu_deinit(struct mdss_data_type *mdata)
 {
 	if (mdata->smmu_ops.smmu_deinit)
 		mdata->smmu_ops.smmu_deinit(mdata);
-}
-
-static inline struct sg_table *mdss_smmu_sg_table_clone(struct sg_table
-			*orig_table, gfp_t gfp_mask, bool padding)
-{
-	struct mdss_data_type *mdata = mdss_mdp_get_mdata();
-
-	if (!mdata || !mdata->smmu_ops.smmu_sg_table_clone)
-		return NULL;
-
-	return mdata->smmu_ops.smmu_sg_table_clone(orig_table,
-				gfp_mask, padding);
 }
 
 #endif /* MDSS_SMMU_H */
