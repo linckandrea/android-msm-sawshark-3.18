@@ -322,11 +322,7 @@ ioctl_fail:
 readbuf_fail:
 	q6asm_audio_client_buf_free_contiguous(IN,
 					effects->ac);
-<<<<<<< HEAD
         mutex_unlock(&effects->lock);
-=======
-	mutex_unlock(&effects->lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return rc;
 cfg_fail:
 	q6asm_audio_client_buf_free_contiguous(IN,
@@ -334,11 +330,7 @@ cfg_fail:
 	q6asm_audio_client_buf_free_contiguous(OUT,
 					effects->ac);
 	effects->buf_alloc = 0;
-<<<<<<< HEAD
         mutex_unlock(&effects->lock);
-=======
-	mutex_unlock(&effects->lock);
->>>>>>> e46d03b34fc25df25b9ca1b37e52d33e1055534a
 	return rc;
 }
 

@@ -97,6 +97,7 @@ static int msm_rpm_master_copy_stats(
 {
 	struct msm_rpm_master_stats record;
 	struct msm_rpm_master_stats_platform_data *pdata;
+	static int master_cnt;
 	int count, j = 0;
 	char *buf;
 	unsigned long active_cores;

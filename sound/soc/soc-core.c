@@ -878,7 +878,6 @@ struct snd_soc_component *soc_find_component(
 	const struct device_node *of_node, const char *name)
 {
 	struct snd_soc_component *component;
-	bool found = false;
 
 	if (!of_node && !name) {
 		pr_err("%s: Either of_node or name must be valid\n",
@@ -886,25 +885,16 @@ struct snd_soc_component *soc_find_component(
 		return NULL;
 	}
 
-	mutex_lock(&client_mutex);
 	list_for_each_entry(component, &component_list, list) {
 		if (of_node) {
-			if (component->dev->of_node == of_node) {
-				found = true;
-				goto exit;
-			}
+			if (component->dev->of_node == of_node)
+				return component;
 		} else if (strcmp(component->name, name) == 0) {
-			found = true;
-			goto exit;
+			return component;
 		}
 	}
 
-exit:
-	mutex_unlock(&client_mutex);
-	if (found)
-		return component;
-	else
-		return NULL;
+	return NULL;
 }
 EXPORT_SYMBOL(soc_find_component);
 
@@ -913,9 +903,7 @@ static struct snd_soc_dai *snd_soc_find_dai(
 {
 	struct snd_soc_component *component;
 	struct snd_soc_dai *dai;
-	bool found = false;
 
-	mutex_lock(&client_mutex);
 	/* Find CPU DAI from registered DAIs*/
 	list_for_each_entry(component, &component_list, list) {
 		if (dlc->of_node && component->dev->of_node != dlc->of_node)
@@ -926,17 +914,11 @@ static struct snd_soc_dai *snd_soc_find_dai(
 			if (dlc->dai_name && strcmp(dai->name, dlc->dai_name))
 				continue;
 
-			found = true;
-			goto exit;
+			return dai;
 		}
 	}
 
-exit:
-	mutex_unlock(&client_mutex);
-	if (found)
-		return dai;
-	else
-		return NULL;
+	return NULL;
 }
 
 static int soc_bind_dai_link(struct snd_soc_card *card, int num)
@@ -1910,9 +1892,6 @@ static int soc_cleanup_card_resources(struct snd_soc_card *card)
 	for (i = 0; i < card->num_aux_devs; i++)
 		soc_remove_aux_dev(card, i);
 
-	/* free the ALSA card at first; this syncs with pending operations */
-	snd_card_free(card->snd_card);
-
 	/* remove and free each DAI */
 	soc_remove_dai_links(card);
 
@@ -1924,7 +1903,9 @@ static int soc_cleanup_card_resources(struct snd_soc_card *card)
 
 	snd_soc_dapm_free(&card->dapm);
 
+	snd_card_free(card->snd_card);
 	return 0;
+
 }
 
 /* removes a socdev */
@@ -2759,7 +2740,7 @@ int snd_soc_get_volsw_sx(struct snd_kcontrol *kcontrol,
 	unsigned int rshift = mc->rshift;
 	int max = mc->max;
 	int min = mc->min;
-	unsigned int mask = (unsigned int)(1 << (fls(min + max) - 1)) - 1;
+	int mask = (1 << (fls(min + max) - 1)) - 1;
 	unsigned int val;
 	int ret;
 

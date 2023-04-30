@@ -69,10 +69,6 @@
 	status = "okay";
 };
 
-&wcd_rst_gpio {
-	status = "okay";
-};
-
 &int_codec {
 	status = "disabled";
 };
