@@ -74,11 +74,13 @@ arch-$(CONFIG_CPU_32v5)		=-D__LINUX_ARM_ARCH__=5 $(call cc-option,-march=armv5te
 arch-$(CONFIG_CPU_32v4T)	=-D__LINUX_ARM_ARCH__=4 -march=armv4t
 arch-$(CONFIG_CPU_32v4)		=-D__LINUX_ARM_ARCH__=4 -march=armv4
 arch-$(CONFIG_CPU_32v3)		=-D__LINUX_ARM_ARCH__=3 -march=armv3
+arch-$(CONFIG_HUAWEI_SAWSHARK)	:=-D__LINUX_ARM_ARCH__=7 $(call cc-option,-mcpu=cortex-a7,-march=armv7-a)
 
 # Evaluate arch cc-option calls now
 arch-y := $(arch-y)
 
 # This selects how we optimise for the processor.
+tune-$(CONFIG_ARCH_MSM8909)	=-mtune=cortex-a7
 tune-$(CONFIG_CPU_ARM7TDMI)	=-mtune=arm7tdmi
 tune-$(CONFIG_CPU_ARM720T)	=-mtune=arm7tdmi
 tune-$(CONFIG_CPU_ARM740T)	=-mtune=arm7tdmi
