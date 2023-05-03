@@ -25,8 +25,6 @@
 
 #define MAX_EVENTS 30
 
-extern void lazyplug_enter_lazy(bool enter);
-
 static int get_poll_flags(void *instance)
 {
 	struct msm_vidc_inst *inst = instance;
@@ -1240,8 +1238,6 @@ void *msm_vidc_open(int core_id, int session_type)
 	inst->debugfs_root =
 		msm_vidc_debugfs_init_inst(inst, core->debugfs_root);
 
-	lazyplug_enter_lazy(true);
-
 	return inst;
 fail_init:
 	v4l2_fh_del(&inst->event_handler);
@@ -1391,7 +1387,6 @@ int msm_vidc_close(void *instance)
 	msm_smem_delete_client(inst->mem_client);
 
 	kref_put(&inst->kref, close_helper);
-	lazyplug_enter_lazy(false);
 	return 0;
 }
 EXPORT_SYMBOL(msm_vidc_close);
