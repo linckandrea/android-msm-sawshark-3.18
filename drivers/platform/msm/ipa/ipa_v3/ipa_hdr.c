@@ -702,7 +702,8 @@ int __ipa3_del_hdr(u32 hdr_hdl, bool by_user)
 				return -EPERM;
 			}
 		}
- 		entry->user_deleted = true;
+
+		entry->user_deleted = true;
 	}
 
 	if (--entry->ref_cnt) {
@@ -1013,8 +1014,8 @@ int ipa3_reset_hdr(void)
 				}
 				IPADBG("skip default header\n");
 				continue;
- 			}
- 		}
+			}
+		}
 
 		if (ipa3_id_find(entry->id) == NULL) {
 			WARN_ON(1);

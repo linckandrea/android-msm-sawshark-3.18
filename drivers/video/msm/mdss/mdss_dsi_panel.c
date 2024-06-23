@@ -304,6 +304,23 @@ static void mdss_dsi_panel_bklt_dcs(struct mdss_dsi_ctrl_pdata *ctrl, int level)
 
 }
 
+
+void mdss_dsi_idle_work(struct work_struct *work)
+{
+    struct mdss_dsi_ctrl_pdata *ctrl = NULL;
+    struct delayed_work *dw = to_delayed_work(work);
+
+    ctrl = container_of(dw, struct mdss_dsi_ctrl_pdata, idle_work);
+    if (!ctrl) {
+        pr_err("%s: invalid ctrl data\n", __func__);
+        return;
+    }
+
+    pr_info("%s: start to send idle command\n", __func__);
+    mdss_dsi_panel_cmds_send(ctrl, &ctrl->idle_on_cmds,
+        CMD_REQ_COMMIT);
+}
+
 static void mdss_dsi_panel_set_idle_mode(struct mdss_panel_data *pdata,
 							int enable)
 {
@@ -326,11 +343,11 @@ static void mdss_dsi_panel_set_idle_mode(struct mdss_panel_data *pdata,
 
 	if (enable) {
 		if (ctrl->idle_on_cmds.cmd_cnt){
-			mdss_dsi_panel_cmds_send(ctrl, &ctrl->idle_on_cmds,
-					CMD_REQ_COMMIT);
+            schedule_delayed_work(&ctrl->idle_work, msecs_to_jiffies(400));
 			pr_info("Idle on \n");
 		}
 	} else {
+        cancel_delayed_work_sync(&ctrl->idle_work);
 		if (ctrl->idle_off_cmds.cmd_cnt) {
 			mdss_dsi_panel_cmds_send(ctrl, &ctrl->idle_off_cmds,
 					CMD_REQ_COMMIT);

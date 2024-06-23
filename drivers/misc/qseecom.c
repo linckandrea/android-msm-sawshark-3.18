@@ -2387,7 +2387,7 @@ static int qseecom_unload_app(struct qseecom_dev_handle *data,
 
 	if (!memcmp(data->client.app_name, "keymaste", strlen("keymaste"))) {
 		pr_debug("Do not unload keymaster app from tz\n");
-		return 0;
+		goto unload_exit;
 	}
 
 	if (data->client.app_id > 0) {
@@ -6349,7 +6349,7 @@ static int __qseecom_qteec_issue_cmd(struct qseecom_dev_handle *data,
 
 	req_ptr = req->req_ptr;
 	resp_ptr = req->resp_ptr;
-	
+
 	/* find app_id & img_name from list */
 	spin_lock_irqsave(&qseecom.registered_app_list_lock, flags);
 	list_for_each_entry(ptr_app, &qseecom.registered_app_list_head,

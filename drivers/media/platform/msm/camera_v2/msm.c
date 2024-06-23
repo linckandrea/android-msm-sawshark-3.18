@@ -728,6 +728,10 @@ static long msm_private_ioctl(struct file *file, void *fh,
 		return -ENOTTY;
 	}
 
+<<<<<<< HEAD
+=======
+	memset(&event, 0, sizeof(struct v4l2_event));
+>>>>>>> 5011ae9f83801349cef8d1d6d305c692eb2f9110
 	session_id = event_data->session_id;
 	stream_id = event_data->stream_id;
 
@@ -1231,7 +1235,7 @@ static ssize_t write_logsync(struct file *file, const char __user *buf,
 	uint64_t seq_num = 0;
 	int ret;
 
-	if (copy_from_user(lbuf, buf, sizeof(lbuf)))
+	if (copy_from_user(lbuf, buf, sizeof(lbuf) - 1))
 		return -EFAULT;
 
 	ret = sscanf(lbuf, "%llu", &seq_num);

@@ -2832,7 +2832,7 @@ long kgsl_ioctl_gpuobj_sync(struct kgsl_device_private *dev_priv,
 	objs = kzalloc(param->count * sizeof(*objs), GFP_KERNEL);
 	if (objs == NULL)
 		return -ENOMEM;
-
+	
 	entries = kzalloc(param->count * sizeof(*entries), GFP_KERNEL);
 	if (entries == NULL) {
 		kfree(objs);
@@ -2861,7 +2861,6 @@ long kgsl_ioctl_gpuobj_sync(struct kgsl_device_private *dev_priv,
 		full_flush = check_full_flush(size, objs[i].op);
 		if (full_flush) {
 			trace_kgsl_mem_sync_full_cache(i, size);
-			flush_cache_all();
 			goto out;
 		}
 
@@ -2873,9 +2872,7 @@ long kgsl_ioctl_gpuobj_sync(struct kgsl_device_private *dev_priv,
 			ret = _kgsl_gpumem_sync_cache(entries[i],
 					objs[i].offset, objs[i].length,
 					objs[i].op);
-
 out:
-
 	for (i = 0; i < param->count; i++)
 		if (entries[i])
 			kgsl_mem_entry_put(entries[i]);

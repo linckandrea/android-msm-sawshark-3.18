@@ -1211,8 +1211,8 @@ int ip6_append_data(struct sock *sk, int getfrag(void *from, char *to,
 			if (np->frag_size)
 				mtu = np->frag_size;
 		}
-		if (mtu < IPV6_MIN_MTU)
-			return -EINVAL;
+	        if (mtu < IPV6_MIN_MTU)
+		    return -EINVAL;
 		cork->fragsize = mtu;
 		if (dst_allfrag(rt->dst.path))
 			cork->flags |= IPCORK_ALLFRAG;

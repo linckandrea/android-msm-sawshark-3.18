@@ -130,6 +130,13 @@ static void timerfd_remove_cancel(struct timerfd_ctx *ctx)
 	spin_unlock(&ctx->cancel_lock);
 }
 
+static void timerfd_remove_cancel(struct timerfd_ctx *ctx)
+{
+	spin_lock(&ctx->cancel_lock);
+	__timerfd_remove_cancel(ctx);
+	spin_unlock(&ctx->cancel_lock);
+}
+
 static bool timerfd_canceled(struct timerfd_ctx *ctx)
 {
 	if (!ctx->might_cancel || ctx->moffs.tv64 != KTIME_MAX)
@@ -153,7 +160,7 @@ static void timerfd_setup_cancel(struct timerfd_ctx *ctx, int flags)
 		}
 	} else {
 		__timerfd_remove_cancel(ctx);
- 	}
+	}
 	spin_unlock(&ctx->cancel_lock);
 }
 
@@ -407,6 +414,7 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
 		return -ENOMEM;
 
 	init_waitqueue_head(&ctx->wqh);
+	spin_lock_init(&ctx->cancel_lock);
 	ctx->clockid = clockid;
 
 	if (isalarm(ctx)) {

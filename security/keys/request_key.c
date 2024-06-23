@@ -336,7 +336,7 @@ static int construct_get_dest_keyring(struct key **_dest_keyring)
 				return ret;
 			}
 		}
-  	}
+	}
 
 	*_dest_keyring = dest_keyring;
 	kleave(" [dk %d]", key_serial(dest_keyring));
@@ -471,7 +471,6 @@ static struct key *construct_key_and_link(struct keyring_search_context *ctx,
 		ret = -ENOMEM;
 		goto error_put_dest_keyring;
 	}
-
 
 	ret = construct_alloc_key(ctx, dest_keyring, flags, user, &key);
 	key_user_put(user);

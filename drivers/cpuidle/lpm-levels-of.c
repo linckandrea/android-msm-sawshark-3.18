@@ -694,12 +694,12 @@ failed:
 void free_cluster_node(struct lpm_cluster *cluster)
 {
 	int i;
-        struct lpm_cluster *cl, *m;
+	struct lpm_cluster *cl, *m;
 
 	list_for_each_entry_safe(cl, m, &cluster->child, list) {
-        list_del(&cl->list);
-        free_cluster_node(cl);
-        };
+		list_del(&cl->list);
+		free_cluster_node(cl);
+	};
 
 	if (cluster->cpu) {
 		for (i = 0; i < cluster->cpu->nlevels; i++) {

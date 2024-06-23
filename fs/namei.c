@@ -4181,7 +4181,7 @@ int vfs_rename2(struct vfsmount *mnt,
 	struct inode *target = new_dentry->d_inode;
 	bool new_is_dir = false;
 	unsigned max_links = new_dir->i_sb->s_max_links;
-    struct name_snapshot old_name;
+	struct name_snapshot old_name;
 
 	if (source == target)
 		return 0;

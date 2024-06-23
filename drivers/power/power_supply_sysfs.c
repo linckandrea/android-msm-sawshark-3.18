@@ -39,6 +39,15 @@
 }
 
 static struct device_attribute power_supply_attrs[];
+static struct delayed_work healthd_init_delaywork;	
+static bool healthd_init_done;
+#define WAIT_HEALTHD_INIT_DELAY 2500
+
+static void healthd_init_delay_work(struct work_struct *work)
+{
+	pr_info("healthd_init_delay_work done. \n");
+	healthd_init_done = 1;
+}
 
 static ssize_t power_supply_show_property(struct device *dev,
 					  struct device_attribute *attr,
@@ -79,6 +88,7 @@ static ssize_t power_supply_show_property(struct device *dev,
 	struct power_supply *psy = dev_get_drvdata(dev);
 	const ptrdiff_t off = attr - power_supply_attrs;
 	union power_supply_propval value;
+	bool usb_fake_online = 0;
 
 	if (off == POWER_SUPPLY_PROP_TYPE) {
 		value.intval = psy->type;
@@ -333,7 +343,11 @@ static const struct attribute_group *power_supply_attr_groups[] = {
 void power_supply_init_attrs(struct device_type *dev_type)
 {
 	int i;
-
+	
+	healthd_init_done = 0;
+	INIT_DEFERRABLE_WORK(&healthd_init_delaywork, healthd_init_delay_work);
+	schedule_delayed_work(&healthd_init_delaywork, WAIT_HEALTHD_INIT_DELAY);
+	
 	dev_type->groups = power_supply_attr_groups;
 
 	for (i = 0; i < ARRAY_SIZE(power_supply_attrs); i++)
