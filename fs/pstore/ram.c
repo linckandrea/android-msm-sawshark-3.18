@@ -34,7 +34,6 @@
 #include <linux/slab.h>
 #include <linux/compiler.h>
 #include <linux/pstore_ram.h>
-#include <linux/of.h>
 #include <linux/proc_fs.h>
 
 #define RAMOOPS_KERNMSG_HDR "===="
@@ -308,24 +307,6 @@ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
 	return 0;
 }
 
-static int notrace ramoops_pstore_write_buf_user(enum pstore_type_id type,
-						 enum kmsg_dump_reason reason,
-						 u64 *id, unsigned int part,
-						 const char __user *buf,
-						 bool compressed, size_t size,
-						 struct pstore_info *psi)
-{
-	if (type == PSTORE_TYPE_PMSG) {
-		struct ramoops_context *cxt = psi->data;
-
-		if (!cxt->mprz)
-			return -ENOMEM;
-		return persistent_ram_write_user(cxt->mprz, buf, size);
-	}
-
-	return -EINVAL;
-}
-
 static int ramoops_pstore_erase(enum pstore_type_id type, u64 id, int count,
 				struct timespec time, struct pstore_info *psi)
 {
@@ -364,7 +345,6 @@ static struct ramoops_context oops_cxt = {
 		.open	= ramoops_pstore_open,
 		.read	= ramoops_pstore_read,
 		.write_buf	= ramoops_pstore_write_buf,
-		.write_buf_user	= ramoops_pstore_write_buf_user,
 		.erase	= ramoops_pstore_erase,
 	},
 };
@@ -490,24 +470,11 @@ static const struct file_operations last_kmsg_proc_fops = {
 static int ramoops_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
-	struct ramoops_platform_data *pdata;
+	struct ramoops_platform_data *pdata = pdev->dev.platform_data;
 	struct ramoops_context *cxt = &oops_cxt;
 	size_t dump_mem_sz;
 	phys_addr_t paddr;
 	int err = -EINVAL;
-
-	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-	if (!pdata) {
-		pr_err("could not allocate ramoops_platform_data\n");
-		return -ENOMEM;
-	}
-
-	dev_set_drvdata(dev, pdata);
-
-	if (pdev->dev.of_node)
-		ramoops_of_init(pdev);
-	else if (pdev->dev.platform_data)
-		memcpy(pdata, pdev->dev.platform_data, sizeof(*pdata));
 
 	/* Only a single ramoops area allowed at a time, so fail extra
 	 * probes.
@@ -530,9 +497,6 @@ static int ramoops_probe(struct platform_device *pdev)
 		pdata->ftrace_size = rounddown_pow_of_two(pdata->ftrace_size);
 	if (pdata->pmsg_size && !is_power_of_2(pdata->pmsg_size))
 		pdata->pmsg_size = rounddown_pow_of_two(pdata->pmsg_size);
-	/* If ecc is not defined in pdata, check module param */
-	if (!pdata->ecc_info.ecc_size)
-		pdata->ecc_info.ecc_size = ramoops_ecc == 1 ? 16 : ramoops_ecc;
 
 	cxt->size = pdata->mem_size;
 	cxt->phys_addr = pdata->mem_address;
@@ -548,11 +512,9 @@ static int ramoops_probe(struct platform_device *pdev)
 
 	dump_mem_sz = cxt->size - cxt->console_size - cxt->ftrace_size
 			- cxt->pmsg_size;
-	if (dump_mem_sz) {
-		err = ramoops_init_przs(dev, cxt, &paddr, dump_mem_sz);
-		if (err)
-			goto fail_out;
-	}
+	err = ramoops_init_przs(dev, cxt, &paddr, dump_mem_sz);
+	if (err)
+		goto fail_out;
 
 	err = ramoops_init_prz(dev, cxt, &cxt->cprz, &paddr,
 			       cxt->console_size, 0);
@@ -600,9 +562,6 @@ static int ramoops_probe(struct platform_device *pdev)
 	mem_address = pdata->mem_address;
 	record_size = pdata->record_size;
 	dump_oops = pdata->dump_oops;
-	ramoops_console_size = pdata->console_size;
-	ramoops_pmsg_size = pdata->pmsg_size;
-	ramoops_ftrace_size = pdata->ftrace_size;
 
 	pr_info("attached 0x%lx@0x%llx, ecc: %d/%d\n",
 		cxt->size, (unsigned long long)cxt->phys_addr,
@@ -654,9 +613,6 @@ static struct platform_driver ramoops_driver = {
 	.remove		= __exit_p(ramoops_remove),
 	.driver		= {
 		.name	= "ramoops",
-#ifdef CONFIG_OF
-		.of_match_table = of_match_ptr(ramoops_of_match),
-#endif
 		.owner	= THIS_MODULE,
 	},
 };

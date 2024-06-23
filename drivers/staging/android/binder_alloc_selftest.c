@@ -176,7 +176,6 @@ static void binder_selftest_free_page(struct binder_alloc *alloc)
 			pr_err("expect free but is %s at page index %d\n",
 			       list_empty(&alloc->pages[i].lru) ?
 			       "alloc" : "lru", i);
->>>>>>> 5011ae9f83801349cef8d1d6d305c692eb2f9110
 			binder_selftest_failures++;
 		}
 	}
@@ -212,12 +211,8 @@ static bool is_dup(int *seq, int index, int val)
 
 /* Generate BUFFER_NUM factorial free orders. */
 static void binder_selftest_free_seq(struct binder_alloc *alloc,
-<<<<<<< HEAD
-				     size_t *sizes, int *seq, int index)
-=======
 				     size_t *sizes, int *seq,
 				     int index, size_t end)
->>>>>>> 5011ae9f83801349cef8d1d6d305c692eb2f9110
 {
 	int i;
 

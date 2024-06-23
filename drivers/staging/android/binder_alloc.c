@@ -443,7 +443,6 @@ struct binder_buffer *binder_alloc_new_buf_locked(struct binder_alloc *alloc,
 		end_page_addr = has_page_addr;
 	ret = binder_update_page_range(alloc, 1,
 	    (void *)PAGE_ALIGN((uintptr_t)buffer->data), end_page_addr);
-
 	if (ret)
 		return ERR_PTR(ret);
 
@@ -461,6 +460,7 @@ struct binder_buffer *binder_alloc_new_buf_locked(struct binder_alloc *alloc,
 		new_buffer->free = 1;
 		binder_insert_free_buffer(alloc, new_buffer);
 	}
+
 	rb_erase(best_fit, &alloc->free_buffers);
 	buffer->free = 0;
 	buffer->free_in_progress = 0;
@@ -756,6 +756,7 @@ void binder_alloc_deferred_release(struct binder_alloc *alloc)
 		binder_free_buf_locked(alloc, buffer);
 		buffers++;
 	}
+
 	while (!list_empty(&alloc->buffers)) {
 		buffer = list_first_entry(&alloc->buffers,
 					  struct binder_buffer, entry);
