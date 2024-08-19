@@ -2,8 +2,14 @@
 # Makefile for physical layer USB drivers
 #
 obj-$(CONFIG_USB_PHY)			+= phy.o
+<<<<<<< HEAD
 obj-$(CONFIG_OF)			+= of.o
 obj-$(CONFIG_USB_OTG_WAKELOCK)		+= otg-wakelock.o
+=======
+obj-$(CONFIG_USB_OTG_WAKELOCK)		+= otg-wakelock.o
+
+obj-$(CONFIG_DUAL_ROLE_USB_INTF)	+= class-dual-role.o
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 # transceiver drivers, keep the list sorted
 
 obj-$(CONFIG_AB8500_USB)		+= phy-ab8500-usb.o

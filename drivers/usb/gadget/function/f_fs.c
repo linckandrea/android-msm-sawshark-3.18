@@ -1771,6 +1771,7 @@ static int ffs_func_eps_enable(struct ffs_function *func)
 	spin_lock_irqsave(&func->ffs->eps_lock, flags);
 	do {
 		struct usb_endpoint_descriptor *ds;
+<<<<<<< HEAD:drivers/usb/gadget/function/f_fs.c
 		int desc_idx;
 
 		if (ffs->gadget->speed == USB_SPEED_SUPER)
@@ -1785,6 +1786,10 @@ static int ffs_func_eps_enable(struct ffs_function *func)
 			ds = ep->descs[desc_idx];
 		} while (!ds && --desc_idx >= 0);
 
+=======
+		int desc_idx = ffs->gadget->speed == USB_SPEED_HIGH ? 1 : 0;
+		ds = ep->descs[desc_idx];
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/f_fs.c
 		if (!ds) {
 			ret = -EINVAL;
 			break;

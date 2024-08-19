@@ -935,7 +935,11 @@ static void neigh_timer_handler(unsigned long arg)
 			neigh->updated = jiffies;
 			atomic_set(&neigh->probes, 0);
 			notify = 1;
+<<<<<<< HEAD
 			next = now + NEIGH_VAR(neigh->parms, RETRANS_TIME);
+=======
+			next = now + neigh->parms->retrans_time;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		}
 	} else {
 		/* NUD_PROBE|NUD_INCOMPLETE */

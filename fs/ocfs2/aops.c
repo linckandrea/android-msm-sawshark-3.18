@@ -588,6 +588,22 @@ static void ocfs2_dio_end_io(struct kiocb *iocb,
 
 	level = ocfs2_iocb_rw_locked_level(iocb);
 	ocfs2_rw_unlock(inode, level);
+<<<<<<< HEAD
+=======
+}
+
+/*
+ * ocfs2_invalidatepage() and ocfs2_releasepage() are shamelessly stolen
+ * from ext3.  PageChecked() bits have been removed as OCFS2 does not
+ * do journalled data.
+ */
+static void ocfs2_invalidatepage(struct page *page, unsigned int offset,
+				 unsigned int length)
+{
+	journal_t *journal = OCFS2_SB(page->mapping->host->i_sb)->journal->j_journal;
+
+	jbd2_journal_invalidatepage(journal, page, offset);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int ocfs2_releasepage(struct page *page, gfp_t wait)

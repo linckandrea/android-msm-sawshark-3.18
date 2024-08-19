@@ -125,6 +125,14 @@ static int inet6_create(struct net *net, struct socket *sock, int protocol,
 
 	if (!current_has_network())
 		return -EACCES;
+<<<<<<< HEAD
+=======
+
+	if (sock->type != SOCK_RAW &&
+	    sock->type != SOCK_DGRAM &&
+	    !inet_ehash_secret)
+		build_ehash_secret();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Look for the requested type/protocol pair. */
 lookup_protocol:
@@ -1004,7 +1012,11 @@ sysctl_fail:
 	pingv6_exit();
 #endif
 pingv6_fail:
+<<<<<<< HEAD
 	ipv6_packet_cleanup();
+=======
+	pingv6_exit();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 ipv6_packet_fail:
 	tcpv6_exit();
 tcpv6_fail:

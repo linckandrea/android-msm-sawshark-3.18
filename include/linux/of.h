@@ -371,6 +371,7 @@ static inline struct device_node *of_find_node_by_name(struct device_node *from,
 	return NULL;
 }
 
+<<<<<<< HEAD
 static inline struct device_node *of_find_node_by_type(struct device_node *from,
 	const char *type)
 {
@@ -385,6 +386,8 @@ static inline struct device_node *of_find_matching_node_and_match(
 	return NULL;
 }
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static inline struct device_node *of_find_node_by_path(const char *path)
 {
 	return NULL;

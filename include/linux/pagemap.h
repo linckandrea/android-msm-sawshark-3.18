@@ -248,6 +248,7 @@ static inline struct page *page_cache_alloc_readahead(struct address_space *x)
 typedef int filler_t(void *, struct page *);
 
 pgoff_t page_cache_next_hole(struct address_space *mapping,
+<<<<<<< HEAD
 			     pgoff_t index, unsigned long max_scan);
 pgoff_t page_cache_prev_hole(struct address_space *mapping,
 			     pgoff_t index, unsigned long max_scan);
@@ -357,6 +358,26 @@ struct page *find_lock_entry(struct address_space *mapping, pgoff_t offset);
 unsigned find_get_entries(struct address_space *mapping, pgoff_t start,
 			  unsigned int nr_entries, struct page **entries,
 			  pgoff_t *indices);
+=======
+                             pgoff_t index, unsigned long max_scan);
+
+extern struct page * find_get_page_flags(struct address_space *mapping,
+					 pgoff_t index, int fgp_flags);
+
+#define FGP_ACCESSED		0x00000001
+
+static inline struct page* find_get_page(struct address_space *mapping,
+					 pgoff_t index)
+{
+	return find_get_page_flags(mapping, index, 0);
+}
+
+
+extern struct page * find_lock_page(struct address_space *mapping,
+				pgoff_t index);
+extern struct page * find_or_create_page(struct address_space *mapping,
+				pgoff_t index, gfp_t gfp_mask);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 unsigned find_get_pages(struct address_space *mapping, pgoff_t start,
 			unsigned int nr_pages, struct page **pages);
 unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t start,
@@ -504,6 +525,7 @@ static inline int wait_on_page_locked_killable(struct page *page)
 	return 0;
 }
 
+<<<<<<< HEAD
 extern wait_queue_head_t *page_waitqueue(struct page *page);
 static inline void wake_up_page(struct page *page, int bit)
 {
@@ -511,6 +533,9 @@ static inline void wake_up_page(struct page *page, int bit)
 }
 
 /* 
+=======
+/*
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * Wait for a page to be unlocked.
  *
  * This must be called with the caller "holding" the page,
@@ -523,7 +548,7 @@ static inline void wait_on_page_locked(struct page *page)
 		wait_on_page_bit(page, PG_locked);
 }
 
-/* 
+/*
  * Wait for a page to complete writeback
  */
 static inline void wait_on_page_writeback(struct page *page)

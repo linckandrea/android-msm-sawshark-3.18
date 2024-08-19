@@ -1,6 +1,9 @@
 /*
  * Copyright (C) 2013 Google, Inc.
+<<<<<<< HEAD
  * Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -86,6 +89,7 @@ DEFINE_EVENT_CONDITION(mmc_blk_rw_class, mmc_blk_rw_end,
 	TP_CONDITION(((cmd == MMC_READ_MULTIPLE_BLOCK) ||
 		      (cmd == MMC_WRITE_MULTIPLE_BLOCK)) &&
 		      data));
+<<<<<<< HEAD
 
 TRACE_EVENT(mmc_cmd_rw_start,
 	TP_PROTO(unsigned int cmd, unsigned int arg, unsigned int flags),
@@ -233,6 +237,9 @@ DEFINE_EVENT(mmc_pm_template, sdhci_msm_runtime_resume,
 	     TP_PROTO(const char *dev_name, int err, s64 usecs),
 	     TP_ARGS(dev_name, err, usecs));
 #endif /* if !defined(_TRACE_MMC_H) || defined(TRACE_HEADER_MULTI_READ) */
+=======
+#endif /* _TRACE_MMC_H */
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /* This part must be outside protection */
 #include <trace/define_trace.h>

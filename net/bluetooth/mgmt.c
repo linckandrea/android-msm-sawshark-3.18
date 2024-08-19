@@ -3140,6 +3140,7 @@ static int pair_device(struct sock *sk, struct hci_dev *hdev, void *data,
 	sec_level = BT_SECURITY_MEDIUM;
 	auth_type = HCI_AT_DEDICATED_BONDING;
 
+<<<<<<< HEAD
 	if (cp->addr.type == BDADDR_BREDR) {
 		conn = hci_connect_acl(hdev, &cp->addr.bdaddr, sec_level,
 				       auth_type);
@@ -3168,6 +3169,14 @@ static int pair_device(struct sock *sk, struct hci_dev *hdev, void *data,
 				      sec_level, HCI_LE_CONN_TIMEOUT,
 				      HCI_ROLE_MASTER);
 	}
+=======
+	if (cp->addr.type == BDADDR_BREDR)
+		conn = hci_connect(hdev, ACL_LINK, 0, &cp->addr.bdaddr,
+				   cp->addr.type, sec_level, auth_type);
+	else
+		conn = hci_connect(hdev, LE_LINK, 0, &cp->addr.bdaddr,
+				   cp->addr.type, sec_level, auth_type);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (IS_ERR(conn)) {
 		int status;

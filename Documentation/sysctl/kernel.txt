@@ -575,6 +575,7 @@ This file shows up if CONFIG_DEBUG_STACKOVERFLOW is enabled.
 
 ==============================================================
 
+<<<<<<< HEAD
 perf_cpu_time_max_percent:
 
 Hints to the kernel how much CPU time it should be allowed to
@@ -601,6 +602,8 @@ allowed to execute.
 
 ==============================================================
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 panic_on_unrecovered_nmi:
 
 The default Linux behaviour on an NMI of either memory or unknown is

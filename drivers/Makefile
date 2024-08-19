@@ -159,6 +159,7 @@ obj-$(CONFIG_IIO)		+= iio/
 obj-$(CONFIG_VME_BUS)		+= vme/
 obj-$(CONFIG_IPACK_BUS)		+= ipack/
 obj-$(CONFIG_NTB)		+= ntb/
+<<<<<<< HEAD
 obj-$(CONFIG_FMC)		+= fmc/
 obj-$(CONFIG_POWERCAP)		+= powercap/
 obj-$(CONFIG_MCB)		+= mcb/
@@ -174,3 +175,6 @@ obj-$(CONFIG_SENSORS_SSC)	+= sensors/
 # <t-base drivers
 obj-y                           += hwversion/
 obj-y                           += hwmcu/
+=======
+obj-$(CONFIG_ANDROID)		+= android/
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

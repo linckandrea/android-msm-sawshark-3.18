@@ -231,6 +231,7 @@ ENTRY(__cpu_setup)
 	 * Set/prepare TCR and TTBR. We use 512GB (39-bit) address range for
 	 * both user and kernel.
 	 */
+<<<<<<< HEAD
 	ldr	x10, =TCR_TxSZ(VA_BITS) | TCR_CACHE_FLAGS | TCR_SMP_FLAGS | \
 			TCR_TG_FLAGS | TCR_ASID16 | TCR_TBI0
 	/*
@@ -239,10 +240,32 @@ ENTRY(__cpu_setup)
 	 */
 	mrs	x9, ID_AA64MMFR0_EL1
 	bfi	x10, x9, #32, #3
+=======
+	ldr	x10, =TCR_TxSZ(VA_BITS) | TCR_FLAGS | TCR_IPS_40BIT | \
+		      TCR_ASID16 | TCR_TBI0 | (1 << 31)
+#ifdef CONFIG_ARM64_64K_PAGES
+	orr	x10, x10, TCR_TG0_64K
+	orr	x10, x10, TCR_TG1_64K
+#endif
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	msr	tcr_el1, x10
 	ret					// return to head.S
 ENDPROC(__cpu_setup)
 
+#ifdef CONFIG_ARMV7_COMPAT
+	/*
+	 *                 n n            T
+	 *       U E      WT T UD     US IHBS
+	 *       CE0      XWHW CZ     ME TEEA S
+	 * .... .IEE .... NEAI TE.I ..AD DEN0 ACAM
+	 * 0011 0... 1101 ..0. ..0. 10.. .... .... < hardware reserved
+	 * .... .100 .... 01.1 11.1 ..01 0011 1101 < software settings
+	 */
+	.type	crval, #object
+crval:
+	.word	0x030802e2			// clear
+	.word	0x0405d03d			// set
+#else
 	/*
 	 *                 n n            T
 	 *       U E      WT T UD     US IHBS
@@ -253,6 +276,7 @@ ENDPROC(__cpu_setup)
 	 */
 	.type	crval, #object
 crval:
+<<<<<<< HEAD
 
 #ifdef CONFIG_ARM64_ICACHE_DISABLE
 #define CR_IBIT		0
@@ -268,3 +292,8 @@ crval:
 
 	.word	0x000802c2	// clear
 	.word	0x0405c039 | CR_IBIT | CR_CBIT	// set
+=======
+	.word	0x030802e2			// clear
+	.word	0x0405d11d			// set
+#endif
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

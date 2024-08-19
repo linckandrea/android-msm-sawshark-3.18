@@ -278,6 +278,10 @@
 #include <net/ip6_route.h>
 #include <net/ipv6.h>
 #include <net/transp_v6.h>
+<<<<<<< HEAD
+=======
+#include <net/netdma.h>
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <net/sock.h>
 
 #include <asm/uaccess.h>
@@ -1316,8 +1320,12 @@ out_nopush:
 	release_sock(sk);
 
 	if (copied + copied_syn)
+<<<<<<< HEAD
 		uid_stat_tcp_snd(from_kuid(&init_user_ns, current_uid()),
 				 copied + copied_syn);
+=======
+		uid_stat_tcp_snd(current_uid(), copied + copied_syn);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return copied + copied_syn;
 
 do_fault:
@@ -1592,8 +1600,12 @@ int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
 	if (copied > 0) {
 		tcp_recv_skb(sk, seq, &offset);
 		tcp_cleanup_rbuf(sk, copied);
+<<<<<<< HEAD
 		uid_stat_tcp_rcv(from_kuid(&init_user_ns, current_uid()),
 				 copied);
+=======
+		uid_stat_tcp_rcv(current_uid(), copied);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 	return copied;
 }
@@ -1925,8 +1937,12 @@ skip_copy:
 	release_sock(sk);
 
 	if (copied > 0)
+<<<<<<< HEAD
 		uid_stat_tcp_rcv(from_kuid(&init_user_ns, current_uid()),
 				 copied);
+=======
+		uid_stat_tcp_rcv(current_uid(), copied);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return copied;
 
 out:
@@ -1936,8 +1952,12 @@ out:
 recv_urg:
 	err = tcp_recv_urg(sk, msg, len, flags);
 	if (err > 0)
+<<<<<<< HEAD
 		uid_stat_tcp_rcv(from_kuid(&init_user_ns, current_uid()),
 				 err);
+=======
+		uid_stat_tcp_rcv(current_uid(), err);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	goto out;
 
 recv_sndq:
@@ -3065,8 +3085,13 @@ EXPORT_SYMBOL_GPL(tcp_done);
 
 int tcp_abort(struct sock *sk, int err)
 {
+<<<<<<< HEAD
 	if (!sk_fullsock(sk)) {
 		sock_gen_put(sk);
+=======
+	if (sk->sk_state == TCP_TIME_WAIT) {
+		inet_twsk_put((struct inet_timewait_sock *)sk);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return -EOPNOTSUPP;
 	}
 
@@ -3211,6 +3236,7 @@ void __init tcp_init(void)
 static int tcp_is_local(struct net *net, __be32 addr) {
 	struct rtable *rt;
 	struct flowi4 fl4 = { .daddr = addr };
+<<<<<<< HEAD
 	rt = ip_route_output_key(net, &fl4);
 	if (IS_ERR_OR_NULL(rt))
 		return 0;
@@ -3221,6 +3247,26 @@ static int tcp_is_local(struct net *net, __be32 addr) {
 static int tcp_is_local6(struct net *net, struct in6_addr *addr) {
 	struct rt6_info *rt6 = rt6_lookup(net, addr, addr, 0, 0);
 	return rt6 && rt6->dst.dev && (rt6->dst.dev->flags & IFF_LOOPBACK);
+=======
+	int is_local;
+	rt = ip_route_output_key(net, &fl4);
+	if (IS_ERR_OR_NULL(rt))
+		return 0;
+
+	is_local = rt->dst.dev && (rt->dst.dev->flags & IFF_LOOPBACK);
+	ip_rt_put(rt);
+	return is_local;
+}
+
+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+static int tcp_is_local6(struct net *net, struct in6_addr *addr) {
+	struct rt6_info *rt6 = rt6_lookup(net, addr, addr, 0, 0);
+	int is_local;
+
+	is_local = rt6 && rt6->dst.dev && (rt6->dst.dev->flags & IFF_LOOPBACK);
+	ip6_rt_put(rt6);
+	return is_local;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 #endif
 
@@ -3234,9 +3280,15 @@ int tcp_nuke_addr(struct net *net, struct sockaddr *addr)
 	int family = addr->sa_family;
 	unsigned int bucket;
 
+<<<<<<< HEAD
 	struct in_addr *in = NULL;
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 	struct in6_addr *in6 = NULL;
+=======
+	struct in_addr *in;
+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+	struct in6_addr *in6;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif
 	if (family == AF_INET) {
 		in = &((struct sockaddr_in *)addr)->sin_addr;
@@ -3258,6 +3310,7 @@ restart:
 		sk_nulls_for_each(sk, node, &tcp_hashinfo.ehash[bucket].chain) {
 			struct inet_sock *inet = inet_sk(sk);
 
+<<<<<<< HEAD
 			if (sk->sk_state == TCP_TIME_WAIT) {
 				/*
 				 * Sockets that are in TIME_WAIT state are
@@ -3271,6 +3324,10 @@ restart:
 			if (sysctl_ip_dynaddr && sk->sk_state == TCP_SYN_SENT)
 				continue;
 
+=======
+			if (sysctl_ip_dynaddr && sk->sk_state == TCP_SYN_SENT)
+				continue;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			if (sock_flag(sk, SOCK_DEAD))
 				continue;
 
@@ -3279,22 +3336,34 @@ restart:
 				if (s4 == LOOPBACK4_IPV6)
 					continue;
 
+<<<<<<< HEAD
 				if (in && in->s_addr != s4 &&
+=======
+				if (in->s_addr != s4 &&
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				    !(in->s_addr == INADDR_ANY &&
 				      !tcp_is_local(net, s4)))
 					continue;
 			}
 
+<<<<<<< HEAD
 #if defined(CONFIG_IPV6)
+=======
+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			if (family == AF_INET6) {
 				struct in6_addr *s6;
 				if (!inet->pinet6)
 					continue;
 
+<<<<<<< HEAD
 				if (sk->sk_family == AF_INET)
 					continue;
 
 				s6 = &sk->sk_v6_rcv_saddr;
+=======
+				s6 = &inet->pinet6->rcv_saddr;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				if (ipv6_addr_type(s6) == IPV6_ADDR_MAPPED)
 					continue;
 
@@ -3331,4 +3400,7 @@ restart:
 
 	return 0;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL_GPL(tcp_nuke_addr);
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

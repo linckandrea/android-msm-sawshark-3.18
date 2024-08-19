@@ -410,10 +410,13 @@ static inline int crypto_memneq(const void *a, const void *b, size_t size)
 	return __crypto_memneq(a, b, size) != 0UL ? 1 : 0;
 }
 
+<<<<<<< HEAD
 static inline void crypto_yield(u32 flags)
 {
 	if (flags & CRYPTO_TFM_REQ_MAY_SLEEP)
 		cond_resched();
 }
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif	/* _CRYPTO_ALGAPI_H */

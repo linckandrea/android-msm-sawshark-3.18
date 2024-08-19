@@ -63,6 +63,7 @@ struct mmc_queue {
 	struct mmc_queue_req	mqrq[2];
 	struct mmc_queue_req	*mqrq_cur;
 	struct mmc_queue_req	*mqrq_prev;
+<<<<<<< HEAD
 	struct mmc_queue_req	*mqrq_cmdq;
 	bool			wr_packing_enabled;
 	int			num_of_potential_packed_wr_reqs;
@@ -76,6 +77,16 @@ struct mmc_queue {
 	int (*err_check_fn) (struct mmc_card *, struct mmc_async_req *);
 	void (*packed_test_fn) (struct request_queue *, struct mmc_queue_req *);
 	void (*cmdq_shutdown)(struct mmc_queue *);
+=======
+#ifdef CONFIG_MMC_SIMULATE_MAX_SPEED
+	atomic_t max_write_speed;
+	atomic_t max_read_speed;
+	atomic_t cache_size;
+	/* i/o tracking */
+	atomic_long_t cache_used;
+	unsigned long cache_jiffies;
+#endif
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 extern int mmc_init_queue(struct mmc_queue *, struct mmc_card *, spinlock_t *,

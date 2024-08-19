@@ -55,6 +55,10 @@
 #include <linux/bitops.h>
 #include <linux/errno.h>
 #include <linux/highmem.h>
+<<<<<<< HEAD
+=======
+#include <linux/init.h>
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <asm/tlbflush.h>
@@ -1047,7 +1051,11 @@ static inline void __zs_cpu_down(struct mapping_area *area)
 static inline void *__zs_map_object(struct mapping_area *area,
 				struct page *pages[2], int off, int size)
 {
+<<<<<<< HEAD
 	BUG_ON(map_vm_area(area->vm, PAGE_KERNEL, pages));
+=======
+	BUG_ON(map_vm_area(area->vm, PAGE_KERNEL, &pages));
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	area->vm_addr = area->vm->addr;
 	return area->vm_addr + off;
 }

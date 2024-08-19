@@ -25,6 +25,11 @@
 #include <linux/in.h>
 #include <linux/spinlock.h>
 #include <net/net_namespace.h>
+<<<<<<< HEAD
+=======
+#include "flask.h"
+#include "avc.h"
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 struct task_security_struct {
 	u32 osid;		/* SID prior to last execve */

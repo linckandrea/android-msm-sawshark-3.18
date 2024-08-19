@@ -12,11 +12,24 @@
 #include <linux/cpu.h>
 #include <linux/cpufreq.h>
 #include <linux/module.h>
+<<<<<<< HEAD
 #include <linux/slab.h>
 #include <linux/sort.h>
 #include <linux/of.h>
 #include <linux/sched.h>
 #include <linux/cputime.h>
+=======
+#include <linux/jiffies.h>
+#include <linux/percpu.h>
+#include <linux/kobject.h>
+#include <linux/spinlock.h>
+#include <linux/notifier.h>
+#include <linux/sort.h>
+#include <linux/err.h>
+#include <linux/of.h>
+#include <linux/sched.h>
+#include <asm/cputime.h>
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 static spinlock_t cpufreq_stats_lock;
 
@@ -358,10 +371,17 @@ static void cpufreq_powerstats_free(void)
 	}
 }
 
+<<<<<<< HEAD
 static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
 		struct cpufreq_frequency_table *table, int count)
 {
 	unsigned int i, ret = 0;
+=======
+static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+		struct cpufreq_frequency_table *table, int count)
+{
+	unsigned int i, j, ret = 0;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	struct cpufreq_stats *stat;
 	unsigned int alloc_size;
 	unsigned int cpu = policy->cpu;
@@ -380,6 +400,10 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
 	stat->cpu = cpu;
 	per_cpu(cpufreq_stats_table, cpu) = stat;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	alloc_size = count * sizeof(int) + count * sizeof(u64);
 
 #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
@@ -429,9 +453,14 @@ static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
 
 static void cpufreq_powerstats_create(unsigned int cpu,
 		struct cpufreq_frequency_table *table, int count) {
+<<<<<<< HEAD
 	unsigned int alloc_size, i = 0, ret = 0;
 	struct cpufreq_power_stats *powerstats;
 	struct cpufreq_frequency_table *pos;
+=======
+	unsigned int alloc_size, i = 0, j = 0, ret = 0;
+	struct cpufreq_power_stats *powerstats;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	struct device_node *cpu_node;
 	char device_path[16];
 
@@ -452,10 +481,21 @@ static void cpufreq_powerstats_create(unsigned int cpu,
 	powerstats->freq_table = powerstats->curr + count;
 
 	spin_lock(&cpufreq_stats_lock);
+<<<<<<< HEAD
 	i = 0;
 	cpufreq_for_each_valid_entry(pos, table)
 		powerstats->freq_table[i++] = pos->frequency;
 	powerstats->state_num = i;
+=======
+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END && j < count; i++) {
+		unsigned int freq = table[i].frequency;
+
+		if (freq == CPUFREQ_ENTRY_INVALID)
+			continue;
+		powerstats->freq_table[j++] = freq;
+	}
+	powerstats->state_num = j;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	snprintf(device_path, sizeof(device_path), "/cpus/cpu@%d", cpu);
 	cpu_node = of_find_node_by_path(device_path);
@@ -562,6 +602,7 @@ static void cpufreq_allstats_create(unsigned int cpu,
 	spin_unlock(&cpufreq_stats_lock);
 }
 
+<<<<<<< HEAD
 static void cpufreq_stats_create_table(unsigned int cpu)
 {
 	struct cpufreq_policy *policy;
@@ -597,6 +638,14 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
 	int ret = 0, count = 0;
 	struct cpufreq_policy *policy = data;
 	struct cpufreq_frequency_table *table, *pos;
+=======
+static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+		unsigned long val, void *data)
+{
+	int ret, count = 0, i;
+	struct cpufreq_policy *policy = data;
+	struct cpufreq_frequency_table *table;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	unsigned int cpu_num, cpu = policy->cpu;
 
 	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
@@ -608,8 +657,18 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
 	if (!table)
 		return 0;
 
+<<<<<<< HEAD
 	cpufreq_for_each_valid_entry(pos, table)
 		count++;
+=======
+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+		unsigned int freq = table[i].frequency;
+
+		if (freq == CPUFREQ_ENTRY_INVALID)
+			continue;
+		count++;
+	}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (!per_cpu(all_cpufreq_stats, cpu))
 		cpufreq_allstats_create(cpu, table, count);
@@ -619,12 +678,19 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
 			cpufreq_powerstats_create(cpu_num, table, count);
 	}
 
+<<<<<<< HEAD
 	if (val == CPUFREQ_CREATE_POLICY)
 		ret = __cpufreq_stats_create_table(policy, table, count);
 	else if (val == CPUFREQ_REMOVE_POLICY)
 		__cpufreq_stats_free_table(policy);
 
 	return ret;
+=======
+	ret = cpufreq_stats_create_table(policy, table, count);
+	if (ret)
+		return ret;
+	return 0;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
@@ -663,6 +729,80 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
 	return 0;
 }
 
+<<<<<<< HEAD
+=======
+static int cpufreq_stats_create_table_cpu(unsigned int cpu)
+{
+	struct cpufreq_policy *policy;
+	struct cpufreq_frequency_table *table;
+	int i, count, cpu_num, ret = -ENODEV;
+
+	policy = cpufreq_cpu_get(cpu);
+	if (!policy)
+		return -ENODEV;
+
+	table = cpufreq_frequency_get_table(cpu);
+	if (!table)
+		goto out;
+
+	count = 0;
+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+		unsigned int freq = table[i].frequency;
+
+		if (freq != CPUFREQ_ENTRY_INVALID)
+			count++;
+	}
+
+	if (!per_cpu(all_cpufreq_stats, cpu))
+		cpufreq_allstats_create(cpu, table, count);
+
+	for_each_possible_cpu(cpu_num) {
+		if (!per_cpu(cpufreq_power_stats, cpu_num))
+			cpufreq_powerstats_create(cpu_num, table, count);
+	}
+
+	ret = cpufreq_stats_create_table(policy, table, count);
+
+out:
+	cpufreq_cpu_put(policy);
+	return ret;
+}
+
+static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+					       unsigned long action,
+					       void *hcpu)
+{
+	unsigned int cpu = (unsigned long)hcpu;
+
+	switch (action) {
+	case CPU_ONLINE:
+		cpufreq_update_policy(cpu);
+		break;
+	case CPU_DOWN_PREPARE:
+		cpufreq_stats_free_sysfs(cpu);
+		break;
+	case CPU_DEAD:
+		cpufreq_stats_free_table(cpu);
+		break;
+	case CPU_UP_CANCELED_FROZEN:
+		cpufreq_stats_free_sysfs(cpu);
+		cpufreq_stats_free_table(cpu);
+		break;
+	case CPU_DOWN_FAILED:
+	case CPU_DOWN_FAILED_FROZEN:
+		cpufreq_stats_create_table_cpu(cpu);
+		break;
+	}
+	return NOTIFY_OK;
+}
+
+/* priority=1 so this will get called before cpufreq_remove_dev */
+static struct notifier_block cpufreq_stat_cpu_notifier __refdata = {
+	.notifier_call = cpufreq_stat_cpu_callback,
+	.priority = 1,
+};
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static struct notifier_block notifier_policy_block = {
 	.notifier_call = cpufreq_stat_notifier_policy
 };
@@ -696,7 +836,10 @@ static int __init cpufreq_stats_init(void)
 	}
 
 	create_all_freq_table();
+<<<<<<< HEAD
 	WARN_ON(cpufreq_get_global_kobject());
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	ret = sysfs_create_file(cpufreq_global_kobject,
 			&_attr_all_time_in_state.attr);
 	if (ret)
@@ -719,9 +862,16 @@ static void __exit cpufreq_stats_exit(void)
 			CPUFREQ_TRANSITION_NOTIFIER);
 	for_each_online_cpu(cpu)
 		cpufreq_stats_free_table(cpu);
+<<<<<<< HEAD
 	cpufreq_allstats_free();
 	cpufreq_powerstats_free();
 	cpufreq_put_global_kobject();
+=======
+		cpufreq_stats_free_sysfs(cpu);
+	}
+	cpufreq_allstats_free();
+	cpufreq_powerstats_free();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 MODULE_AUTHOR("Zou Nan hai <nanhai.zou@intel.com>");

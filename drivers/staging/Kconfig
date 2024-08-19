@@ -58,6 +58,19 @@ source "drivers/staging/vt6656/Kconfig"
 
 source "drivers/staging/iio/Kconfig"
 
+<<<<<<< HEAD
+=======
+source "drivers/staging/wlags49_h2/Kconfig"
+
+source "drivers/staging/wlags49_h25/Kconfig"
+
+source "drivers/staging/sm7xxfb/Kconfig"
+
+source "drivers/staging/crystalhd/Kconfig"
+
+source "drivers/staging/cxt1e1/Kconfig"
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 source "drivers/staging/xgifb/Kconfig"
 
 source "drivers/staging/emxx_udc/Kconfig"

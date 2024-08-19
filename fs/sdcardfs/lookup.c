@@ -428,7 +428,16 @@ struct dentry *sdcardfs_lookup(struct inode *dir, struct dentry *dentry,
 	}
 
 	/* save current_cred and override it */
+<<<<<<< HEAD
 	OVERRIDE_CRED_PTR(SDCARDFS_SB(dir->i_sb), saved_cred, SDCARDFS_I(dir));
+=======
+	saved_cred = override_fsids(SDCARDFS_SB(dir->i_sb),
+						SDCARDFS_I(dir)->data);
+	if (!saved_cred) {
+		ret = ERR_PTR(-ENOMEM);
+		goto out_err;
+	}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	sdcardfs_get_lower_path(parent, &lower_parent_path);
 
@@ -459,7 +468,11 @@ struct dentry *sdcardfs_lookup(struct inode *dir, struct dentry *dentry,
 
 out:
 	sdcardfs_put_lower_path(parent, &lower_parent_path);
+<<<<<<< HEAD
 	REVERT_CRED(saved_cred);
+=======
+	revert_fsids(saved_cred);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 out_err:
 	dput(parent);
 	return ret;

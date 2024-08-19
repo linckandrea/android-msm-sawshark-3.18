@@ -28,8 +28,11 @@
 #include <linux/suspend.h>
 #include <linux/syscore_ops.h>
 #include <linux/reboot.h>
+<<<<<<< HEAD
 #include <linux/security.h>
 #include <linux/io.h>
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #include <generated/utsrelease.h>
 
@@ -547,8 +550,14 @@ static struct notifier_block fw_shutdown_nb = {
 	.notifier_call = fw_shutdown_notify,
 };
 
+<<<<<<< HEAD
 static ssize_t timeout_show(struct class *class, struct class_attribute *attr,
 			    char *buf)
+=======
+static ssize_t firmware_timeout_show(struct class *class,
+				     struct class_attribute *attr,
+				     char *buf)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	return sprintf(buf, "%d\n", loading_timeout);
 }
@@ -710,6 +719,7 @@ static ssize_t firmware_loading_store(struct device *dev,
 			 * see the mapped 'buf->data' once the loading
 			 * is completed.
 			 * */
+<<<<<<< HEAD
 			rc = fw_map_pages_buf(fw_buf);
 			if (rc)
 				dev_err(dev, "%s: map pages failed\n",
@@ -727,6 +737,10 @@ static ssize_t firmware_loading_store(struct device *dev,
 				set_bit(FW_STATUS_ABORT, &fw_buf->status);
 				written = rc;
 			}
+=======
+			fw_map_pages_buf(fw_buf);
+			list_del_init(&fw_buf->pending_list);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			complete_all(&fw_buf->completion);
 			break;
 		}

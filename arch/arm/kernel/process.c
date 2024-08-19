@@ -32,7 +32,10 @@
 #include <linux/random.h>
 #include <linux/hw_breakpoint.h>
 #include <linux/leds.h>
+<<<<<<< HEAD
 #include <linux/reboot.h>
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <linux/console.h>
 
 #include <asm/cacheflush.h>
@@ -283,15 +286,22 @@ void machine_restart(char *cmd)
 	local_irq_disable();
 	smp_send_stop();
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/* Flush the console to make sure all the relevant messages make it
 	 * out to the console drivers */
 	arm_machine_flush_console();
 
+<<<<<<< HEAD
 	if (arm_pm_restart)
 		arm_pm_restart(reboot_mode, cmd);
 	else
 		do_kernel_restart(cmd);
+=======
+	arm_pm_restart(reboot_mode, cmd);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Give a grace period for failure to restart of 1s */
 	mdelay(1000);
@@ -312,12 +322,19 @@ static void show_data(unsigned long addr, int nbytes, const char *name)
 	u32	*p;
 
 	/*
+<<<<<<< HEAD
 	 * don't attempt to dump non-kernel addresses, values that are probably
 	 * just small negative numbers, or vmalloc addresses that may point to
 	 * memory-mapped peripherals
 	 */
 	if (addr < PAGE_OFFSET || addr > -256UL ||
 	    is_vmalloc_addr((void *)addr))
+=======
+	 * don't attempt to dump non-kernel addresses or
+	 * values that are probably just small negative numbers
+	 */
+	if (addr < PAGE_OFFSET || addr > -256UL)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return;
 
 	printk("\n%s: %#lx:\n", name, addr);
@@ -339,8 +356,12 @@ static void show_data(unsigned long addr, int nbytes, const char *name)
 		printk("%04lx ", (unsigned long)p & 0xffff);
 		for (j = 0; j < 8; j++) {
 			u32	data;
+<<<<<<< HEAD
 			if (!virt_addr_valid(p) ||
 			    probe_kernel_address(p, data)) {
+=======
+			if (probe_kernel_address(p, data)) {
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				printk(" ********");
 			} else {
 				printk(" %08x", data);
@@ -353,6 +374,13 @@ static void show_data(unsigned long addr, int nbytes, const char *name)
 
 static void show_extra_register_data(struct pt_regs *regs, int nbytes)
 {
+<<<<<<< HEAD
+=======
+	mm_segment_t fs;
+
+	fs = get_fs();
+	set_fs(KERNEL_DS);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	show_data(regs->ARM_pc - nbytes, nbytes * 2, "PC");
 	show_data(regs->ARM_lr - nbytes, nbytes * 2, "LR");
 	show_data(regs->ARM_sp - nbytes, nbytes * 2, "SP");
@@ -369,6 +397,10 @@ static void show_extra_register_data(struct pt_regs *regs, int nbytes)
 	show_data(regs->ARM_r8 - nbytes, nbytes * 2, "R8");
 	show_data(regs->ARM_r9 - nbytes, nbytes * 2, "R9");
 	show_data(regs->ARM_r10 - nbytes, nbytes * 2, "R10");
+<<<<<<< HEAD
+=======
+	set_fs(fs);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 void __show_regs(struct pt_regs *regs)
@@ -432,8 +464,13 @@ void __show_regs(struct pt_regs *regs)
 		printk("Control: %08x%s\n", ctrl, buf);
 	}
 #endif
+<<<<<<< HEAD
 	if (get_fs() == get_ds())
 		show_extra_register_data(regs, 128);
+=======
+
+	show_extra_register_data(regs, 128);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 void show_regs(struct pt_regs * regs)
@@ -605,6 +642,7 @@ int in_gate_area_no_mm(unsigned long addr)
 
 const char *arch_vma_name(struct vm_area_struct *vma)
 {
+<<<<<<< HEAD
 	return is_gate_vma(vma) ? "[vectors]" : NULL;
 }
 
@@ -665,11 +703,34 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	down_write(&mm->mmap_sem);
 	hint = sigpage_addr(mm, 1);
 	addr = get_unmapped_area(NULL, hint, PAGE_SIZE, 0, 0);
+=======
+	return is_gate_vma(vma) ? "[vectors]" :
+		(vma->vm_mm && vma->vm_start == vma->vm_mm->context.sigpage) ?
+		 "[sigpage]" : NULL;
+}
+
+extern struct page *get_signal_page(void);
+
+int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+{
+	struct mm_struct *mm = current->mm;
+	struct page *page;
+	unsigned long addr;
+	int ret;
+
+	page = get_signal_page();
+	if (!page)
+		return -ENOMEM;
+
+	down_write(&mm->mmap_sem);
+	addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (IS_ERR_VALUE(addr)) {
 		ret = addr;
 		goto up_fail;
 	}
 
+<<<<<<< HEAD
 	vma = _install_special_mapping(mm, addr, PAGE_SIZE,
 		VM_READ | VM_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC,
 		&sigpage_mapping);
@@ -680,6 +741,14 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	}
 
 	mm->context.sigpage = addr;
+=======
+	ret = install_special_mapping(mm, addr, PAGE_SIZE,
+		VM_READ | VM_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC,
+		&page);
+
+	if (ret == 0)
+		mm->context.sigpage = addr;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
  up_fail:
 	up_write(&mm->mmap_sem);

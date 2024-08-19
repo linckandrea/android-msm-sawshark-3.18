@@ -10,17 +10,39 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/lz4.h>
+<<<<<<< HEAD
 
 #include "zcomp_lz4.h"
 
 static void *zcomp_lz4_create(void)
 {
 	return kzalloc(LZ4_MEM_COMPRESS, GFP_KERNEL);
+=======
+#include <linux/vmalloc.h>
+#include <linux/mm.h>
+
+#include "zcomp_lz4.h"
+
+static void *zcomp_lz4_create(gfp_t flags)
+{
+	void *ret;
+
+	ret = kmalloc(LZ4_MEM_COMPRESS, flags);
+	if (!ret)
+		ret = __vmalloc(LZ4_MEM_COMPRESS,
+				flags | __GFP_HIGHMEM,
+				PAGE_KERNEL);
+	return ret;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static void zcomp_lz4_destroy(void *private)
 {
+<<<<<<< HEAD
 	kfree(private);
+=======
+	kvfree(private);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int zcomp_lz4_compress(const unsigned char *src, unsigned char *dst,

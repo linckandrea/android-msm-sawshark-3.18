@@ -95,7 +95,11 @@ endif # if INET
 
 config ANDROID_PARANOID_NETWORK
 	bool "Only allow certain groups to create sockets"
+<<<<<<< HEAD
 	default ANDROID
+=======
+	default y
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	help
 		none
 
@@ -256,7 +260,11 @@ source "net/rmnet_data/Kconfig"
 
 config RPS
 	boolean "RPS"
+<<<<<<< HEAD
 	depends on SMP && SYSFS
+=======
+	depends on SMP && SYSFS && USE_GENERIC_SMP_HELPERS
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	default y
 
 config RFS_ACCEL

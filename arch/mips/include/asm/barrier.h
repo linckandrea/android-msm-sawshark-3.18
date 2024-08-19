@@ -195,7 +195,10 @@ do {									\
 	___p1;								\
 })
 
+<<<<<<< HEAD
 #define smp_mb__before_atomic()	smp_mb__before_llsc()
 #define smp_mb__after_atomic()	smp_llsc_mb()
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* __ASM_BARRIER_H */

@@ -92,7 +92,10 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 	int other_free = global_page_state(NR_FREE_PAGES) - totalreserve_pages;
 	int other_file = global_page_state(NR_FILE_PAGES) -
 						global_page_state(NR_SHMEM) -
+<<<<<<< HEAD
 						global_page_state(NR_UNEVICTABLE) -
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 						total_swapcache_pages();
 
 	if (lowmem_adj_size < array_size)
@@ -178,7 +181,11 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		lowmem_deathpending_timeout = jiffies + HZ;
 		set_tsk_thread_flag(selected, TIF_MEMDIE);
 		send_sig(SIGKILL, selected, 0);
+<<<<<<< HEAD
 		rem += selected_tasksize;
+=======
+		rem -= selected_tasksize;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 
 	lowmem_print(4, "lowmem_scan %lu, %x, return %lu\n",
@@ -283,8 +290,15 @@ static const struct kparam_array __param_arr_adj = {
 
 module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
 #ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
+<<<<<<< HEAD
 module_param_cb(adj, &lowmem_adj_array_ops,
 		.arr = &__param_arr_adj, S_IRUGO | S_IWUSR);
+=======
+__module_param_call(MODULE_PARAM_PREFIX, adj,
+		    &lowmem_adj_array_ops,
+		    .arr = &__param_arr_adj,
+		    S_IRUGO | S_IWUSR, -1);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 __MODULE_PARM_TYPE(adj, "array of short");
 #else
 module_param_array_named(adj, lowmem_adj, short, &lowmem_adj_size,

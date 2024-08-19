@@ -173,9 +173,13 @@ static struct srcu_struct pmus_srcu;
  *   2 - disallow kernel profiling for unpriv
  *   3 - disallow all unpriv perf event use
  */
+<<<<<<< HEAD
 #ifdef CONFIG_PERF_EVENTS_USERMODE
 int sysctl_perf_event_paranoid __read_mostly = -1;
 #elif defined CONFIG_SECURITY_PERF_EVENTS_RESTRICT
+=======
+#ifdef CONFIG_SECURITY_PERF_EVENTS_RESTRICT
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 int sysctl_perf_event_paranoid __read_mostly = 3;
 #else
 int sysctl_perf_event_paranoid __read_mostly = 1;
@@ -956,6 +960,39 @@ static void put_ctx(struct perf_event_context *ctx)
  *	    mmap_sem
  */
 static struct perf_event_context *perf_event_ctx_lock(struct perf_event *event)
+<<<<<<< HEAD
+=======
+{
+	struct perf_event_context *ctx;
+
+again:
+	rcu_read_lock();
+	ctx = ACCESS_ONCE(event->ctx);
+	if (!atomic_inc_not_zero(&ctx->refcount)) {
+		rcu_read_unlock();
+		goto again;
+	}
+	rcu_read_unlock();
+
+	mutex_lock(&ctx->mutex);
+	if (event->ctx != ctx) {
+		mutex_unlock(&ctx->mutex);
+		put_ctx(ctx);
+		goto again;
+	}
+
+	return ctx;
+}
+
+static void perf_event_ctx_unlock(struct perf_event *event,
+				  struct perf_event_context *ctx)
+{
+	mutex_unlock(&ctx->mutex);
+	put_ctx(ctx);
+}
+
+static void unclone_ctx(struct perf_event_context *ctx)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct perf_event_context *ctx;
 
@@ -3911,6 +3948,7 @@ static void perf_event_for_each(struct perf_event *event,
 	perf_event_for_each_child(event, func);
 	list_for_each_entry(sibling, &event->sibling_list, group_entry)
 		perf_event_for_each_child(sibling, func);
+<<<<<<< HEAD
 }
 
 struct period_event {
@@ -3949,6 +3987,8 @@ static int __perf_event_period(void *info)
 	raw_spin_unlock(&ctx->lock);
 
 	return 0;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int perf_event_period(struct perf_event *event, u64 __user *arg)
@@ -4092,6 +4132,7 @@ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return ret;
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_COMPAT
 static long perf_compat_ioctl(struct file *file, unsigned int cmd,
 				unsigned long arg)
@@ -4112,6 +4153,8 @@ static long perf_compat_ioctl(struct file *file, unsigned int cmd,
 # define perf_compat_ioctl NULL
 #endif
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 int perf_event_task_enable(void)
 {
 	struct perf_event_context *ctx;
@@ -7748,11 +7791,19 @@ SYSCALL_DEFINE5(perf_event_open,
 				move_group = 0;
 			}
 		}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		/*
 		 * See perf_event_ctx_lock() for comments on the details
 		 * of swizzling perf_event::ctx.
 		 */
+<<<<<<< HEAD
 		perf_remove_from_context(group_leader, false);
+=======
+		perf_remove_from_context(group_leader);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		/*
 		 * Removing from the context ends up with disabled
@@ -7779,7 +7830,11 @@ SYSCALL_DEFINE5(perf_event_open,
 		 */
 		synchronize_rcu();
 
+<<<<<<< HEAD
 		perf_install_in_context(ctx, group_leader, group_leader->cpu);
+=======
+		perf_install_in_context(ctx, group_leader, event->cpu);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		get_ctx(ctx);
 		list_for_each_entry(sibling, &group_leader->sibling_list,
 				    group_entry) {
@@ -7822,6 +7877,10 @@ SYSCALL_DEFINE5(perf_event_open,
 	fdput(group);
 	fd_install(event_fd, event_file);
 	return event_fd;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 err_locked:
 	if (move_group)
 		perf_event_ctx_unlock(group_leader, gctx);
@@ -7925,8 +7984,13 @@ void perf_pmu_migrate_context(struct pmu *pmu, int src_cpu, int dst_cpu)
 
 	synchronize_rcu();
 
+<<<<<<< HEAD
 	list_for_each_entry_safe(event, tmp, &events, migrate_entry) {
 		list_del(&event->migrate_entry);
+=======
+	list_for_each_entry_safe(event, tmp, &events, event_entry) {
+		list_del(&event->event_entry);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (event->state >= PERF_EVENT_STATE_OFF)
 			event->state = PERF_EVENT_STATE_INACTIVE;
 		account_event_cpu(event, dst_cpu);
@@ -8480,10 +8544,15 @@ static void __perf_event_exit_context(void *__info)
 {
 	struct remove_event re = { .detach_group = true };
 	struct perf_event_context *ctx = __info;
+<<<<<<< HEAD
+=======
+	struct perf_event *event;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	perf_pmu_rotate_stop(ctx->pmu);
 
 	rcu_read_lock();
+<<<<<<< HEAD
 	list_for_each_entry_rcu(re.event, &ctx->event_list, event_entry)
 		__perf_remove_from_context(&re);
 	rcu_read_unlock();
@@ -8499,6 +8568,11 @@ static void __perf_event_stop_swclock(void *__info)
 		    event->attr.type == PERF_TYPE_SOFTWARE)
 			cpu_clock_event_stop(event, 0);
 	}
+=======
+	list_for_each_entry_rcu(event, &ctx->event_list, event_entry)
+		__perf_remove_from_context(event);
+	rcu_read_unlock();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static void perf_event_exit_cpu_context(int cpu)

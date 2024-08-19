@@ -221,6 +221,9 @@ cond_syscall(sys_kcmp);
 
 /* operate on Secure Computing state */
 cond_syscall(sys_seccomp);
+<<<<<<< HEAD
 
 /* access BPF programs and maps */
 cond_syscall(sys_bpf);
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

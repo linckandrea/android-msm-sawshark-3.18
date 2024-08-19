@@ -48,7 +48,11 @@ struct mnt_namespace;
 #define MNT_ATIME_MASK (MNT_NOATIME | MNT_NODIRATIME | MNT_RELATIME )
 
 #define MNT_INTERNAL_FLAGS (MNT_SHARED | MNT_WRITE_HOLD | MNT_INTERNAL | \
+<<<<<<< HEAD
 			    MNT_DOOMED | MNT_SYNC_UMOUNT | MNT_MARKED)
+=======
+			    MNT_MARKED)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #define MNT_INTERNAL	0x4000
 
@@ -57,9 +61,12 @@ struct mnt_namespace;
 #define MNT_LOCK_NOSUID		0x100000
 #define MNT_LOCK_NODEV		0x200000
 #define MNT_LOCK_READONLY	0x400000
+<<<<<<< HEAD
 #define MNT_LOCKED		0x800000
 #define MNT_DOOMED		0x1000000
 #define MNT_SYNC_UMOUNT		0x2000000
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #define MNT_MARKED		0x4000000
 
 struct vfsmount {

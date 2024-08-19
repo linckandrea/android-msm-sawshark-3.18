@@ -616,6 +616,28 @@ int cond_write_list(struct policydb *p, struct cond_node *list, void *fp)
 
 void cond_compute_xperms(struct avtab *ctab, struct avtab_key *key,
 		struct extended_perms_decision *xpermd)
+<<<<<<< HEAD
+=======
+{
+	struct avtab_node *node;
+
+	if (!ctab || !key || !xpermd)
+		return;
+
+	for (node = avtab_search_node(ctab, key); node;
+			node = avtab_search_node_next(node, key->specified)) {
+		if (node->key.specified & AVTAB_ENABLED)
+			services_compute_xperms_decision(xpermd, node);
+	}
+	return;
+
+}
+/* Determine whether additional permissions are granted by the conditional
+ * av table, and if so, add them to the result
+ */
+void cond_compute_av(struct avtab *ctab, struct avtab_key *key,
+		struct av_decision *avd, struct extended_perms *xperms)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct avtab_node *node;
 
@@ -657,7 +679,11 @@ void cond_compute_av(struct avtab *ctab, struct avtab_key *key,
 		if ((u16)(AVTAB_AUDITALLOW|AVTAB_ENABLED) ==
 		    (node->key.specified & (AVTAB_AUDITALLOW|AVTAB_ENABLED)))
 			avd->auditallow |= node->datum.u.data;
+<<<<<<< HEAD
 		if ((node->key.specified & AVTAB_ENABLED) &&
+=======
+		if (xperms && (node->key.specified & AVTAB_ENABLED) &&
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				(node->key.specified & AVTAB_XPERMS))
 			services_compute_xperms_drivers(xperms, node);
 	}

@@ -13,8 +13,11 @@
 #include <linux/gfp.h>
 #include <linux/slab.h>
 #include <linux/percpu.h>
+<<<<<<< HEAD
 #include <linux/acpi.h>
 #include <linux/of.h>
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <linux/cpufeature.h>
 
 #include "base.h"
@@ -614,7 +617,10 @@ static ssize_t print_cpu_modalias(struct device *dev,
 #define print_cpu_modalias	arch_print_cpu_modalias
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_HAVE_CPU_AUTOPROBE
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
 	char *buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
@@ -625,7 +631,10 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
 	}
 	return 0;
 }
+<<<<<<< HEAD
 #endif /*CONFIG_HAVE_CPU_AUTOPROBE*/
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif
 
 /*
@@ -645,10 +654,14 @@ int register_cpu(struct cpu *cpu, int num)
 	cpu->dev.id = num;
 	cpu->dev.bus = &cpu_subsys;
 	cpu->dev.release = cpu_device_release;
+<<<<<<< HEAD
 	cpu->dev.offline_disabled = !cpu->hotpluggable;
 	cpu->dev.offline = !cpu_online(num);
 	cpu->dev.of_node = of_get_cpu_node(num, NULL);
 #ifdef CONFIG_HAVE_CPU_AUTOPROBE
+=======
+#ifdef CONFIG_ARCH_HAS_CPU_AUTOPROBE
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	cpu->dev.bus->uevent = cpu_uevent;
 #endif
 	cpu->dev.groups = common_cpu_attr_groups;

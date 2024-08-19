@@ -26,6 +26,7 @@ config SQUASHFS
 	  If unsure, say N.
 
 choice
+<<<<<<< HEAD
 	prompt "File decompression options"
 	depends on SQUASHFS
 	help
@@ -54,6 +55,8 @@ config SQUASHFS_FILE_DIRECT
 endchoice
 
 choice
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	prompt "Decompressor parallelisation options"
 	depends on SQUASHFS
 	help

@@ -35,6 +35,19 @@
 #include <net/netfilter/nf_conntrack.h>
 #endif
 
+<<<<<<< HEAD
+=======
+void
+xt_socket_put_sk(struct sock *sk)
+{
+	if (sk->sk_state == TCP_TIME_WAIT)
+		inet_twsk_put(inet_twsk(sk));
+	else
+		sock_put(sk);
+}
+EXPORT_SYMBOL(xt_socket_put_sk);
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static int
 extract_icmp4_fields(const struct sk_buff *skb,
 		    u8 *protocol,
@@ -92,6 +105,7 @@ extract_icmp4_fields(const struct sk_buff *skb,
 	return 0;
 }
 
+<<<<<<< HEAD
 /* "socket" match based redirection (no specific rule)
  * ===================================================
  *
@@ -131,6 +145,8 @@ xt_socket_get_sock_v4(struct net *net, const u8 protocol,
 
 
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 struct sock*
 xt_socket_get4_sk(const struct sk_buff *skb, struct xt_action_param *par)
 {
@@ -184,6 +200,7 @@ xt_socket_get4_sk(const struct sk_buff *skb, struct xt_action_param *par)
 	}
 #endif
 
+<<<<<<< HEAD
 	if (sk)
 		atomic_inc(&sk->sk_refcnt);
 	else
@@ -238,6 +255,49 @@ socket_match(const struct sk_buff *skb, struct xt_action_param *par,
 			sk = NULL;
 	}
 
+=======
+	sk = nf_tproxy_get_sock_v4(dev_net(skb->dev), protocol,
+				   saddr, daddr, sport, dport, par->in, NFT_LOOKUP_ANY);
+
+	pr_debug("proto %hhu %pI4:%hu -> %pI4:%hu (orig %pI4:%hu) sock %p\n",
+		 protocol, &saddr, ntohs(sport),
+		 &daddr, ntohs(dport),
+		 &iph->daddr, hp ? ntohs(hp->dest) : 0, sk);
+
+	return sk;
+}
+EXPORT_SYMBOL(xt_socket_get4_sk);
+
+static bool
+socket_match(const struct sk_buff *skb, struct xt_action_param *par,
+	     const struct xt_socket_mtinfo1 *info)
+{
+	struct sock *sk;
+
+	sk = xt_socket_get4_sk(skb, par);
+	if (sk != NULL) {
+		bool wildcard;
+		bool transparent = true;
+
+		/* Ignore sockets listening on INADDR_ANY */
+		wildcard = (sk->sk_state != TCP_TIME_WAIT &&
+			    inet_sk(sk)->inet_rcv_saddr == 0);
+
+		/* Ignore non-transparent sockets,
+		   if XT_SOCKET_TRANSPARENT is used */
+		if (info && info->flags & XT_SOCKET_TRANSPARENT)
+			transparent = ((sk->sk_state != TCP_TIME_WAIT &&
+					inet_sk(sk)->transparent) ||
+				       (sk->sk_state == TCP_TIME_WAIT &&
+					inet_twsk(sk)->tw_transparent));
+
+		xt_socket_put_sk(sk);
+
+		if (wildcard || !transparent)
+			sk = NULL;
+	}
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return (sk != NULL);
 }
 
@@ -313,6 +373,7 @@ extract_icmp6_fields(const struct sk_buff *skb,
 	return 0;
 }
 
+<<<<<<< HEAD
 static struct sock *
 xt_socket_get_sock_v6(struct net *net, const u8 protocol,
 		      const struct in6_addr *saddr, const struct in6_addr *daddr,
@@ -332,6 +393,8 @@ xt_socket_get_sock_v6(struct net *net, const u8 protocol,
 	return NULL;
 }
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 struct sock*
 xt_socket_get6_sk(const struct sk_buff *skb, struct xt_action_param *par)
 {
@@ -367,6 +430,7 @@ xt_socket_get6_sk(const struct sk_buff *skb, struct xt_action_param *par)
 		return NULL;
 	}
 
+<<<<<<< HEAD
 	if (sk)
 		atomic_inc(&sk->sk_refcnt);
 	else
@@ -424,6 +488,49 @@ socket_mt6_v1_v2_v3(const struct sk_buff *skb, struct xt_action_param *par)
 			sk = NULL;
 	}
 
+=======
+	sk = nf_tproxy_get_sock_v6(dev_net(skb->dev), tproto,
+				   saddr, daddr, sport, dport, par->in, NFT_LOOKUP_ANY);
+	pr_debug("proto %hhd %pI6:%hu -> %pI6:%hu "
+		 "(orig %pI6:%hu) sock %p\n",
+		 tproto, saddr, ntohs(sport),
+		 daddr, ntohs(dport),
+		 &iph->daddr, hp ? ntohs(hp->dest) : 0, sk);
+	return sk;
+}
+EXPORT_SYMBOL(xt_socket_get6_sk);
+
+static bool
+socket_mt6_v1(const struct sk_buff *skb, struct xt_action_param *par)
+{
+	struct sock *sk;
+	const struct xt_socket_mtinfo1 *info;
+
+	info = (struct xt_socket_mtinfo1 *) par->matchinfo;
+	sk = xt_socket_get6_sk(skb, par);
+	if (sk != NULL) {
+		bool wildcard;
+		bool transparent = true;
+
+		/* Ignore sockets listening on INADDR_ANY */
+		wildcard = (sk->sk_state != TCP_TIME_WAIT &&
+			    ipv6_addr_any(&inet6_sk(sk)->rcv_saddr));
+
+		/* Ignore non-transparent sockets,
+		   if XT_SOCKET_TRANSPARENT is used */
+		if (info && info->flags & XT_SOCKET_TRANSPARENT)
+			transparent = ((sk->sk_state != TCP_TIME_WAIT &&
+					inet_sk(sk)->transparent) ||
+				       (sk->sk_state == TCP_TIME_WAIT &&
+					inet_twsk(sk)->tw_transparent));
+
+		xt_socket_put_sk(sk);
+
+		if (wildcard || !transparent)
+			sk = NULL;
+	}
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return (sk != NULL);
 }
 #endif

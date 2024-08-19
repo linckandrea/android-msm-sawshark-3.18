@@ -1,8 +1,14 @@
 /*
+<<<<<<< HEAD
  * drivers/staging/android/ion/ion_heap.c
  *
  * Copyright (C) 2011 Google, Inc.
  * Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
+=======
+ * drivers/gpu/ion/ion_heap.c
+ *
+ * Copyright (C) 2011 Google, Inc.
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -23,9 +29,12 @@
 #include <linux/sched.h>
 #include <linux/scatterlist.h>
 #include <linux/vmalloc.h>
+<<<<<<< HEAD
 #include <linux/slab.h>
 #include <linux/highmem.h>
 #include <linux/dma-mapping.h>
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include "ion.h"
 #include "ion_priv.h"
 
@@ -42,7 +51,11 @@ void *ion_heap_map_kernel(struct ion_heap *heap,
 	struct page **tmp = pages;
 
 	if (!pages)
+<<<<<<< HEAD
 		return ERR_PTR(-ENOMEM);
+=======
+		return NULL;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (buffer->flags & ION_FLAG_CACHED)
 		pgprot = PAGE_KERNEL;
@@ -257,6 +270,7 @@ int ion_heap_init_deferred_free(struct ion_heap *heap)
 	struct sched_param param = { .sched_priority = 0 };
 
 	INIT_LIST_HEAD(&heap->free_list);
+<<<<<<< HEAD
 	init_waitqueue_head(&heap->waitqueue);
 	heap->task = kthread_run(ion_heap_deferred_free, heap,
 				 "%s", heap->name);
@@ -271,10 +285,28 @@ int ion_heap_init_deferred_free(struct ion_heap *heap)
 
 static unsigned long ion_heap_shrink_count(struct shrinker *shrinker,
 						struct shrink_control *sc)
+=======
+	heap->free_list_size = 0;
+	spin_lock_init(&heap->free_lock);
+	init_waitqueue_head(&heap->waitqueue);
+	heap->task = kthread_run(ion_heap_deferred_free, heap,
+				 "%s", heap->name);
+	sched_setscheduler(heap->task, SCHED_IDLE, &param);
+	if (IS_ERR(heap->task)) {
+		pr_err("%s: creating thread for deferred free failed\n",
+		       __func__);
+		return PTR_RET(heap->task);
+	}
+	return 0;
+}
+
+static int ion_heap_shrink(struct shrinker *shrinker, struct shrink_control *sc)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct ion_heap *heap = container_of(shrinker, struct ion_heap,
 					     shrinker);
 	int total = 0;
+<<<<<<< HEAD
 
 	total = ion_heap_freelist_size(heap) / PAGE_SIZE;
 	if (heap->ops->shrink)
@@ -287,11 +319,17 @@ static unsigned long ion_heap_shrink_scan(struct shrinker *shrinker,
 {
 	struct ion_heap *heap = container_of(shrinker, struct ion_heap,
 					     shrinker);
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	int freed = 0;
 	int to_scan = sc->nr_to_scan;
 
 	if (to_scan == 0)
+<<<<<<< HEAD
 		return 0;
+=======
+		goto out;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/*
 	 * shrink the free list first, no point in zeroing the memory if we're
@@ -302,18 +340,33 @@ static unsigned long ion_heap_shrink_scan(struct shrinker *shrinker,
 				PAGE_SIZE;
 
 	to_scan -= freed;
+<<<<<<< HEAD
 	if (to_scan <= 0)
 		return freed;
 
 	if (heap->ops->shrink)
 		freed += heap->ops->shrink(heap, sc->gfp_mask, to_scan);
 	return freed;
+=======
+	if (to_scan < 0)
+		to_scan = 0;
+
+out:
+	total = ion_heap_freelist_size(heap) / PAGE_SIZE;
+	if (heap->ops->shrink)
+		total += heap->ops->shrink(heap, sc->gfp_mask, to_scan);
+	return total;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 void ion_heap_init_shrinker(struct ion_heap *heap)
 {
+<<<<<<< HEAD
 	heap->shrinker.count_objects = ion_heap_shrink_count;
 	heap->shrinker.scan_objects = ion_heap_shrink_scan;
+=======
+	heap->shrinker.shrink = ion_heap_shrink;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	heap->shrinker.seeks = DEFAULT_SEEKS;
 	heap->shrinker.batch = 0;
 	register_shrinker(&heap->shrinker);
@@ -325,9 +378,14 @@ struct ion_heap *ion_heap_create(struct ion_platform_heap *heap_data)
 
 	switch (heap_data->type) {
 	case ION_HEAP_TYPE_SYSTEM_CONTIG:
+<<<<<<< HEAD
 		pr_err("%s: Heap type is disabled: %d\n", __func__,
 		       heap_data->type);
 		return ERR_PTR(-EINVAL);
+=======
+		heap = ion_system_contig_heap_create(heap_data);
+		break;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	case ION_HEAP_TYPE_SYSTEM:
 		heap = ion_system_heap_create(heap_data);
 		break;
@@ -347,15 +405,24 @@ struct ion_heap *ion_heap_create(struct ion_platform_heap *heap_data)
 	}
 
 	if (IS_ERR_OR_NULL(heap)) {
+<<<<<<< HEAD
 		pr_err("%s: error creating heap %s type %d base %pa size %zu\n",
 		       __func__, heap_data->name, heap_data->type,
 		       &heap_data->base, heap_data->size);
+=======
+		pr_err("%s: error creating heap %s type %d base %lu size %zu\n",
+		       __func__, heap_data->name, heap_data->type,
+		       heap_data->base, heap_data->size);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return ERR_PTR(-EINVAL);
 	}
 
 	heap->name = heap_data->name;
 	heap->id = heap_data->id;
+<<<<<<< HEAD
 	heap->priv = heap_data->priv;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return heap;
 }
 
@@ -366,8 +433,12 @@ void ion_heap_destroy(struct ion_heap *heap)
 
 	switch (heap->type) {
 	case ION_HEAP_TYPE_SYSTEM_CONTIG:
+<<<<<<< HEAD
 		pr_err("%s: Heap type is disabled: %d\n", __func__,
 		       heap->type);
+=======
+		ion_system_contig_heap_destroy(heap);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		break;
 	case ION_HEAP_TYPE_SYSTEM:
 		ion_system_heap_destroy(heap);

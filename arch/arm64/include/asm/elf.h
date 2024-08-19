@@ -162,6 +162,10 @@ extern unsigned long arch_randomize_brk(struct mm_struct *mm);
 #define arch_randomize_brk arch_randomize_brk
 
 #ifdef CONFIG_COMPAT
+<<<<<<< HEAD
+=======
+#define COMPAT_ELF_PLATFORM		("v8l")
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #ifdef __AARCH64EB__
 #define COMPAT_ELF_PLATFORM		("v8b")

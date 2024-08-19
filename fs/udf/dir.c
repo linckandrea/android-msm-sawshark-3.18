@@ -162,9 +162,25 @@ static int udf_readdir(struct file *file, struct dir_context *ctx)
 		}
 
 		if (cfi.fileCharacteristics & FID_FILE_CHAR_PARENT) {
+<<<<<<< HEAD
 			if (!dir_emit_dotdot(file, ctx))
 				goto out;
 			continue;
+=======
+			iblock = parent_ino(filp->f_path.dentry);
+			flen = 2;
+			memcpy(fname, "..", flen);
+			dt_type = DT_DIR;
+		} else {
+			struct kernel_lb_addr tloc = lelb_to_cpu(cfi.icb.extLocation);
+
+			iblock = udf_get_lb_pblock(dir->i_sb, &tloc, 0);
+			flen = udf_get_filename(dir->i_sb, nameptr, lfi, fname,
+						UDF_NAME_LEN);
+			if (!flen)
+				continue;
+			dt_type = DT_UNKNOWN;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		}
 
 		flen = udf_get_filename(dir->i_sb, nameptr, lfi, fname,

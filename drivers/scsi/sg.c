@@ -1022,7 +1022,11 @@ sg_ioctl(struct file *filp, unsigned int cmd_in, unsigned long arg)
 		result = get_user(val, ip);
 		if (result)
 			return result;
+<<<<<<< HEAD
 		if (val > SG_MAX_CDB_SIZE)
+=======
+		if (val > MAX_COMMAND_SIZE)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			return -ENOMEM;
 		sfp->next_cmd_len = (val > 0) ? val : 0;
 		return 0;

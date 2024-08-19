@@ -1376,9 +1376,17 @@ config SYSCTL_ARCH_UNALIGN_ALLOW
 config HAVE_PCSPKR_PLATFORM
 	bool
 
+<<<<<<< HEAD
 # interpreter that classic socket filters depend on
 config BPF
 	bool
+=======
+config PANIC_TIMEOUT
+	int "Default panic timeout"
+	default 0
+	help
+	  Set default panic timeout.
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 menuconfig EXPERT
 	bool "Configure standard kernel features (expert users)"
@@ -1831,6 +1839,18 @@ config BASE_SMALL
 	int
 	default 0 if BASE_FULL
 	default 1 if !BASE_FULL
+
+config SYSTEM_TRUSTED_KEYRING
+	bool "Provide system-wide ring of trusted keys"
+	depends on KEYS
+	help
+	  Provide a system keyring to which trusted keys can be added.  Keys in
+	  the keyring are considered to be trusted.  Keys may be added at will
+	  by the kernel from compiled-in data and from hardware key stores, but
+	  userspace may only add extra keys if those keys can be verified by
+	  keys already in the keyring.
+
+	  Keys in this keyring are used by module signature checking.
 
 menuconfig MODULES
 	bool "Enable loadable module support"

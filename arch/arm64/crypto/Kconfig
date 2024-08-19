@@ -27,20 +27,31 @@ config CRYPTO_AES_ARM64_CE
 	tristate "AES core cipher using ARMv8 Crypto Extensions"
 	depends on ARM64 && KERNEL_MODE_NEON
 	select CRYPTO_ALGAPI
+<<<<<<< HEAD
 	select CRYPTO_AES
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 config CRYPTO_AES_ARM64_CE_CCM
 	tristate "AES in CCM mode using ARMv8 Crypto Extensions"
 	depends on ARM64 && KERNEL_MODE_NEON
 	select CRYPTO_ALGAPI
+<<<<<<< HEAD
 	select CRYPTO_AES
+=======
+	select CRYPTO_AES_ARM64_CE
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	select CRYPTO_AEAD
 
 config CRYPTO_AES_ARM64_CE_BLK
 	tristate "AES in ECB/CBC/CTR/XTS modes using ARMv8 Crypto Extensions"
 	depends on ARM64 && KERNEL_MODE_NEON
 	select CRYPTO_BLKCIPHER
+<<<<<<< HEAD
 	select CRYPTO_AES
+=======
+	select CRYPTO_AES_ARM64_CE
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	select CRYPTO_ABLK_HELPER
 
 config CRYPTO_AES_ARM64_NEON_BLK

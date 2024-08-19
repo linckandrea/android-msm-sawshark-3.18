@@ -255,6 +255,17 @@ void do_invalidatepage(struct page *page, unsigned int offset,
 #endif
 	if (invalidatepage)
 		(*invalidatepage)(page, offset, length);
+<<<<<<< HEAD
+=======
+}
+
+static inline void truncate_partial_page(struct page *page, unsigned partial)
+{
+	zero_user_segment(page, partial, PAGE_CACHE_SIZE);
+	cleancache_invalidate_page(page->mapping, page);
+	if (page_has_private(page))
+		do_invalidatepage(page, partial, PAGE_CACHE_SIZE - partial);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /*
@@ -793,7 +804,11 @@ void truncate_setsize(struct inode *inode, loff_t newsize)
 	i_size_write(inode, newsize);
 	if (newsize > oldsize)
 		pagecache_isize_extended(inode, oldsize, newsize);
+<<<<<<< HEAD
 	truncate_pagecache(inode, newsize);
+=======
+	truncate_pagecache(inode, oldsize, newsize);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 EXPORT_SYMBOL(truncate_setsize);
 
@@ -823,6 +838,10 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 	struct page *page;
 	pgoff_t index;
 
+<<<<<<< HEAD
+=======
+	WARN_ON(!mutex_is_locked(&inode->i_mutex));
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	WARN_ON(to > inode->i_size);
 
 	if (from >= to || bsize == PAGE_CACHE_SIZE)

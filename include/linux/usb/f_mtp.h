@@ -19,6 +19,7 @@
 #define __LINUX_USB_F_MTP_H
 
 #include <uapi/linux/usb/f_mtp.h>
+<<<<<<< HEAD
 #include <linux/ioctl.h>
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
@@ -50,4 +51,7 @@ struct __compat_mtp_event {
 						struct __compat_mtp_file_range)
 #endif
 #endif
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* __LINUX_USB_F_MTP_H */

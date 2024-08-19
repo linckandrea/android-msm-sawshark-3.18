@@ -78,6 +78,7 @@ config MMC_TEST
 	  This driver is only of interest to those developing or
 	  testing a host driver. Most people should say N here.
 
+<<<<<<< HEAD
 config MMC_BLOCK_TEST
 	tristate "MMC block test"
 	depends on MMC_BLOCK && IOSCHED_TEST
@@ -96,3 +97,16 @@ config MMC_FFU
 	  Field firmware updates (FFU) enables features enhancment
 	  in the field.
 
+=======
+config MMC_SIMULATE_MAX_SPEED
+	bool "Turn on maximum speed control per block device"
+	depends on MMC_BLOCK
+	help
+	  Say Y here to enable MMC device speed limiting. Used to test and
+	  simulate the behavior of the system when confronted with a slow MMC.
+
+	  Enables max_read_speed, max_write_speed and cache_size attributes to
+	  control the write or read maximum KB/second speed behaviors.
+
+	  If unsure, say N here.
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

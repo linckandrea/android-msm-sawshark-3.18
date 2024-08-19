@@ -599,7 +599,11 @@ static int rndis_init_response(int configNr, rndis_init_msg_type *buf)
 		+ sizeof(struct ethhdr)
 		+ sizeof(struct rndis_packet_msg_type)
 		+ 22));
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
 	resp->PacketAlignmentFactor = cpu_to_le32(params->pkt_alignment_factor);
+=======
+	resp->PacketAlignmentFactor = cpu_to_le32(0);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 	resp->AFListOffset = cpu_to_le32(0);
 	resp->AFListSize = cpu_to_le32(0);
 
@@ -958,7 +962,10 @@ int rndis_set_param_dev(u8 configNr, struct net_device *dev, u16 *cdc_filter)
 	rndis_per_dev_params[configNr].dev = dev;
 	rndis_per_dev_params[configNr].filter = cdc_filter;
 
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
 	/* reset aggregation stats for every set_alt */
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 	rndis_ul_max_xfer_size_rcvd = 0;
 	rndis_ul_max_pkt_per_xfer_rcvd = 0;
 	return 0;
@@ -1055,6 +1062,13 @@ void rndis_flow_control(u8 confignr, bool enable_flow_control)
 	}
 }
 
+void rndis_set_max_pkt_xfer(u8 configNr, u8 max_pkt_per_xfer)
+{
+	pr_debug("%s:\n", __func__);
+
+	rndis_per_dev_params[configNr].max_pkt_per_xfer = max_pkt_per_xfer;
+}
+
 void rndis_add_hdr(struct sk_buff *skb)
 {
 	struct rndis_packet_msg_type *header;
@@ -1144,7 +1158,11 @@ int rndis_rm_hdr(struct gether *port,
 			struct sk_buff *skb,
 			struct sk_buff_head *list)
 {
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
 	int num_pkts = 0;
+=======
+	int num_pkts = 1;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 
 	if (skb->len > rndis_ul_max_xfer_size_rcvd)
 		rndis_ul_max_xfer_size_rcvd = skb->len;
@@ -1154,8 +1172,19 @@ int rndis_rm_hdr(struct gether *port,
 		struct sk_buff          *skb2;
 		u32             msg_len, data_offset, data_len;
 
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
 		if (skb->len < sizeof *hdr) {
 			pr_err("invalid rndis pkt: skblen:%u hdr_len:%zu",
+=======
+		/* some rndis hosts send extra byte to avoid zlp, ignore it */
+		if (skb->len == 1) {
+			dev_kfree_skb_any(skb);
+			return 0;
+		}
+
+		if (skb->len < sizeof *hdr) {
+			pr_err("invalid rndis pkt: skblen:%u hdr_len:%u",
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 					skb->len, sizeof *hdr);
 			dev_kfree_skb_any(skb);
 			return -EINVAL;
@@ -1174,7 +1203,10 @@ int rndis_rm_hdr(struct gether *port,
 			dev_kfree_skb_any(skb);
 			return -EOVERFLOW;
 		}
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 		if (le32_to_cpu(hdr->MessageType) != RNDIS_MSG_PACKET) {
 			pr_err("invalid rndis message: %d/%d/%d/%d, len:%d\n",
 					le32_to_cpu(hdr->MessageType),
@@ -1183,12 +1215,18 @@ int rndis_rm_hdr(struct gether *port,
 			return -EINVAL;
 		}
 
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
 		num_pkts++;
 
 		skb_pull(skb, data_offset + 8);
 
 		if (data_len == skb->len ||
 				data_len == (skb->len - 1)) {
+=======
+		skb_pull(skb, data_offset + 8);
+
+		if (msg_len == skb->len) {
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 			skb_trim(skb, data_len);
 			break;
 		}
@@ -1203,6 +1241,11 @@ int rndis_rm_hdr(struct gether *port,
 		skb_pull(skb, msg_len - sizeof *hdr);
 		skb_trim(skb2, data_len);
 		skb_queue_tail(list, skb2);
+<<<<<<< HEAD:drivers/usb/gadget/function/rndis.c
+=======
+
+		num_pkts++;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.c
 	}
 
 	if (num_pkts > rndis_ul_max_pkt_per_xfer_rcvd)
@@ -1321,10 +1364,14 @@ static struct proc_dir_entry *rndis_connect_state [RNDIS_MAX_CONFIGS];
 
 #endif /* CONFIG_USB_GADGET_DEBUG_FILES */
 
+static bool rndis_initialized;
 
 int rndis_init(void)
 {
 	u8 i;
+
+	if (rndis_initialized)
+		return 0;
 
 	for (i = 0; i < RNDIS_MAX_CONFIGS; i++) {
 #ifdef	CONFIG_USB_GADGET_DEBUG_FILES
@@ -1354,6 +1401,7 @@ int rndis_init(void)
 		INIT_LIST_HEAD(&(rndis_per_dev_params[i].resp_queue));
 	}
 
+	rndis_initialized = true;
 	return 0;
 }
 
@@ -1362,7 +1410,13 @@ void rndis_exit(void)
 #ifdef CONFIG_USB_GADGET_DEBUG_FILES
 	u8 i;
 	char name[20];
+#endif
 
+	if (!rndis_initialized)
+		return;
+	rndis_initialized = false;
+
+#ifdef CONFIG_USB_GADGET_DEBUG_FILES
 	for (i = 0; i < RNDIS_MAX_CONFIGS; i++) {
 		sprintf(name, NAME_TEMPLATE, i);
 		remove_proc_entry(name, NULL);

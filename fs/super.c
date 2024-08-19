@@ -168,8 +168,21 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags)
 	static const struct super_operations default_op;
 	int i;
 
+<<<<<<< HEAD
 	if (!s)
 		return NULL;
+=======
+	if (s) {
+		if (security_sb_alloc(s))
+			goto out_free_sb;
+
+#ifdef CONFIG_SMP
+		s->s_files = alloc_percpu(struct list_head);
+		if (!s->s_files)
+			goto err_out;
+		else {
+			int i;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	INIT_LIST_HEAD(&s->s_mounts);
 
@@ -183,6 +196,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags)
 		lockdep_init_map(&s->s_writers.lock_map[i], sb_writers_name[i],
 				 &type->s_writers_key[i], 0);
 	}
+<<<<<<< HEAD
 	init_waitqueue_head(&s->s_writers.wait);
 	init_waitqueue_head(&s->s_writers.wait_unfrozen);
 	s->s_flags = flags;
@@ -190,6 +204,22 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags)
 	INIT_HLIST_NODE(&s->s_instances);
 	INIT_HLIST_BL_HEAD(&s->s_anon);
 	INIT_LIST_HEAD(&s->s_inodes);
+=======
+out:
+	return s;
+err_out:
+	security_sb_free(s);
+#ifdef CONFIG_SMP
+	if (s->s_files)
+		free_percpu(s->s_files);
+#endif
+	destroy_sb_writers(s);
+out_free_sb:
+	kfree(s);
+	s = NULL;
+	goto out;
+}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (list_lru_init(&s->s_dentry_lru))
 		goto fail;

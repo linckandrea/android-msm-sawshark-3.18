@@ -160,6 +160,7 @@ static void ceph_invalidatepage(struct page *page, unsigned int offset,
 
 	ClearPageChecked(page);
 
+<<<<<<< HEAD
 	dout("%p invalidatepage %p idx %lu full dirty page\n",
 	     inode, page, page->index);
 
@@ -167,6 +168,20 @@ static void ceph_invalidatepage(struct page *page, unsigned int offset,
 	ceph_put_snap_context(snapc);
 	page->private = 0;
 	ClearPagePrivate(page);
+=======
+	ci = ceph_inode(inode);
+	if (offset == 0) {
+		dout("%p invalidatepage %p idx %lu full dirty page %u\n",
+		     inode, page, page->index, offset);
+		ceph_put_wrbuffer_cap_refs(ci, 1, snapc);
+		ceph_put_snap_context(snapc);
+		page->private = 0;
+		ClearPagePrivate(page);
+	} else {
+		dout("%p invalidatepage %p idx %lu partial dirty page\n",
+		     inode, page, page->index);
+	}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int ceph_releasepage(struct page *page, gfp_t g)

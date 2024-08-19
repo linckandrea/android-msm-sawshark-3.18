@@ -57,8 +57,12 @@ int do_truncate2(struct vfsmount *mnt, struct dentry *dentry, loff_t length,
 		newattrs.ia_valid |= ret | ATTR_FORCE;
 
 	mutex_lock(&dentry->d_inode->i_mutex);
+<<<<<<< HEAD
 	/* Note any delegations or leases have already been broken: */
 	ret = notify_change2(mnt, dentry, &newattrs, NULL);
+=======
+	ret = notify_change2(mnt, dentry, &newattrs);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mutex_unlock(&dentry->d_inode->i_mutex);
 	return ret;
 }
@@ -511,7 +515,11 @@ retry_deleg:
 		goto out_unlock;
 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+<<<<<<< HEAD
 	error = notify_change2(path->mnt, path->dentry, &newattrs, &delegated_inode);
+=======
+	error = notify_change2(path->mnt, path->dentry, &newattrs);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 out_unlock:
 	mutex_unlock(&inode->i_mutex);
 	if (delegated_inode) {
@@ -591,7 +599,11 @@ retry_deleg:
 	mutex_lock(&inode->i_mutex);
 	error = security_path_chown(path, uid, gid);
 	if (!error)
+<<<<<<< HEAD
 		error = notify_change2(path->mnt, path->dentry, &newattrs, &delegated_inode);
+=======
+		error = notify_change2(path->mnt, path->dentry, &newattrs);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mutex_unlock(&inode->i_mutex);
 	if (delegated_inode) {
 		error = break_deleg_wait(&delegated_inode);

@@ -211,7 +211,10 @@ static char * const zone_names[MAX_NR_ZONES] = {
  * tuned according to the amount of memory in the system.
  */
 int min_free_kbytes = 1024;
+<<<<<<< HEAD
 int user_min_free_kbytes = -1;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 int min_free_order_shift = 1;
 
 /*
@@ -764,7 +767,11 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 }
 
 static void free_one_page(struct zone *zone,
+<<<<<<< HEAD
 				struct page *page, unsigned long pfn,
+=======
+				struct page *page,
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				unsigned int order,
 				int migratetype)
 {
@@ -1173,8 +1180,12 @@ static void try_to_steal_freepages(struct zone *zone, struct page *page,
 	    page_group_by_mobility_disabled) {
 		int pages;
 
+<<<<<<< HEAD
 		pages = move_freepages_block(zone, page,
 				start_type, 0);
+=======
+		pages = move_freepages_block(zone, page, start_type);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		/* Claim the whole block if over half of it is free */
 		if (pages >= (1 << (pageblock_order-1)) ||
@@ -1187,7 +1198,11 @@ static void try_to_steal_freepages(struct zone *zone, struct page *page,
 static inline struct page *
 __rmqueue_fallback(struct zone *zone, unsigned int order, int start_migratetype)
 {
+<<<<<<< HEAD
 	struct free_area *area;
+=======
+	struct free_area * area;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	unsigned int current_order;
 	struct page *page;
 
@@ -1214,8 +1229,24 @@ __rmqueue_fallback(struct zone *zone, unsigned int order, int start_migratetype)
 			if (is_migrate_cma(migratetype))
 				area->nr_free_cma--;
 
+<<<<<<< HEAD
 			try_to_steal_freepages(zone, page, start_migratetype,
 								migratetype);
+=======
+			if (!is_migrate_cma(migratetype)) {
+				try_to_steal_freepages(zone, page,
+							start_migratetype,
+							migratetype);
+			} else {
+				/*
+				 * When borrowing from MIGRATE_CMA, we need to
+				 * release the excess buddy pages to CMA
+				 * itself, and we do not try to steal extra
+				 * free pages.
+				 */
+				buddy_type = migratetype;
+			}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 			/* Remove the page from the freelists */
 			list_del(&page->lru);
@@ -5886,10 +5917,13 @@ static void __setup_per_zone_wmarks(void)
 					low + (min >> 2);
 		zone->watermark[WMARK_HIGH] = min_wmark_pages(zone) +
 					low + (min >> 1);
+<<<<<<< HEAD
 
 		__mod_zone_page_state(zone, NR_ALLOC_BATCH,
 			high_wmark_pages(zone) - low_wmark_pages(zone) -
 			atomic_long_read(&zone->vm_stat[NR_ALLOC_BATCH]));
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		setup_zone_migrate_reserve(zone);
 		spin_unlock_irqrestore(&zone->lock, flags);

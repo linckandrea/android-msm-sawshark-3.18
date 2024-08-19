@@ -577,7 +577,11 @@ static void write_one_revoke_record(journal_t *journal,
 {
 	int csum_size = 0;
 	struct buffer_head *descriptor;
+<<<<<<< HEAD
 	int sz, offset;
+=======
+	int offset;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	journal_header_t *header;
 
 	/* If we are already aborting, this all becomes a noop.  We
@@ -624,10 +628,19 @@ static void write_one_revoke_record(journal_t *journal,
 		*descriptorp = descriptor;
 	}
 
+<<<<<<< HEAD
 	if (JBD2_HAS_INCOMPAT_FEATURE(journal, JBD2_FEATURE_INCOMPAT_64BIT))
 		* ((__be64 *)(&descriptor->b_data[offset])) =
 			cpu_to_be64(record->blocknr);
 	else
+=======
+	if (JBD2_HAS_INCOMPAT_FEATURE(journal, JBD2_FEATURE_INCOMPAT_64BIT)) {
+		* ((__be64 *)(&descriptor->b_data[offset])) =
+			cpu_to_be64(record->blocknr);
+		offset += 8;
+
+	} else {
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		* ((__be32 *)(&descriptor->b_data[offset])) =
 			cpu_to_be32(record->blocknr);
 	offset += sz;

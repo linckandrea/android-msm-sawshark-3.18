@@ -1694,6 +1694,15 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size,
 		return size;
 
 	nr_pages = DIV_ROUND_UP(size, BUF_PAGE_SIZE);
+<<<<<<< HEAD
+=======
+
+	/* we need a minimum of two pages */
+	if (nr_pages < 2)
+		nr_pages = 2;
+
+	size = nr_pages * BUF_PAGE_SIZE;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* we need a minimum of two pages */
 	if (nr_pages < 2)

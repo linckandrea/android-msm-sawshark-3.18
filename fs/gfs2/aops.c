@@ -285,11 +285,21 @@ continue_unlock:
 				goto continue_unlock;
 		}
 
+<<<<<<< HEAD
 		BUG_ON(PageWriteback(page));
 		if (!clear_page_dirty_for_io(page))
 			goto continue_unlock;
 
 		trace_wbc_writepage(wbc, mapping->backing_dev_info);
+=======
+		/* Is the page fully outside i_size? (truncate in progress) */
+		if (page->index > end_index || (page->index == end_index && !offset)) {
+			page->mapping->a_ops->invalidatepage(page, 0,
+							     PAGE_CACHE_SIZE);
+			unlock_page(page);
+			continue;
+		}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		ret = __gfs2_jdata_writepage(page, wbc);
 		if (unlikely(ret)) {

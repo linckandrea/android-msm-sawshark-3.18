@@ -20,7 +20,11 @@
 #include <linux/spinlock.h>
 #include <linux/wait.h>
 
+<<<<<<< HEAD:include/linux/sync.h
 #include <uapi/linux/sync.h>
+=======
+#include "uapi/sync.h"
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/staging/android/sync.h
 
 struct sync_timeline;
 struct sync_pt;

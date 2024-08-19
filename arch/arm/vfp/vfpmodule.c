@@ -649,6 +649,7 @@ static int vfp_hotplug(struct notifier_block *b, unsigned long action,
 	return NOTIFY_OK;
 }
 
+<<<<<<< HEAD
 void vfp_kmode_exception(void)
 {
 	/*
@@ -669,6 +670,8 @@ void vfp_kmode_exception(void)
 		pr_crit("BUG: FP instruction issued in kernel mode with FP unit disabled\n");
 }
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifdef CONFIG_KERNEL_MODE_NEON
 
 /*

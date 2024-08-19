@@ -15,6 +15,22 @@
 
 #define MMC_CMD_RETRIES        3
 
+<<<<<<< HEAD
+=======
+struct mmc_bus_ops {
+	int (*awake)(struct mmc_host *);
+	int (*sleep)(struct mmc_host *);
+	void (*remove)(struct mmc_host *);
+	void (*detect)(struct mmc_host *);
+	int (*suspend)(struct mmc_host *);
+	int (*resume)(struct mmc_host *);
+	int (*power_save)(struct mmc_host *);
+	int (*power_restore)(struct mmc_host *);
+	int (*alive)(struct mmc_host *);
+	int (*shutdown)(struct mmc_host *);
+};
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 void mmc_attach_bus(struct mmc_host *host, const struct mmc_bus_ops *ops);
 void mmc_detach_bus(struct mmc_host *host);
 

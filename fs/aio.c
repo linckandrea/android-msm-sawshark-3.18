@@ -1139,7 +1139,10 @@ static long aio_read_events_ring(struct kioctx *ctx,
 		goto out;
 
 	head %= ctx->nr_events;
+<<<<<<< HEAD
 	tail %= ctx->nr_events;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	while (ret < nr) {
 		long avail;
@@ -1355,12 +1358,27 @@ static ssize_t aio_setup_single_vector(struct kiocb *kiocb,
 				       unsigned long *nr_segs,
 				       struct iovec *iovec)
 {
+<<<<<<< HEAD
 	if (unlikely(!access_ok(!rw, buf, kiocb->ki_nbytes)))
 		return -EFAULT;
 
 	iovec->iov_base = buf;
 	iovec->iov_len = kiocb->ki_nbytes;
 	*nr_segs = 1;
+=======
+	size_t len = kiocb->ki_nbytes;
+
+	if (len > MAX_RW_COUNT)
+		len = MAX_RW_COUNT;
+
+	if (unlikely(!access_ok(!rw, kiocb->ki_buf, len)))
+		return -EFAULT;
+
+	kiocb->ki_iovec = &kiocb->ki_inline_vec;
+	kiocb->ki_iovec->iov_base = kiocb->ki_buf;
+	kiocb->ki_iovec->iov_len = len;
+	kiocb->ki_nr_segs = 1;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return 0;
 }
 

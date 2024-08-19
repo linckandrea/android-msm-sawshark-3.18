@@ -106,6 +106,7 @@ TRACE_EVENT(cpufreq_interactive_unboost,
 	    TP_printk("%s", __get_str(s))
 );
 
+<<<<<<< HEAD
 TRACE_EVENT(cpufreq_interactive_load_change,
 	    TP_PROTO(unsigned long cpu_id),
 	    TP_ARGS(cpu_id),
@@ -142,6 +143,8 @@ TRACE_EVENT(cpufreq_interactive_cpuload,
 		      __entry->prev, __entry->predicted)
 );
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* _TRACE_CPUFREQ_INTERACTIVE_H */
 
 /* This part must be outside protection */

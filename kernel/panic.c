@@ -40,6 +40,12 @@ static int pause_on_oops_flag;
 static DEFINE_SPINLOCK(pause_on_oops_lock);
 static bool crash_kexec_post_notifiers;
 
+<<<<<<< HEAD
+=======
+#ifndef CONFIG_PANIC_TIMEOUT
+#define CONFIG_PANIC_TIMEOUT 0
+#endif
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 EXPORT_SYMBOL_GPL(panic_timeout);
 
@@ -411,7 +417,12 @@ void print_oops_end_marker(void)
 		printk(KERN_WARNING "Board Information: %s\n",
 		       mach_panic_string);
 
+<<<<<<< HEAD
 	pr_warn("---[ end trace %016llx ]---\n", (unsigned long long)oops_id);
+=======
+	printk(KERN_WARNING "---[ end trace %016llx ]---\n",
+		(unsigned long long)oops_id);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /*

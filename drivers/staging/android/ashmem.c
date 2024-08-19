@@ -408,7 +408,10 @@ static int ashmem_mmap(struct file *file, struct vm_area_struct *vma)
 			fput(vma->vm_file);
 		vma->vm_file = asma->file;
 	}
+<<<<<<< HEAD
 	asma->vm_start = vma->vm_start;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 out:
 	mutex_unlock(&ashmem_mutex);
@@ -442,6 +445,12 @@ ashmem_shrink_scan(struct shrinker *shrink, struct shrink_control *sc)
 	if (!mutex_trylock(&ashmem_mutex))
 		return -1;
 
+<<<<<<< HEAD
+=======
+	if (!mutex_trylock(&ashmem_mutex))
+		return -1;
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	list_for_each_entry_safe(range, next, &ashmem_lru_list, lru) {
 		loff_t start = range->pgstart * PAGE_SIZE;
 		loff_t end = (range->pgend + 1) * PAGE_SIZE;

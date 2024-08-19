@@ -1241,7 +1241,11 @@ static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
 			queue_delayed_work(system_power_efficient_wq,
 					&hub->init_work,
 					msecs_to_jiffies(delay));
+<<<<<<< HEAD
                         device_unlock(hub->intfdev);
+=======
+			device_unlock(hub->intfdev);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			return;		/* Continues at init3: below */
 		} else {
 			msleep(delay);

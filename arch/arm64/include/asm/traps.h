@@ -20,12 +20,16 @@
 
 #include <linux/list.h>
 
+<<<<<<< HEAD
 struct pt_regs;
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 struct undef_hook {
 	struct list_head node;
 	u32 instr_mask;
 	u32 instr_val;
+<<<<<<< HEAD
 	u64 pstate_mask;
 	u64 pstate_val;
 	int (*fn)(struct pt_regs *regs, u32 instr);
@@ -33,6 +37,14 @@ struct undef_hook {
 
 void register_undef_hook(struct undef_hook *hook);
 void unregister_undef_hook(struct undef_hook *hook);
+=======
+	u32 pstate_mask;
+	u32 pstate_val;
+	int (*fn)(struct pt_regs *regs, unsigned int instr);
+};
+
+void register_undef_hook(struct undef_hook *hook);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 static inline int in_exception_text(unsigned long ptr)
 {

@@ -729,6 +729,7 @@
  *	(&struct nl80211_vendor_cmd_info) of the supported vendor commands.
  *	This may also be sent as an event with the same attributes.
  *
+<<<<<<< HEAD
  * @NL80211_CMD_SET_QOS_MAP: Set Interworking QoS mapping for IP DSCP values.
  *	The QoS mapping information is included in %NL80211_ATTR_QOS_MAP. If
  *	that attribute is not included, QoS mapping is disabled. Since this
@@ -780,6 +781,8 @@
  *	not running. The driver indicates the status of the scan through
  *	cfg80211_scan_done().
  *
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * @NL80211_CMD_MAX: highest used command number
  * @__NL80211_CMD_AFTER_LAST: internal use
  */
@@ -949,6 +952,7 @@ enum nl80211_commands {
 
 	NL80211_CMD_VENDOR,
 
+<<<<<<< HEAD
 	NL80211_CMD_SET_QOS_MAP,
 
 	NL80211_CMD_ADD_TX_TS,
@@ -968,6 +972,8 @@ enum nl80211_commands {
 
 	NL80211_CMD_ABORT_SCAN,
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/* add new commands above here */
 
 	/* used to define NL80211_CMD_MAX below */
@@ -1603,10 +1609,17 @@ enum nl80211_commands {
  *	operation).
  * @NL80211_ATTR_CSA_IES: Nested set of attributes containing the IE information
  *	for the time while performing a channel switch.
+<<<<<<< HEAD
  * @NL80211_ATTR_CSA_C_OFF_BEACON: An array of offsets (u16) to the channel
  *	switch counters in the beacons tail (%NL80211_ATTR_BEACON_TAIL).
  * @NL80211_ATTR_CSA_C_OFF_PRESP: An array of offsets (u16) to the channel
  *	switch counters in the probe response (%NL80211_ATTR_PROBE_RESP).
+=======
+ * @NL80211_ATTR_CSA_C_OFF_BEACON: Offset of the channel switch counter
+ *	field in the beacons tail (%NL80211_ATTR_BEACON_TAIL).
+ * @NL80211_ATTR_CSA_C_OFF_PRESP: Offset of the channel switch counter
+ *	field in the probe response (%NL80211_ATTR_PROBE_RESP).
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * @NL80211_ATTR_RXMGMT_FLAGS: flags for nl80211_send_mgmt(), u32.
  *	As specified in the &enum nl80211_rxmgmt_flags.
@@ -1623,6 +1636,7 @@ enum nl80211_commands {
  *	to react to radar events, e.g. initiate a channel switch or leave the
  *	IBSS network.
  *
+<<<<<<< HEAD
  * @NL80211_ATTR_SUPPORT_5_MHZ: A flag indicating that the device supports
  *	5 MHz channel bandwidth.
  * @NL80211_ATTR_SUPPORT_10_MHZ: A flag indicating that the device supports
@@ -1632,6 +1646,8 @@ enum nl80211_commands {
  *	Notification Element based on association request when used with
  *	%NL80211_CMD_NEW_STATION; u8 attribute.
  *
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * @NL80211_ATTR_VENDOR_ID: The vendor ID, either a 24-bit OUI or, if
  *	%NL80211_VENDOR_ID_IS_LINUX is set, a special Linux ID (not used yet)
  * @NL80211_ATTR_VENDOR_SUBCMD: vendor sub-command
@@ -1654,16 +1670,20 @@ enum nl80211_commands {
  *	advertise values that cannot always be met. In such cases, an attempt
  *	to add a new station entry with @NL80211_CMD_NEW_STATION may fail.
  *
+<<<<<<< HEAD
  * @NL80211_ATTR_CSA_C_OFFSETS_TX: An array of csa counter offsets (u16) which
  *	should be updated when the frame is transmitted.
  * @NL80211_ATTR_MAX_CSA_COUNTERS: U8 attribute used to advertise the maximum
  *	supported number of csa counters.
  *
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * @NL80211_ATTR_TDLS_PEER_CAPABILITY: flags for TDLS peer capabilities, u32.
  *	As specified in the &enum nl80211_tdls_peer_capability.
  *
  * @NL80211_ATTR_IFACE_SOCKET_OWNER: flag attribute, if set during interface
  *	creation then the new interface will be owned by the netlink socket
+<<<<<<< HEAD
  *	that created it and will be destroyed when the socket is closed
  *
  * @NL80211_ATTR_TDLS_INITIATOR: flag attribute indicating the current end is
@@ -1693,6 +1713,12 @@ enum nl80211_commands {
  *
  * @NL80211_ATTR_SMPS_MODE: SMPS mode to use (ap mode). see
  *	&enum nl80211_smps_mode.
+=======
+ *	that created it and will be destroyed when the socket is closed.
+ *	If set during scheduled scan start then the new scan req will be
+ *	owned by the netlink socket that created it and the scheduled scan will
+ *	be stopped when the socket is closed.
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * @NL80211_ATTR_MAX: highest attribute number currently defined
  * @__NL80211_ATTR_AFTER_LAST: internal use
@@ -2018,6 +2044,10 @@ enum nl80211_attrs {
 	NL80211_ATTR_VENDOR_ID,
 	NL80211_ATTR_VENDOR_SUBCMD,
 	NL80211_ATTR_VENDOR_DATA,
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	NL80211_ATTR_VENDOR_EVENTS,
 
 	NL80211_ATTR_QOS_MAP,
@@ -2031,6 +2061,7 @@ enum nl80211_attrs {
 
 	NL80211_ATTR_IFACE_SOCKET_OWNER,
 
+<<<<<<< HEAD
 	NL80211_ATTR_CSA_C_OFFSETS_TX,
 	NL80211_ATTR_MAX_CSA_COUNTERS,
 
@@ -2046,6 +2077,8 @@ enum nl80211_attrs {
 
 	NL80211_ATTR_SMPS_MODE,
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/* add attributes here, update the policy in nl80211.c */
 
 	__NL80211_ATTR_AFTER_LAST,
@@ -4290,6 +4323,7 @@ enum nl80211_crit_proto_id {
 /* maximum duration for critical protocol measures */
 #define NL80211_CRIT_PROTO_MAX_DURATION		5000 /* msec */
 
+<<<<<<< HEAD
 /**
  * enum nl80211_rxmgmt_flags - flags for received management frame.
  *
@@ -4301,6 +4335,8 @@ enum nl80211_rxmgmt_flags {
 	NL80211_RXMGMT_FLAG_ANSWERED = 1 << 0,
 };
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /*
  * If this flag is unset, the lower 24 bits are an OUI, if set
  * a Linux nl80211 vendor ID is used (no such IDs are allocated
@@ -4321,6 +4357,7 @@ struct nl80211_vendor_cmd_info {
 	__u32 subcmd;
 };
 
+<<<<<<< HEAD
 /**
  * enum nl80211_tdls_peer_capability - TDLS peer flags.
  *
@@ -4337,4 +4374,6 @@ enum nl80211_tdls_peer_capability {
 	NL80211_TDLS_PEER_WMM = 1<<2,
 };
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* __LINUX_NL80211_H */

@@ -52,8 +52,12 @@
 		(unsigned)&vector_fiq_offset;		\
 	})
 
+<<<<<<< HEAD
 static unsigned long dfl_fiq_insn;
 static struct pt_regs dfl_fiq_regs;
+=======
+static unsigned long no_fiq_insn;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /* Default reacquire function
  * - we always relinquish FIQ control
@@ -92,6 +96,7 @@ int show_fiq_list(struct seq_file *p, int prec)
 
 void set_fiq_handler(void *start, unsigned int length)
 {
+<<<<<<< HEAD
 	void *base = vectors_page;
 	unsigned offset = FIQ_OFFSET;
 
@@ -100,6 +105,19 @@ void set_fiq_handler(void *start, unsigned int length)
 		flush_icache_range((unsigned long)base + offset, offset +
 				   length);
 	flush_icache_range(0xffff0000 + offset, 0xffff0000 + offset + length);
+=======
+#if defined(CONFIG_CPU_USE_DOMAINS)
+	void *base = (void *)0xffff0000;
+#else
+	void *base = vectors_page;
+#endif
+	unsigned offset = FIQ_OFFSET;
+
+	memcpy(base + offset, start, length);
+	flush_icache_range(0xffff0000 + offset, 0xffff0000 + offset + length);
+	if (!vectors_high())
+		flush_icache_range(offset, offset + length);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 int claim_fiq(struct fiq_handler *f)
@@ -158,7 +176,11 @@ EXPORT_SYMBOL(disable_fiq);
 void __init init_FIQ(int start)
 {
 	unsigned offset = FIQ_OFFSET;
+<<<<<<< HEAD
 	dfl_fiq_insn = *(unsigned long *)(0xffff0000 + offset);
 	get_fiq_regs(&dfl_fiq_regs);
+=======
+	no_fiq_insn = *(unsigned long *)(0xffff0000 + offset);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	fiq_start = start;
 }

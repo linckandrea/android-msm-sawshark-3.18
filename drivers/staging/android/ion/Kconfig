@@ -1,6 +1,10 @@
 menuconfig ION
 	bool "Ion Memory Manager"
+<<<<<<< HEAD
 	depends on HAVE_MEMBLOCK && HAS_DMA && MMU
+=======
+	depends on HAVE_MEMBLOCK
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	select GENERIC_ALLOCATOR
 	select DMA_SHARED_BUFFER
 	---help---
@@ -17,6 +21,7 @@ config ION_TEST
 	  Choose this option to create a device that can be used to test the
 	  kernel and device side ION functions.
 
+<<<<<<< HEAD
 config ION_DUMMY
 	bool "Dummy Ion driver"
 	depends on ION
@@ -27,12 +32,15 @@ config ION_DUMMY
 	  one doesn't have access to hardware drivers that
 	  use ION.
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 config ION_TEGRA
 	tristate "Ion for Tegra"
 	depends on ARCH_TEGRA && ION
 	help
 	  Choose this option if you wish to use ion on an nVidia Tegra.
 
+<<<<<<< HEAD
 config ION_MSM
 	tristate "Ion for MSM"
 	depends on ARCH_MSM && ION
@@ -50,6 +58,11 @@ config ALLOC_BUFFERS_IN_4K_CHUNKS
 config ION_POOL_CACHE_POLICY
 	bool "Ion set page pool cache policy"
 	depends on ION && X86
+=======
+config ION_POOL_CACHE_POLICY
+	bool "Ion set page pool cache policy"
+	depends on ION
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	default y if X86
 	help
 	  Choose this option if need to explicity set cache policy of the

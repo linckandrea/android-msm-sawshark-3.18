@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
  * drivers/staging/android/ion/ion_page_pool.c
+=======
+ * drivers/gpu/ion/ion_mem_pool.c
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * Copyright (C) 2011 Google, Inc.
  *
@@ -21,6 +25,7 @@
 #include <linux/list.h>
 #include <linux/module.h>
 #include <linux/slab.h>
+<<<<<<< HEAD
 #include <linux/swap.h>
 #include <linux/vmalloc.h>
 #include "ion_priv.h"
@@ -38,14 +43,32 @@ static void *ion_page_pool_alloc_pages(struct ion_page_pool *pool)
 		if (msm_ion_heap_high_order_page_zero(page, pool->order))
 			goto error_free_pages;
 
+=======
+#include "ion_priv.h"
+
+struct ion_page_pool_item {
+	struct page *page;
+	struct list_head list;
+};
+
+static void *ion_page_pool_alloc_pages(struct ion_page_pool *pool)
+{
+	struct page *page = alloc_pages(pool->gfp_mask, pool->order);
+
+	if (!page)
+		return NULL;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	ion_page_pool_alloc_set_cache_policy(pool, page);
 
 	ion_pages_sync_for_device(NULL, page, PAGE_SIZE << pool->order,
 						DMA_BIDIRECTIONAL);
 	return page;
+<<<<<<< HEAD
 error_free_pages:
 	__free_pages(page, pool->order);
 	return NULL;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static void ion_page_pool_free_pages(struct ion_page_pool *pool,
@@ -57,12 +80,28 @@ static void ion_page_pool_free_pages(struct ion_page_pool *pool,
 
 static int ion_page_pool_add(struct ion_page_pool *pool, struct page *page)
 {
+<<<<<<< HEAD
 	mutex_lock(&pool->mutex);
 	if (PageHighMem(page)) {
 		list_add_tail(&page->lru, &pool->high_items);
 		pool->high_count++;
 	} else {
 		list_add_tail(&page->lru, &pool->low_items);
+=======
+	struct ion_page_pool_item *item;
+
+	item = kmalloc(sizeof(struct ion_page_pool_item), GFP_KERNEL);
+	if (!item)
+		return -ENOMEM;
+
+	mutex_lock(&pool->mutex);
+	item->page = page;
+	if (PageHighMem(page)) {
+		list_add_tail(&item->list, &pool->high_items);
+		pool->high_count++;
+	} else {
+		list_add_tail(&item->list, &pool->low_items);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		pool->low_count++;
 	}
 	mutex_unlock(&pool->mutex);
@@ -71,10 +110,15 @@ static int ion_page_pool_add(struct ion_page_pool *pool, struct page *page)
 
 static struct page *ion_page_pool_remove(struct ion_page_pool *pool, bool high)
 {
+<<<<<<< HEAD
+=======
+	struct ion_page_pool_item *item;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	struct page *page;
 
 	if (high) {
 		BUG_ON(!pool->high_count);
+<<<<<<< HEAD
 		page = list_first_entry(&pool->high_items, struct page, lru);
 		pool->high_count--;
 	} else {
@@ -88,11 +132,31 @@ static struct page *ion_page_pool_remove(struct ion_page_pool *pool, bool high)
 }
 
 void *ion_page_pool_alloc(struct ion_page_pool *pool, bool *from_pool)
+=======
+		item = list_first_entry(&pool->high_items,
+					struct ion_page_pool_item, list);
+		pool->high_count--;
+	} else {
+		BUG_ON(!pool->low_count);
+		item = list_first_entry(&pool->low_items,
+					struct ion_page_pool_item, list);
+		pool->low_count--;
+	}
+
+	list_del(&item->list);
+	page = item->page;
+	kfree(item);
+	return page;
+}
+
+void *ion_page_pool_alloc(struct ion_page_pool *pool)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct page *page = NULL;
 
 	BUG_ON(!pool);
 
+<<<<<<< HEAD
 	*from_pool = true;
 
 	if (mutex_trylock(&pool->mutex)) {
@@ -106,6 +170,18 @@ void *ion_page_pool_alloc(struct ion_page_pool *pool, bool *from_pool)
 		page = ion_page_pool_alloc_pages(pool);
 		*from_pool = false;
 	}
+=======
+	mutex_lock(&pool->mutex);
+	if (pool->high_count)
+		page = ion_page_pool_remove(pool, true);
+	else if (pool->low_count)
+		page = ion_page_pool_remove(pool, false);
+	mutex_unlock(&pool->mutex);
+
+	if (!page)
+		page = ion_page_pool_alloc_pages(pool);
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return page;
 }
 
@@ -113,8 +189,11 @@ void ion_page_pool_free(struct ion_page_pool *pool, struct page *page)
 {
 	int ret;
 
+<<<<<<< HEAD
 	BUG_ON(pool->order != compound_order(page));
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	ret = ion_page_pool_add(pool, page);
 	if (ret)
 		ion_page_pool_free_pages(pool, page);
@@ -127,17 +206,27 @@ void ion_page_pool_free_immediate(struct ion_page_pool *pool, struct page *page)
 
 static int ion_page_pool_total(struct ion_page_pool *pool, bool high)
 {
+<<<<<<< HEAD
 	int count = pool->low_count;
 
 	if (high)
 		count += pool->high_count;
 
 	return count << pool->order;
+=======
+	int total = 0;
+
+	total += high ? (pool->high_count + pool->low_count) *
+		(1 << pool->order) :
+			pool->low_count * (1 << pool->order);
+	return total;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 int ion_page_pool_shrink(struct ion_page_pool *pool, gfp_t gfp_mask,
 				int nr_to_scan)
 {
+<<<<<<< HEAD
 	int freed = 0;
 	bool high;
 
@@ -150,6 +239,14 @@ int ion_page_pool_shrink(struct ion_page_pool *pool, gfp_t gfp_mask,
 		return ion_page_pool_total(pool, high);
 
 	while (freed < nr_to_scan) {
+=======
+	int i;
+	bool high;
+
+	high = !!(gfp_mask & __GFP_HIGHMEM);
+
+	for (i = 0; i < nr_to_scan; i++) {
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		struct page *page;
 
 		mutex_lock(&pool->mutex);
@@ -163,10 +260,16 @@ int ion_page_pool_shrink(struct ion_page_pool *pool, gfp_t gfp_mask,
 		}
 		mutex_unlock(&pool->mutex);
 		ion_page_pool_free_pages(pool, page);
+<<<<<<< HEAD
 		freed += (1 << pool->order);
 	}
 
 	return freed;
+=======
+	}
+
+	return ion_page_pool_total(pool, high);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 struct ion_page_pool *ion_page_pool_create(gfp_t gfp_mask, unsigned int order)
@@ -179,7 +282,11 @@ struct ion_page_pool *ion_page_pool_create(gfp_t gfp_mask, unsigned int order)
 	pool->low_count = 0;
 	INIT_LIST_HEAD(&pool->low_items);
 	INIT_LIST_HEAD(&pool->high_items);
+<<<<<<< HEAD
 	pool->gfp_mask = gfp_mask | __GFP_COMP;
+=======
+	pool->gfp_mask = gfp_mask;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	pool->order = order;
 	mutex_init(&pool->mutex);
 	plist_node_init(&pool->list, order);

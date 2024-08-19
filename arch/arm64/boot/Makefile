@@ -14,17 +14,28 @@
 # Based on the ia64 boot/Makefile.
 #
 
+<<<<<<< HEAD
 include $(srctree)/arch/arm64/boot/dts/qcom/Makefile
+=======
+include $(srctree)/arch/arm64/boot/dts/Makefile
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 targets := Image Image.gz
 
 DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))
 ifneq ($(DTB_NAMES),)
 DTB_LIST := $(addsuffix .dtb,$(DTB_NAMES))
+<<<<<<< HEAD
 DTB_OBJS := $(addprefix $(obj)/dts/,$(DTB_LIST))
 else
 DTB_OBJS := $(shell find $(obj)/dts/ -name \*.dtb)
 endif
+=======
+else
+DTB_LIST := $(dtb-y)
+endif
+DTB_OBJS := $(addprefix $(obj)/dts/,$(DTB_LIST))
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 $(obj)/Image: vmlinux FORCE
 	$(call if_changed,objcopy)

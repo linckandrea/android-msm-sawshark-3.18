@@ -52,8 +52,17 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
 
+<<<<<<< HEAD:kernel/printk/printk.c
 #include "console_cmdline.h"
 #include "braille.h"
+=======
+#ifdef CONFIG_EARLY_PRINTK_DIRECT
+extern void printascii(char *);
+#endif
+
+/* printk's without a loglevel use this.. */
+#define DEFAULT_MESSAGE_LOGLEVEL CONFIG_DEFAULT_MESSAGE_LOGLEVEL
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:kernel/printk.c
 
 #ifdef CONFIG_EARLY_PRINTK_DIRECT
 extern void printascii(char *);

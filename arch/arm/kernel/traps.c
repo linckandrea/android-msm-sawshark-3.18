@@ -40,6 +40,7 @@
 #include <asm/system_misc.h>
 #include <asm/opcodes.h>
 
+<<<<<<< HEAD
 #include <trace/events/exception.h>
 
 static const char *handler[]= {
@@ -49,6 +50,9 @@ static const char *handler[]= {
 	"interrupt",
 	"undefined instruction",
 };
+=======
+static const char *handler[]= { "prefetch abort", "data abort", "address exception", "interrupt" };
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 void *vectors_page;
 
@@ -887,7 +891,11 @@ static void __init kuser_init(void *vectors)
 		memcpy(vectors + 0xfe0, vectors + 0xfe8, 4);
 }
 #else
+<<<<<<< HEAD
 static inline void __init kuser_init(void *vectors)
+=======
+static void __init kuser_init(void *vectors)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 }
 #endif

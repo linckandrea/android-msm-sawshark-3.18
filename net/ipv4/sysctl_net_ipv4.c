@@ -150,7 +150,11 @@ static int ipv4_ping_group_range(struct ctl_table *table, int write,
 }
 
 /* Validate changes from /proc interface. */
+<<<<<<< HEAD
 static int proc_tcp_default_init_rwnd(struct ctl_table *ctl, int write,
+=======
+static int proc_tcp_default_init_rwnd(ctl_table *ctl, int write,
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				      void __user *buffer,
 				      size_t *lenp, loff_t *ppos)
 {
@@ -164,7 +168,11 @@ static int proc_tcp_default_init_rwnd(struct ctl_table *ctl, int write,
 	return ret;
 }
 
+<<<<<<< HEAD
 static int proc_tcp_congestion_control(struct ctl_table *ctl, int write,
+=======
+static int proc_tcp_congestion_control(ctl_table *ctl, int write,
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				       void __user *buffer, size_t *lenp, loff_t *ppos)
 {
 	char val[TCP_CA_NAME_MAX];
@@ -723,6 +731,7 @@ static struct ctl_table ipv4_table[] = {
 		.extra2		= &four,
 	},
 	{
+<<<<<<< HEAD
 		.procname	= "tcp_min_tso_segs",
 		.data		= &sysctl_tcp_min_tso_segs,
 		.maxlen		= sizeof(int),
@@ -741,6 +750,8 @@ static struct ctl_table ipv4_table[] = {
 		.extra2		= &one,
 	},
 	{
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		.procname       = "tcp_default_init_rwnd",
 		.data           = &sysctl_tcp_default_init_rwnd,
 		.maxlen         = sizeof(int),
@@ -748,6 +759,7 @@ static struct ctl_table ipv4_table[] = {
 		.proc_handler   = proc_tcp_default_init_rwnd
 	},
 	{
+<<<<<<< HEAD
 		.procname	= "icmp_msgs_per_sec",
 		.data		= &sysctl_icmp_msgs_per_sec,
 		.maxlen		= sizeof(int),
@@ -764,6 +776,8 @@ static struct ctl_table ipv4_table[] = {
 		.extra1		= &zero,
 	},
 	{
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		.procname	= "udp_mem",
 		.data		= &sysctl_udp_mem,
 		.maxlen		= sizeof(sysctl_udp_mem),
@@ -906,6 +920,20 @@ static struct ctl_table ipv4_net_table[] = {
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec
+	},
+	{
+		.procname	= "fwmark_reflect",
+		.data		= &init_net.ipv4.sysctl_fwmark_reflect,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
+	},
+	{
+		.procname	= "tcp_fwmark_accept",
+		.data		= &init_net.ipv4.sysctl_tcp_fwmark_accept,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
 	},
 	{
 		.procname	= "fwmark_reflect",

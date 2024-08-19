@@ -13,6 +13,7 @@
  */
 
 #include <linux/ftrace.h>
+#include <linux/module.h>
 #include <linux/uaccess.h>
 #include <linux/module.h>
 #include <linux/stop_machine.h>
@@ -83,6 +84,10 @@ static unsigned long adjust_address(struct dyn_ftrace *rec, unsigned long addr)
 
 int ftrace_arch_code_modify_prepare(void)
 {
+<<<<<<< HEAD
+=======
+	set_kernel_text_rw();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	set_all_modules_text_rw();
 	return 0;
 }
@@ -90,8 +95,12 @@ int ftrace_arch_code_modify_prepare(void)
 int ftrace_arch_code_modify_post_process(void)
 {
 	set_all_modules_text_ro();
+<<<<<<< HEAD
 	/* Make sure any TLB misses during machine stop are cleared. */
 	flush_tlb_all();
+=======
+	set_kernel_text_ro();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return 0;
 }
 

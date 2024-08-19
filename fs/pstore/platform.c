@@ -438,6 +438,40 @@ static int pstore_write_buf_user_compat(enum pstore_type_id type,
 	return unlikely(ret < 0) ? ret : size;
 }
 
+static int pstore_write_buf_user_compat(enum pstore_type_id type,
+			       enum kmsg_dump_reason reason,
+			       u64 *id, unsigned int part,
+			       const char __user *buf,
+			       size_t size,
+			       struct pstore_info *psi)
+{
+	unsigned long flags = 0;
+	size_t i, bufsize = size;
+	long ret = 0;
+
+	if (unlikely(!access_ok(VERIFY_READ, buf, size)))
+		return -EFAULT;
+	if (bufsize > psinfo->bufsize)
+		bufsize = psinfo->bufsize;
+	spin_lock_irqsave(&psinfo->buf_lock, flags);
+	for (i = 0; i < size; ) {
+		size_t c = min(size - i, bufsize);
+
+		ret = __copy_from_user(psinfo->buf, buf + i, c);
+		if (unlikely(ret != 0)) {
+			ret = -EFAULT;
+			break;
+		}
+		ret = psi->write_buf(type, reason, id, part, psinfo->buf,
+				     c, psi);
+		if (unlikely(ret < 0))
+			break;
+		i += c;
+	}
+	spin_unlock_irqrestore(&psinfo->buf_lock, flags);
+	return unlikely(ret < 0) ? ret : size;
+}
+
 /*
  * platform specific persistent storage driver registers with
  * us here. If pstore is already mounted, call the platform
@@ -479,12 +513,18 @@ int pstore_register(struct pstore_info *psi)
 		pstore_get_records(0);
 
 	kmsg_dump_register(&pstore_dumper);
+<<<<<<< HEAD
 
 	if ((psi->flags & PSTORE_FLAGS_FRAGILE) == 0) {
 		pstore_register_console();
 		pstore_register_ftrace();
 		pstore_register_pmsg();
 	}
+=======
+	pstore_register_console();
+	pstore_register_ftrace();
+	pstore_register_pmsg();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (pstore_update_ms >= 0) {
 		pstore_timer.expires = jiffies +

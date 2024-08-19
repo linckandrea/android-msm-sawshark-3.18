@@ -61,9 +61,13 @@
 #include <linux/nsproxy.h>
 #include <linux/ptrace.h>
 #include <linux/sched/rt.h>
+<<<<<<< HEAD
 #include <linux/hugetlb.h>
 #include <linux/freezer.h>
 #include <linux/bootmem.h>
+=======
+#include <linux/freezer.h>
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #include <asm/futex.h>
 
@@ -400,6 +404,7 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
 	unsigned long address = (unsigned long)uaddr;
 	struct mm_struct *mm = current->mm;
 	struct page *page, *page_head;
+	struct address_space *mapping;
 	int err, ro = 0;
 	struct address_space *mapping;
 	/*
@@ -490,6 +495,22 @@ again:
          */
 	mapping = READ_ONCE(page_head->mapping);
 
+<<<<<<< HEAD
+=======
+	/*
+	 * The treatment of mapping from this point on is critical. The page
+	 * lock protects many things but in this context the page lock
+	 * stabilizes mapping, prevents inode freeing in the shared
+	 * file-backed region case and guards against movement to swap cache.
+	 *
+	 * Strictly speaking the page lock is not needed in all cases being
+	 * considered here and page lock forces unnecessarily serialization
+	 * From this point on, mapping will be re-verified if necessary and
+	 * page lock will be acquired only if it is unavoidable
+	 */
+
+	mapping = READ_ONCE(page_head->mapping);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/*
 	 * If page_head->mapping is NULL, then it cannot be a PageAnon
@@ -506,11 +527,15 @@ again:
 	 * shmem_writepage move it from filecache to swapcache beneath us:
 	 * an unlikely race, but we do need to retry for page_head->mapping.
 	 */
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (unlikely(!mapping)) {
 		int shmem_swizzled;
 
 		/*
+<<<<<<< HEAD
 		* Page lock is required to identify which special case above
 		* applies. If this is really a shmem page then the page lock
 		* will prevent unexpected transitions.
@@ -518,19 +543,35 @@ again:
                 lock_page(page);
                 shmem_swizzled = PageSwapCache(page) || page->mapping;
 
+=======
+		 * Page lock is required to identify which special case above
+		 * applies. If this is really a shmem page then the page lock
+		 * will prevent unexpected transitions.
+		 */
+		lock_page(page);
+		shmem_swizzled = PageSwapCache(page) || page->mapping;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		unlock_page(page_head);
 		put_page(page_head);
+
 		if (shmem_swizzled)
 			goto again;
+
 		return -EFAULT;
 	}
 
 	/*
 	 * Private mappings are handled in a simple way.
 	 *
+<<<<<<< HEAD
          * If the futex key is stored on an anonymous page, then the associated
      	 * object is the mm which is implicitly pinned by the calling process.
      	 *
+=======
+	 * If the futex key is stored on an anonymous page, then the associated
+	 * object is the mm which is implicitly pinned by the calling process.
+	 *
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	 * NOTE: When userspace waits on a MAP_SHARED mapping, even if
 	 * it's a read-only handle, it's expected that futexes attach to
 	 * the object not the particular process.
@@ -548,6 +589,7 @@ again:
 		key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
 		key->private.mm = mm;
 		key->private.address = address;
+<<<<<<< HEAD
 		get_futex_key_refs(key); /* implies smp_mb(); (B) */
 	} else {
 		struct inode *inode;
@@ -562,6 +604,25 @@ again:
 		* under RCU. If the mapping still matches expectations then the
 		* mapping->host can be safely accessed as being a valid inode.
 		*/
+=======
+
+		get_futex_key_refs(key); /* implies smp_mb(); (B) */
+
+	} else {
+		struct inode *inode;
+
+		/*
+		 * The associated futex object in this case is the inode and
+		 * the page->mapping must be traversed. Ordinarily this should
+		 * be stabilised under page lock but it's not strictly
+		 * necessary in this case as we just want to pin the inode, not
+		 * update the radix tree or anything like that.
+		 *
+		 * The RCU read lock is taken as the inode is finally freed
+		 * under RCU. If the mapping still matches expectations then the
+		 * mapping->host can be safely accessed as being a valid inode.
+		 */
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		rcu_read_lock();
 
 		if (READ_ONCE(page_head->mapping) != mapping) {
@@ -605,6 +666,7 @@ again:
 
 			goto out;
 		}
+<<<<<<< HEAD
 		key->both.offset |= FUT_OFF_INODE; /* inode-based key */
 		key->shared.inode = inode;
 		key->shared.pgoff = basepage_index(page);
@@ -612,6 +674,15 @@ again:
 	}
 
 
+=======
+
+		key->both.offset |= FUT_OFF_INODE; /* inode-based key */
+		key->shared.inode = inode;
+		key->shared.pgoff = page_head->index;
+		rcu_read_unlock();
+	}
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 out:
 	put_page(page_head);
 	return err;
@@ -885,6 +956,7 @@ void exit_pi_state_list(struct task_struct *curr)
  * [10] There is no transient state which leaves owner and user space
  *	TID out of sync.
  */
+<<<<<<< HEAD
 
 /*
  * Validate that the existing waiter has a pi_state and sanity check
@@ -893,6 +965,11 @@ void exit_pi_state_list(struct task_struct *curr)
  */
 static int attach_to_pi_state(u32 uval, struct futex_pi_state *pi_state,
 			      struct futex_pi_state **ps)
+=======
+static int
+lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
+		union futex_key *key, struct futex_pi_state **ps)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	pid_t pid = uval & FUTEX_TID_MASK;
 
@@ -915,15 +992,88 @@ static int attach_to_pi_state(u32 uval, struct futex_pi_state *pi_state,
 		 */
 		if (!pi_state->owner) {
 			/*
+<<<<<<< HEAD
 			 * No pi state owner, but the user space TID
 			 * is not 0. Inconsistent state. [5]
 			 */
 			if (pid)
+=======
+			 * Sanity check the waiter before increasing
+			 * the refcount and attaching to it.
+			 */
+			pi_state = this->pi_state;
+			/*
+			 * Userspace might have messed up non-PI and
+			 * PI futexes [3]
+			 */
+			if (unlikely(!pi_state))
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				return -EINVAL;
 			/*
+<<<<<<< HEAD
 			 * Take a ref on the state and return success. [4]
 			 */
 			goto out_state;
+=======
+			 * Handle the owner died case:
+			 */
+			if (uval & FUTEX_OWNER_DIED) {
+				/*
+				 * exit_pi_state_list sets owner to NULL and
+				 * wakes the topmost waiter. The task which
+				 * acquires the pi_state->rt_mutex will fixup
+				 * owner.
+				 */
+				if (!pi_state->owner) {
+					/*
+					 * No pi state owner, but the user
+					 * space TID is not 0. Inconsistent
+					 * state. [5]
+					 */
+					if (pid)
+						return -EINVAL;
+					/*
+					 * Take a ref on the state and
+					 * return. [4]
+					 */
+					goto out_state;
+				}
+
+				/*
+				 * If TID is 0, then either the dying owner
+				 * has not yet executed exit_pi_state_list()
+				 * or some waiter acquired the rtmutex in the
+				 * pi state, but did not yet fixup the TID in
+				 * user space.
+				 *
+				 * Take a ref on the state and return. [6]
+				 */
+				if (!pid)
+					goto out_state;
+			} else {
+				/*
+				 * If the owner died bit is not set,
+				 * then the pi_state must have an
+				 * owner. [7]
+				 */
+				if (!pi_state->owner)
+					return -EINVAL;
+			}
+
+			/*
+			 * Bail out if user space manipulated the
+			 * futex value. If pi state exists then the
+			 * owner TID must be the same as the user
+			 * space TID. [9/10]
+			 */
+			if (pid != task_pid_vnr(pi_state->owner))
+				return -EINVAL;
+
+		out_state:
+			atomic_inc(&pi_state->refcount);
+			*ps = pi_state;
+			return 0;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		}
 
 		/*
@@ -1101,12 +1251,29 @@ static int futex_lock_pi_atomic(u32 __user *uaddr, struct futex_hash_bucket *hb,
 		return -EDEADLK;
 
 	/*
+<<<<<<< HEAD
 	 * Lookup existing state first. If it exists, try to attach to
 	 * its pi_state.
 	 */
 	match = futex_top_waiter(hb, key);
 	if (match)
 		return attach_to_pi_state(uval, match->pi_state, ps);
+=======
+	 * Surprise - we got the lock, but we do not trust user space at all.
+	 */
+	if (unlikely(!curval)) {
+		/*
+		 * We verify whether there is kernel state for this
+		 * futex. If not, we can safely assume, that the 0 ->
+		 * TID transition is correct. If state exists, we do
+		 * not bother to fixup the user space state as it was
+		 * corrupted already.
+		 */
+		return futex_top_waiter(hb, key) ? -EINVAL : 1;
+	}
+
+	uval = curval;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/*
 	 * No waiter and user TID is 0. We are here because the
@@ -1582,6 +1749,9 @@ static int futex_requeue(u32 __user *uaddr1, unsigned int flags,
 	struct futex_pi_state *pi_state = NULL;
 	struct futex_hash_bucket *hb1, *hb2;
 	struct futex_q *this, *next;
+
+	if (nr_wake < 0 || nr_requeue < 0)
+		return -EINVAL;
 
 	if (nr_wake < 0 || nr_requeue < 0)
 		return -EINVAL;
@@ -2488,6 +2658,7 @@ retry:
 	spin_lock(&hb->lock);
 
 	/*
+<<<<<<< HEAD
 	 * Check waiters first. We do not trust user space values at
 	 * all and we at least want to know if user space fiddled
 	 * with the futex value instead of blindly unlocking.
@@ -2495,6 +2666,33 @@ retry:
 	match = futex_top_waiter(hb, &key);
 	if (match) {
 		ret = wake_futex_pi(uaddr, uval, match);
+=======
+	 * To avoid races, try to do the TID -> 0 atomic transition
+	 * again. If it succeeds then we can return without waking
+	 * anyone else up. We only try this if neither the waiters nor
+	 * the owner died bit are set.
+	 */
+	if (!(uval & ~FUTEX_TID_MASK) &&
+	    cmpxchg_futex_value_locked(&uval, uaddr, vpid, 0))
+		goto pi_faulted;
+	/*
+	 * Rare case: we managed to release the lock atomically,
+	 * no need to wake anyone else up:
+	 */
+	if (unlikely(uval == vpid))
+		goto out_unlock;
+
+	/*
+	 * Ok, other tasks may need to be woken up - check waiters
+	 * and do the wakeup if necessary:
+	 */
+	head = &hb->chain;
+
+	plist_for_each_entry_safe(this, next, head, list) {
+		if (!match_futex (&this->key, &key))
+			continue;
+		ret = wake_futex_pi(uaddr, uval, this);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		/*
 		 * The atomic access to the futex value generated a
 		 * pagefault, so retry the user-access and the wakeup:
@@ -2511,6 +2709,7 @@ retry:
 	 * preserve the WAITERS bit not the OWNER_DIED one. We are the
 	 * owner.
 	 */
+<<<<<<< HEAD
 	if (cmpxchg_futex_value_locked(&curval, uaddr, uval, 0))
 		goto pi_faulted;
 
@@ -2518,6 +2717,11 @@ retry:
 	 * If uval has changed, let user space handle it.
 	 */
 	ret = (curval == uval) ? 0 : -EAGAIN;
+=======
+	ret = unlock_futex_pi(uaddr, uval);
+	if (ret == -EFAULT)
+		goto pi_faulted;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 out_unlock:
 	spin_unlock(&hb->lock);
@@ -2682,7 +2886,10 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, unsigned int flags,
 	 * shared futexes. We need to compare the keys:
 	 */
 	if (match_futex(&q.key, &key2)) {
+<<<<<<< HEAD
 		queue_unlock(hb);
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		ret = -EINVAL;
 		goto out_put_keys;
 	}

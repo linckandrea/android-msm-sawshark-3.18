@@ -23,6 +23,14 @@ obj-$(CONFIG_VT6655)		+= vt6655/
 obj-$(CONFIG_VT6656)		+= vt6656/
 obj-$(CONFIG_VME_BUS)		+= vme/
 obj-$(CONFIG_IIO)		+= iio/
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_WLAGS49_H2)	+= wlags49_h2/
+obj-$(CONFIG_WLAGS49_H25)	+= wlags49_h25/
+obj-$(CONFIG_FB_SM7XX)		+= sm7xxfb/
+obj-$(CONFIG_CRYSTALHD)		+= crystalhd/
+obj-$(CONFIG_CXT1E1)		+= cxt1e1/
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 obj-$(CONFIG_FB_XGI)		+= xgifb/
 obj-$(CONFIG_USB_EMXX)		+= emxx_udc/
 obj-$(CONFIG_BCM_WIMAX)		+= bcm/

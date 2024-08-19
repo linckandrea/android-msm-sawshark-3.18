@@ -872,6 +872,8 @@ int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
  * @mapping: mapping
  * @index: index
  * @max_scan: maximum range to search
+<<<<<<< HEAD
+=======
  *
  * Search the set [index, min(index+max_scan-1, MAX_INDEX)] for the
  * lowest indexed hole.
@@ -888,6 +890,48 @@ int __lock_page_or_retry(struct page *page, struct mm_struct *mm,
  * index 10, page_cache_next_hole covering both indexes may return 10
  * if called under rcu_read_lock.
  */
+pgoff_t page_cache_next_hole(struct address_space *mapping,
+                             pgoff_t index, unsigned long max_scan)
+{
+        unsigned long i;
+
+        for (i = 0; i < max_scan; i++) {
+                struct page *page;
+
+                page = radix_tree_lookup(&mapping->page_tree, index);
+                if (!page || radix_tree_exceptional_entry(page))
+                        break;
+                index++;
+                if (index == 0)
+                        break;
+        }
+
+        return index;
+}
+EXPORT_SYMBOL(page_cache_next_hole);
+
+/**
+ * find_get_page - find and get a page reference
+ * @mapping: the address_space to search
+ * @offset: the page index
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
+ *
+ * Search the set [index, min(index+max_scan-1, MAX_INDEX)] for the
+ * lowest indexed hole.
+ *
+ * Returns: the index of the hole if found, otherwise returns an index
+ * outside of the set specified (in which case 'return - index >=
+ * max_scan' will be true). In rare cases of index wrap-around, 0 will
+ * be returned.
+ *
+ * page_cache_next_hole may be called under rcu_read_lock. However,
+ * like radix_tree_gang_lookup, this will not atomically search a
+ * snapshot of the tree at a single point in time. For example, if a
+ * hole is created at index 5, then subsequently a hole is created at
+ * index 10, page_cache_next_hole covering both indexes may return 10
+ * if called under rcu_read_lock.
+ */
+<<<<<<< HEAD
 pgoff_t page_cache_next_hole(struct address_space *mapping,
 			     pgoff_t index, unsigned long max_scan)
 {
@@ -963,6 +1007,10 @@ EXPORT_SYMBOL(page_cache_prev_hole);
  * Otherwise, %NULL is returned.
  */
 struct page *find_get_entry(struct address_space *mapping, pgoff_t offset)
+=======
+struct page *find_get_page_flags(struct address_space *mapping, pgoff_t offset,
+				 int fgp_flags)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	void **pagep;
 	struct page *page;
@@ -999,6 +1047,8 @@ repeat:
 		}
 	}
 out:
+	if (page && (fgp_flags & FGP_ACCESSED))
+		mark_page_accessed(page);
 	rcu_read_unlock();
 
 	return page;
@@ -1472,6 +1522,8 @@ static ssize_t do_generic_file_read(struct file *filp, loff_t *ppos,
 	unsigned long offset;      /* offset into pagecache page */
 	unsigned int prev_offset;
 	int error = 0;
+
+	trace_mm_filemap_do_generic_file_read(filp, *ppos, desc->count, 1);
 
 	index = *ppos >> PAGE_CACHE_SHIFT;
 	prev_index = ra->prev_pos >> PAGE_CACHE_SHIFT;
@@ -2456,6 +2508,8 @@ ssize_t generic_perform_write(struct file *file,
 	ssize_t written = 0;
 	unsigned int flags = 0;
 
+	trace_mm_filemap_generic_perform_write(file, pos, iov_iter_count(i), 0);
+
 	/*
 	 * Copies from kernel address space cannot fail (NFSD is a big user).
 	 */
@@ -2534,7 +2588,31 @@ again:
 
 	return written ? written : status;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(generic_perform_write);
+=======
+
+ssize_t
+generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+		unsigned long nr_segs, loff_t pos, loff_t *ppos,
+		size_t count, ssize_t written)
+{
+	struct file *file = iocb->ki_filp;
+	ssize_t status;
+	struct iov_iter i;
+
+	iov_iter_init(&i, iov, nr_segs, count, written);
+	status = generic_perform_write(file, &i, pos);
+
+	if (likely(status >= 0)) {
+		written += status;
+		*ppos = pos + status;
+  	}
+
+	return written ? written : status;
+}
+EXPORT_SYMBOL(generic_file_buffered_write);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /**
  * __generic_file_write_iter - write data to a file

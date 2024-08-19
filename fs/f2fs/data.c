@@ -746,6 +746,15 @@ int f2fs_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
 				start, len, get_data_block_fiemap);
 }
 
+static int get_data_block_bmap(struct inode *inode, sector_t iblock,
+			struct buffer_head *bh_result, int create)
+{
+	/* Block number less than F2FS MAX BLOCKS */
+	if (unlikely(iblock >= max_file_size(0)))
+		return -EFBIG;
+	return get_data_block_ro(inode, iblock, bh_result, create);
+}
+
 static int f2fs_read_data_page(struct file *file, struct page *page)
 {
 	struct inode *inode = page->mapping->host;
@@ -1050,10 +1059,29 @@ fail:
 	return err;
 }
 
+<<<<<<< HEAD
 static int f2fs_write_end(struct file *file,
 			struct address_space *mapping,
 			loff_t pos, unsigned len, unsigned copied,
 			struct page *page, void *fsdata)
+=======
+static ssize_t f2fs_direct_IO(int rw, struct kiocb *iocb,
+		const struct iovec *iov, loff_t offset, unsigned long nr_segs)
+{
+	struct file *file = iocb->ki_filp;
+	struct inode *inode = file->f_mapping->host;
+
+	if (rw == WRITE)
+		return 0;
+
+	/* Needs synchronization with the cleaner */
+	return blockdev_direct_IO(rw, iocb, inode, iov, offset, nr_segs,
+						  get_data_block_ro);
+}
+
+static void f2fs_invalidate_data_page(struct page *page, unsigned int offset,
+				      unsigned int length)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct inode *inode = page->mapping->host;
 
@@ -1157,11 +1185,14 @@ static int f2fs_set_data_page_dirty(struct page *page)
 
 static sector_t f2fs_bmap(struct address_space *mapping, sector_t block)
 {
+<<<<<<< HEAD
 	struct inode *inode = mapping->host;
 
 	if (f2fs_has_inline_data(inode))
 		return 0;
 
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return generic_block_bmap(mapping, block, get_data_block_bmap);
 }
 

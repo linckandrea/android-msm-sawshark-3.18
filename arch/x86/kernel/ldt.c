@@ -245,7 +245,18 @@ static int write_ldt(void __user *ptr, unsigned long bytecount, int oldmode)
 			ldt.avl = 0;
 	}
 
+<<<<<<< HEAD
 	mutex_lock(&mm->context.lock);
+=======
+	if (!IS_ENABLED(CONFIG_X86_16BIT) && !ldt_info.seg_32bit) {
+		error = -EINVAL;
+		goto out_unlock;
+	}
+
+	fill_ldt(&ldt, &ldt_info);
+	if (oldmode)
+		ldt.avl = 0;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	old_ldt = mm->context.ldt;
 	oldsize = old_ldt ? old_ldt->size : 0;

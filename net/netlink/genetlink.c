@@ -507,10 +507,30 @@ void *genlmsg_put(struct sk_buff *skb, u32 portid, u32 seq,
 }
 EXPORT_SYMBOL(genlmsg_put);
 
+<<<<<<< HEAD
 static int genl_lock_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
 {
 	/* our ops are always const - netlink API doesn't propagate that */
 	const struct genl_ops *ops = cb->data;
+=======
+static int genl_lock_start(struct netlink_callback *cb)
+{
+	/* our ops are always const - netlink API doesn't propagate that */
+	const struct genl_ops *ops = cb->data;
+	int rc = 0;
+
+	if (ops->start) {
+		genl_lock();
+		rc = ops->start(cb);
+		genl_unlock();
+	}
+	return rc;
+}
+
+static int genl_lock_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+{
+	struct genl_ops *ops = cb->data;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	int rc;
 
 	genl_lock();
@@ -521,8 +541,12 @@ static int genl_lock_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
 
 static int genl_lock_done(struct netlink_callback *cb)
 {
+<<<<<<< HEAD
 	/* our ops are always const - netlink API doesn't propagate that */
 	const struct genl_ops *ops = cb->data;
+=======
+	struct genl_ops *ops = cb->data;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	int rc = 0;
 
 	if (ops->done) {
@@ -568,25 +592,42 @@ static int genl_family_rcv_msg(struct genl_family *family,
 
 		if (!family->parallel_ops) {
 			struct netlink_dump_control c = {
+<<<<<<< HEAD
 				.module = family->module,
 				/* we have const, but the netlink API doesn't */
 				.data = (void *)ops,
+=======
+				.data = ops,
+				.start = genl_lock_start,
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				.dump = genl_lock_dumpit,
 				.done = genl_lock_done,
 			};
 
 			genl_unlock();
+<<<<<<< HEAD
 			rc = __netlink_dump_start(net->genl_sock, skb, nlh, &c);
+=======
+			rc = netlink_dump_start(net->genl_sock, skb, nlh, &c);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			genl_lock();
 
 		} else {
 			struct netlink_dump_control c = {
+<<<<<<< HEAD
 				.module = family->module,
+=======
+				.start = genl_lock_start,
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				.dump = ops->dumpit,
 				.done = ops->done,
 			};
 
+<<<<<<< HEAD
 			rc = __netlink_dump_start(net->genl_sock, skb, nlh, &c);
+=======
+			rc = netlink_dump_start(net->genl_sock, skb, nlh, &c);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		}
 
 		return rc;

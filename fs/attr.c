@@ -167,6 +167,7 @@ void setattr_copy(struct inode *inode, const struct iattr *attr)
 }
 EXPORT_SYMBOL(setattr_copy);
 
+<<<<<<< HEAD
 /**
  * notify_change - modify attributes of a filesytem object
  * @dentry:	object affected
@@ -188,6 +189,9 @@ EXPORT_SYMBOL(setattr_copy);
  * that case.
  */
 int notify_change2(struct vfsmount *mnt, struct dentry * dentry, struct iattr * attr, struct inode **delegated_inode)
+=======
+int notify_change2(struct vfsmount *mnt, struct dentry * dentry, struct iattr * attr)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct inode *inode = dentry->d_inode;
 	umode_t mode = inode->i_mode;
@@ -279,8 +283,14 @@ int notify_change2(struct vfsmount *mnt, struct dentry * dentry, struct iattr * 
 }
 EXPORT_SYMBOL(notify_change2);
 
+<<<<<<< HEAD
 int notify_change(struct dentry * dentry, struct iattr * attr, struct inode **delegated_inode)
 {
 	return notify_change2(NULL, dentry, attr, delegated_inode);
+=======
+int notify_change(struct dentry * dentry, struct iattr * attr)
+{
+	return notify_change2(NULL, dentry, attr);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 EXPORT_SYMBOL(notify_change);

@@ -178,6 +178,7 @@ source "drivers/ipack/Kconfig"
 
 source "drivers/reset/Kconfig"
 
+<<<<<<< HEAD
 source "drivers/fmc/Kconfig"
 
 source "drivers/coresight/Kconfig"
@@ -202,5 +203,8 @@ source "drivers/hwmcu/Kconfig"
 
 source "drivers/nfc/Kconfig"
 
+=======
+source "drivers/android/Kconfig"
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 endmenu

@@ -151,7 +151,18 @@ static inline int reinstall_suspended_bps(struct pt_regs *regs)
 }
 #endif
 
+<<<<<<< HEAD
 int aarch32_break_handler(struct pt_regs *regs);
+=======
+#ifdef CONFIG_COMPAT
+int aarch32_break_handler(struct pt_regs *regs);
+#else
+static int aarch32_break_handler(struct pt_regs *regs)
+{
+	return -EFAULT;
+}
+#endif
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #endif	/* __ASSEMBLY */
 #endif	/* __KERNEL__ */

@@ -316,8 +316,13 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
 
 	switch (type) {
 	case PSTORE_TYPE_DMESG:
+<<<<<<< HEAD
 		scnprintf(name, sizeof(name), "dmesg-%s-%lld%s",
 			  psname, id, compressed ? ".enc.z" : "");
+=======
+		scnprintf(name, sizeof(name), "dmesg-%s-%lld",
+			  psname, id);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		break;
 	case PSTORE_TYPE_CONSOLE:
 		scnprintf(name, sizeof(name), "console-%s", psname);
@@ -328,6 +333,7 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
 	case PSTORE_TYPE_MCE:
 		scnprintf(name, sizeof(name), "mce-%s-%lld", psname, id);
 		break;
+<<<<<<< HEAD
 	case PSTORE_TYPE_PPC_RTAS:
 		scnprintf(name, sizeof(name), "rtas-%s-%lld", psname, id);
 		break;
@@ -339,6 +345,8 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
 		scnprintf(name, sizeof(name), "powerpc-common-%s-%lld",
 			  psname, id);
 		break;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	case PSTORE_TYPE_PMSG:
 		scnprintf(name, sizeof(name), "pmsg-%s-%lld", psname, id);
 		break;

@@ -17,9 +17,13 @@
 #include <linux/delay.h>
 #include <linux/workqueue.h>
 #include <linux/kmod.h>
+<<<<<<< HEAD
 #include <trace/events/power.h>
 #include <linux/wakeup_reason.h>
 
+=======
+#include <linux/wakeup_reason.h>
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /* 
  * Timeout for stopping processes
  */
@@ -103,6 +107,7 @@ static int try_to_freeze_tasks(bool user_only)
 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
 		       todo - wq_busy, wq_busy);
 
+<<<<<<< HEAD
 			read_lock(&tasklist_lock);
 			for_each_process_thread(g, p) {
 				if (p != current && !freezer_should_skip(p)
@@ -110,6 +115,15 @@ static int try_to_freeze_tasks(bool user_only)
 					sched_show_task(p);
 			}
 			read_unlock(&tasklist_lock);
+=======
+		read_lock(&tasklist_lock);
+		do_each_thread(g, p) {
+			if (p != current && !freezer_should_skip(p)
+			    && freezing(p) && !frozen(p))
+				sched_show_task(p);
+		} while_each_thread(g, p);
+		read_unlock(&tasklist_lock);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	} else {
 		printk("(elapsed %d.%03d seconds) ", elapsed_msecs / 1000,
 			elapsed_msecs % 1000);

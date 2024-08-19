@@ -1,8 +1,14 @@
 /*
+<<<<<<< HEAD
  * drivers/staging/android/ion/ion_system_heap.c
  *
  * Copyright (C) 2011 Google, Inc.
  * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+=======
+ * drivers/gpu/ion/ion_system_heap.c
+ *
+ * Copyright (C) 2011 Google, Inc.
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -20,13 +26,17 @@
 #include <linux/err.h>
 #include <linux/highmem.h>
 #include <linux/mm.h>
+<<<<<<< HEAD
 #include <linux/msm_ion.h>
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <linux/scatterlist.h>
 #include <linux/seq_file.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include "ion.h"
 #include "ion_priv.h"
+<<<<<<< HEAD
 #include <linux/dma-mapping.h>
 #include <trace/events/kmem.h>
 
@@ -41,10 +51,21 @@ static const unsigned int orders[] = {9, 8, 4, 0};
 static const unsigned int orders[] = {0};
 #endif
 
+=======
+
+static gfp_t high_order_gfp_flags = (GFP_HIGHUSER | __GFP_ZERO | __GFP_NOWARN |
+				     __GFP_NORETRY) & ~__GFP_WAIT;
+static gfp_t low_order_gfp_flags  = (GFP_HIGHUSER | __GFP_ZERO | __GFP_NOWARN);
+static const unsigned int orders[] = {8, 4, 0};
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static const int num_orders = ARRAY_SIZE(orders);
 static int order_to_index(unsigned int order)
 {
 	int i;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	for (i = 0; i < num_orders; i++)
 		if (order == orders[i])
 			return i;
@@ -59,19 +80,27 @@ static unsigned int order_to_size(int order)
 
 struct ion_system_heap {
 	struct ion_heap heap;
+<<<<<<< HEAD
 	struct ion_page_pool **uncached_pools;
 	struct ion_page_pool **cached_pools;
+=======
+	struct ion_page_pool **pools;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 struct page_info {
 	struct page *page;
+<<<<<<< HEAD
 	bool from_pool;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	unsigned int order;
 	struct list_head list;
 };
 
 static struct page *alloc_buffer_page(struct ion_system_heap *heap,
 				      struct ion_buffer *buffer,
+<<<<<<< HEAD
 				      unsigned long order,
 				      bool *from_pool)
 {
@@ -94,6 +123,29 @@ static struct page *alloc_buffer_page(struct ion_system_heap *heap,
 	}
 	if (!page)
 		return 0;
+=======
+				      unsigned long order)
+{
+	bool cached = ion_buffer_cached(buffer);
+	struct ion_page_pool *pool = heap->pools[order_to_index(order)];
+	struct page *page;
+
+	if (!cached) {
+		page = ion_page_pool_alloc(pool);
+	} else {
+		gfp_t gfp_flags = low_order_gfp_flags;
+
+		if (order > 4)
+			gfp_flags = high_order_gfp_flags;
+		page = alloc_pages(gfp_flags, order);
+		if (!page)
+			return NULL;
+		ion_pages_sync_for_device(NULL, page, PAGE_SIZE << order,
+						DMA_BIDIRECTIONAL);
+	}
+	if (!page)
+		return NULL;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return page;
 }
@@ -104,6 +156,7 @@ static void free_buffer_page(struct ion_system_heap *heap,
 {
 	bool cached = ion_buffer_cached(buffer);
 
+<<<<<<< HEAD
 	if (!(buffer->private_flags & ION_PRIV_FLAG_SHRINKER_FREE) &&
 	    !(buffer->flags & ION_FLAG_POOL_FORCE_ALLOC)) {
 		struct ion_page_pool *pool;
@@ -112,6 +165,14 @@ static void free_buffer_page(struct ion_system_heap *heap,
 		else
 			pool = heap->uncached_pools[order_to_index(order)];
 		ion_page_pool_free(pool, page);
+=======
+	if (!cached) {
+		struct ion_page_pool *pool = heap->pools[order_to_index(order)];
+		if (buffer->private_flags & ION_PRIV_FLAG_SHRINKER_FREE)
+			ion_page_pool_free_immediate(pool, page);
+		else
+			ion_page_pool_free(pool, page);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	} else {
 		__free_pages(page, order);
 	}
@@ -126,7 +187,10 @@ static struct page_info *alloc_largest_available(struct ion_system_heap *heap,
 	struct page *page;
 	struct page_info *info;
 	int i;
+<<<<<<< HEAD
 	bool from_pool;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	info = kmalloc(sizeof(struct page_info), GFP_KERNEL);
 	if (!info)
@@ -137,15 +201,23 @@ static struct page_info *alloc_largest_available(struct ion_system_heap *heap,
 			continue;
 		if (max_order < orders[i])
 			continue;
+<<<<<<< HEAD
 		from_pool = !(buffer->flags & ION_FLAG_POOL_FORCE_ALLOC);
 
 		page = alloc_buffer_page(heap, buffer, orders[i], &from_pool);
+=======
+
+		page = alloc_buffer_page(heap, buffer, orders[i]);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (!page)
 			continue;
 
 		info->page = page;
 		info->order = orders[i];
+<<<<<<< HEAD
 		info->from_pool = from_pool;
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		INIT_LIST_HEAD(&info->list);
 		return info;
 	}
@@ -153,6 +225,7 @@ static struct page_info *alloc_largest_available(struct ion_system_heap *heap,
 
 	return NULL;
 }
+<<<<<<< HEAD
 static unsigned int process_info(struct page_info *info,
 				 struct scatterlist *sg,
 				 struct scatterlist *sg_sync,
@@ -180,6 +253,8 @@ static unsigned int process_info(struct page_info *info,
 	kfree(info);
 	return i;
 }
+=======
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 static int ion_system_heap_allocate(struct ion_heap *heap,
 				     struct ion_buffer *buffer,
@@ -190,6 +265,7 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 							struct ion_system_heap,
 							heap);
 	struct sg_table *table;
+<<<<<<< HEAD
 	struct sg_table table_sync;
 	struct scatterlist *sg;
 	struct scatterlist *sg_sync;
@@ -203,6 +279,15 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 	unsigned int max_order = orders[0];
 	struct pages_mem data;
 	unsigned int sz;
+=======
+	struct scatterlist *sg;
+	int ret;
+	struct list_head pages;
+	struct page_info *info, *tmp_info;
+	int i = 0;
+	unsigned long size_remaining = PAGE_ALIGN(size);
+	unsigned int max_order = orders[0];
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (align > PAGE_SIZE)
 		return -EINVAL;
@@ -210,14 +295,19 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 	if (size / PAGE_SIZE > totalram_pages / 2)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	data.size = 0;
 	INIT_LIST_HEAD(&pages);
 	INIT_LIST_HEAD(&pages_from_pool);
+=======
+	INIT_LIST_HEAD(&pages);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	while (size_remaining > 0) {
 		info = alloc_largest_available(sys_heap, buffer, size_remaining,
 						max_order);
 		if (!info)
 			goto err;
+<<<<<<< HEAD
 
 		sz = (1 << info->order) * PAGE_SIZE;
 
@@ -241,11 +331,22 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 	table = kzalloc(sizeof(struct sg_table), GFP_KERNEL);
 	if (!table)
 		goto err_free_data_pages;
+=======
+		list_add_tail(&info->list, &pages);
+		size_remaining -= (1 << info->order) * PAGE_SIZE;
+		max_order = info->order;
+		i++;
+	}
+	table = kzalloc(sizeof(struct sg_table), GFP_KERNEL);
+	if (!table)
+		goto err;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	ret = sg_alloc_table(table, i, GFP_KERNEL);
 	if (ret)
 		goto err1;
 
+<<<<<<< HEAD
 	if (nents_sync) {
 		ret = sg_alloc_table(&table_sync, nents_sync, GFP_KERNEL);
 		if (ret)
@@ -321,26 +422,59 @@ err:
 		kfree(info);
 	}
 	list_for_each_entry_safe(info, tmp_info, &pages_from_pool, list) {
+=======
+	sg = table->sgl;
+	list_for_each_entry_safe(info, tmp_info, &pages, list) {
+		struct page *page = info->page;
+		sg_set_page(sg, page, (1 << info->order) * PAGE_SIZE, 0);
+		sg = sg_next(sg);
+		list_del(&info->list);
+		kfree(info);
+	}
+
+	buffer->priv_virt = table;
+	return 0;
+err1:
+	kfree(table);
+err:
+	list_for_each_entry_safe(info, tmp_info, &pages, list) {
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		free_buffer_page(sys_heap, buffer, info->page, info->order);
 		kfree(info);
 	}
 	return -ENOMEM;
 }
 
+<<<<<<< HEAD
 void ion_system_heap_free(struct ion_buffer *buffer)
+=======
+static void ion_system_heap_free(struct ion_buffer *buffer)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct ion_heap *heap = buffer->heap;
 	struct ion_system_heap *sys_heap = container_of(heap,
 							struct ion_system_heap,
 							heap);
+<<<<<<< HEAD
 	struct sg_table *table = buffer->priv_virt;
+=======
+	struct sg_table *table = buffer->sg_table;
+	bool cached = ion_buffer_cached(buffer);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	struct scatterlist *sg;
 	LIST_HEAD(pages);
 	int i;
 
+<<<<<<< HEAD
 	if (!(buffer->private_flags & ION_PRIV_FLAG_SHRINKER_FREE) &&
 	    !(buffer->flags & ION_FLAG_POOL_FORCE_ALLOC))
 		msm_ion_heap_sg_table_zero(table, buffer->size);
+=======
+	/* uncached pages come from the page pools, zero them before returning
+	   for security purposes (other allocations are zerod at alloc time */
+	if (!cached && !(buffer->private_flags & ION_PRIV_FLAG_SHRINKER_FREE))
+		ion_heap_buffer_zero(buffer);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	for_each_sg(table->sgl, sg, table->nents, i)
 		free_buffer_page(sys_heap, buffer, sg_page(sg),
@@ -349,15 +483,27 @@ void ion_system_heap_free(struct ion_buffer *buffer)
 	kfree(table);
 }
 
+<<<<<<< HEAD
 struct sg_table *ion_system_heap_map_dma(struct ion_heap *heap,
 					 struct ion_buffer *buffer)
+=======
+static struct sg_table *ion_system_heap_map_dma(struct ion_heap *heap,
+						struct ion_buffer *buffer)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	return buffer->priv_virt;
 }
 
+<<<<<<< HEAD
 void ion_system_heap_unmap_dma(struct ion_heap *heap,
 			       struct ion_buffer *buffer)
 {
+=======
+static void ion_system_heap_unmap_dma(struct ion_heap *heap,
+				      struct ion_buffer *buffer)
+{
+	return;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int ion_system_heap_shrink(struct ion_heap *heap, gfp_t gfp_mask,
@@ -365,6 +511,7 @@ static int ion_system_heap_shrink(struct ion_heap *heap, gfp_t gfp_mask,
 {
 	struct ion_system_heap *sys_heap;
 	int nr_total = 0;
+<<<<<<< HEAD
 	int i, nr_freed = 0;
 	int only_scan = 0;
 
@@ -388,6 +535,16 @@ static int ion_system_heap_shrink(struct ion_heap *heap, gfp_t gfp_mask,
 			if (nr_to_scan <= 0)
 				break;
 		}
+=======
+	int i;
+
+	sys_heap = container_of(heap, struct ion_system_heap, heap);
+
+	for (i = 0; i < num_orders; i++) {
+		struct ion_page_pool *pool = sys_heap->pools[i];
+
+		nr_total += ion_page_pool_shrink(pool, gfp_mask, nr_to_scan);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 
 	return nr_total;
@@ -411,6 +568,7 @@ static int ion_system_heap_debug_show(struct ion_heap *heap, struct seq_file *s,
 	struct ion_system_heap *sys_heap = container_of(heap,
 							struct ion_system_heap,
 							heap);
+<<<<<<< HEAD
 	bool use_seq = s != NULL;
 	unsigned long uncached_total = 0;
 	unsigned long cached_total = 0;
@@ -510,12 +668,31 @@ static int ion_system_heap_create_pools(struct ion_page_pool **pools)
 err_create_pool:
 	ion_system_heap_destroy_pools(pools);
 	return 1;
+=======
+	int i;
+
+	for (i = 0; i < num_orders; i++) {
+		struct ion_page_pool *pool = sys_heap->pools[i];
+
+		seq_printf(s, "%d order %u highmem pages in pool = %lu total\n",
+			   pool->high_count, pool->order,
+			   (1 << pool->order) * PAGE_SIZE * pool->high_count);
+		seq_printf(s, "%d order %u lowmem pages in pool = %lu total\n",
+			   pool->low_count, pool->order,
+			   (1 << pool->order) * PAGE_SIZE * pool->low_count);
+	}
+	return 0;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 struct ion_heap *ion_system_heap_create(struct ion_platform_heap *unused)
 {
 	struct ion_system_heap *heap;
+<<<<<<< HEAD
 	int pools_size = sizeof(struct ion_page_pool *) * num_orders;
+=======
+	int i;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	heap = kzalloc(sizeof(struct ion_system_heap), GFP_KERNEL);
 	if (!heap)
@@ -523,6 +700,7 @@ struct ion_heap *ion_system_heap_create(struct ion_platform_heap *unused)
 	heap->heap.ops = &system_heap_ops;
 	heap->heap.type = ION_HEAP_TYPE_SYSTEM;
 	heap->heap.flags = ION_HEAP_FLAG_DEFER_FREE;
+<<<<<<< HEAD
 
 	heap->uncached_pools = kzalloc(pools_size, GFP_KERNEL);
 	if (!heap->uncached_pools)
@@ -548,6 +726,32 @@ err_create_uncached_pools:
 err_alloc_cached_pools:
 	kfree(heap->uncached_pools);
 err_alloc_uncached_pools:
+=======
+	heap->pools = kzalloc(sizeof(struct ion_page_pool *) * num_orders,
+			      GFP_KERNEL);
+	if (!heap->pools)
+		goto err_alloc_pools;
+	for (i = 0; i < num_orders; i++) {
+		struct ion_page_pool *pool;
+		gfp_t gfp_flags = low_order_gfp_flags;
+
+		if (orders[i] > 4)
+			gfp_flags = high_order_gfp_flags;
+		pool = ion_page_pool_create(gfp_flags, orders[i]);
+		if (!pool)
+			goto err_create_pool;
+		heap->pools[i] = pool;
+	}
+
+	heap->heap.debug_show = ion_system_heap_debug_show;
+	return &heap->heap;
+err_create_pool:
+	for (i = 0; i < num_orders; i++)
+		if (heap->pools[i])
+			ion_page_pool_destroy(heap->pools[i]);
+	kfree(heap->pools);
+err_alloc_pools:
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	kfree(heap);
 	return ERR_PTR(-ENOMEM);
 }
@@ -557,11 +761,19 @@ void ion_system_heap_destroy(struct ion_heap *heap)
 	struct ion_system_heap *sys_heap = container_of(heap,
 							struct ion_system_heap,
 							heap);
+<<<<<<< HEAD
 
 	ion_system_heap_destroy_pools(sys_heap->uncached_pools);
 	ion_system_heap_destroy_pools(sys_heap->cached_pools);
 	kfree(sys_heap->uncached_pools);
 	kfree(sys_heap->cached_pools);
+=======
+	int i;
+
+	for (i = 0; i < num_orders; i++)
+		ion_page_pool_destroy(sys_heap->pools[i]);
+	kfree(sys_heap->pools);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	kfree(sys_heap);
 }
 
@@ -580,7 +792,11 @@ static int ion_system_contig_heap_allocate(struct ion_heap *heap,
 	if (align > (PAGE_SIZE << order))
 		return -EINVAL;
 
+<<<<<<< HEAD
 	page = alloc_pages(low_order_gfp_flags | __GFP_ZERO, order);
+=======
+	page = alloc_pages(low_order_gfp_flags, order);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!page)
 		return -ENOMEM;
 
@@ -615,7 +831,11 @@ out:
 	return ret;
 }
 
+<<<<<<< HEAD
 void ion_system_contig_heap_free(struct ion_buffer *buffer)
+=======
+static void ion_system_contig_heap_free(struct ion_buffer *buffer)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	struct sg_table *table = buffer->priv_virt;
 	struct page *page = sg_page(table->sgl);
@@ -639,14 +859,23 @@ static int ion_system_contig_heap_phys(struct ion_heap *heap,
 	return 0;
 }
 
+<<<<<<< HEAD
 struct sg_table *ion_system_contig_heap_map_dma(struct ion_heap *heap,
+=======
+static struct sg_table *ion_system_contig_heap_map_dma(struct ion_heap *heap,
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 						struct ion_buffer *buffer)
 {
 	return buffer->priv_virt;
 }
 
+<<<<<<< HEAD
 void ion_system_contig_heap_unmap_dma(struct ion_heap *heap,
 				      struct ion_buffer *buffer)
+=======
+static void ion_system_contig_heap_unmap_dma(struct ion_heap *heap,
+					     struct ion_buffer *buffer)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 }
 
@@ -677,3 +906,7 @@ void ion_system_contig_heap_destroy(struct ion_heap *heap)
 {
 	kfree(heap);
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

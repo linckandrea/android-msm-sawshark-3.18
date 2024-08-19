@@ -1,1 +1,6 @@
 aesbs-core.S
+<<<<<<< HEAD
+=======
+sha256-core.S
+sha512-core.S
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

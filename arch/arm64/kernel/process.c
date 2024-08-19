@@ -222,12 +222,24 @@ static void show_data(unsigned long addr, int nbytes, const char *name)
 static void show_extra_register_data(struct pt_regs *regs, int nbytes)
 {
 	mm_segment_t fs;
+<<<<<<< HEAD
+=======
+	unsigned int i;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	fs = get_fs();
 	set_fs(KERNEL_DS);
 	show_data(regs->pc - nbytes, nbytes * 2, "PC");
 	show_data(regs->regs[30] - nbytes, nbytes * 2, "LR");
 	show_data(regs->sp - nbytes, nbytes * 2, "SP");
+<<<<<<< HEAD
+=======
+	for (i = 0; i < 30; i++) {
+		char name[4];
+		snprintf(name, sizeof(name), "X%u", i);
+		show_data(regs->regs[i] - nbytes, nbytes * 2, name);
+	}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	set_fs(fs);
 }
 
@@ -258,7 +270,11 @@ void __show_regs(struct pt_regs *regs)
 			printk("\n");
 	}
 	if (!user_mode(regs))
+<<<<<<< HEAD
 		show_extra_register_data(regs, 256);
+=======
+		show_extra_register_data(regs, 128);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	printk("\n");
 }
 
@@ -305,8 +321,12 @@ void release_thread(struct task_struct *dead_task)
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
+<<<<<<< HEAD
 	if (current->mm)
 		fpsimd_preserve_current_state();
+=======
+	fpsimd_preserve_current_state();
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	*dst = *src;
 	return 0;
 }

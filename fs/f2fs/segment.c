@@ -1392,6 +1392,10 @@ static int read_normal_summaries(struct f2fs_sb_info *sbi, int type)
 
 static int restore_curseg_summaries(struct f2fs_sb_info *sbi)
 {
+	struct f2fs_summary_block *s_sits =
+		CURSEG_I(sbi, CURSEG_COLD_DATA)->sum_blk;
+	struct f2fs_summary_block *s_nats =
+		CURSEG_I(sbi, CURSEG_HOT_DATA)->sum_blk;
 	int type = CURSEG_HOT_DATA;
 	int err;
 
@@ -1402,11 +1406,22 @@ static int restore_curseg_summaries(struct f2fs_sb_info *sbi)
 		type = CURSEG_HOT_NODE;
 	}
 
+<<<<<<< HEAD
 	for (; type <= CURSEG_COLD_NODE; type++) {
 		err = read_normal_summaries(sbi, type);
 		if (err)
 			return err;
 	}
+=======
+	for (; type <= CURSEG_COLD_NODE; type++)
+		if (read_normal_summaries(sbi, type))
+			return -EINVAL;
+
+	/* sanity check for summary blocks */
+	if (nats_in_cursum(s_nats) > NAT_JOURNAL_ENTRIES ||
+			sits_in_cursum(s_sits) > SIT_JOURNAL_ENTRIES)
+		return -EINVAL;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return 0;
 }

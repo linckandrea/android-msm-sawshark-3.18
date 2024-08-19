@@ -40,5 +40,9 @@
  * size to remain the same.
  */
 #define FALLOC_FL_ZERO_RANGE		0x10
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #endif /* _UAPI_FALLOC_H_ */

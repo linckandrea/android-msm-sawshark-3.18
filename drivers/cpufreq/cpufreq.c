@@ -149,6 +149,16 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
 
 	return cputime_to_usecs(idle_time);
 }
+EXPORT_SYMBOL_GPL(have_governor_per_policy);
+
+struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
+{
+	if (have_governor_per_policy())
+		return &policy->kobj;
+	else
+		return cpufreq_global_kobject;
+}
+EXPORT_SYMBOL_GPL(get_governor_parent_kobj);
 
 u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
 {
@@ -2264,8 +2274,13 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 			CPUFREQ_NOTIFY, new_policy);
 
+<<<<<<< HEAD
 	policy->min = new_policy->min;
 	policy->max = new_policy->max;
+=======
+	data->min = policy->min;
+	data->max = policy->max;
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	trace_cpu_frequency_limits(policy->max, policy->min, policy->cpu);
 
 	pr_debug("new min and max freqs are %u - %u kHz\n",

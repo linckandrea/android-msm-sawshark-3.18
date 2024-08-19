@@ -71,10 +71,14 @@
 #include <linux/capability.h>
 #include <linux/fs_struct.h>
 #include <linux/compat.h>
+<<<<<<< HEAD
 #include <linux/ctype.h>
 #include <linux/string.h>
 #include <linux/uaccess.h>
 #include <uapi/linux/limits.h>
+=======
+#include <linux/uaccess.h>
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #include "audit.h"
 
@@ -458,8 +462,12 @@ static int audit_filter_rules(struct task_struct *tsk,
 
 		switch (f->type) {
 		case AUDIT_PID:
+<<<<<<< HEAD
 			pid = task_pid_nr(tsk);
 			result = audit_comparator(pid, f->op, f->val);
+=======
+			result = audit_comparator(task_tgid_nr(tsk), f->op, f->val);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			break;
 		case AUDIT_PPID:
 			if (ctx) {
@@ -1027,7 +1035,16 @@ static void audit_log_execve_info(struct audit_context *context,
 	unsigned int arg;
 	char *buf_head;
 	char *buf;
+<<<<<<< HEAD
 	const char __user *p = (const char __user *)current->mm->arg_start;
+=======
+	const char __user *p;
+
+	/* NOTE: this buffer needs to be large enough to hold all the non-arg
+	 *       data we put in the audit record for this argument (see the
+	 *       code below) ... at this point in time 96 is plenty */
+	char abuf[96];
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* NOTE: this buffer needs to be large enough to hold all the non-arg
 	 *       data we put in the audit record for this argument (see the
@@ -1041,6 +1058,16 @@ static void audit_log_execve_info(struct audit_context *context,
 	WARN_ON_ONCE(MAX_EXECVE_AUDIT_LEN > 7500);
 	len_max = MAX_EXECVE_AUDIT_LEN;
 
+<<<<<<< HEAD
+=======
+	/* NOTE: we set MAX_EXECVE_AUDIT_LEN to a rather arbitrary limit, the
+	 *       current value of 7500 is not as important as the fact that it
+	 *       is less than 8k, a setting of 7500 gives us plenty of wiggle
+	 *       room if we go over a little bit in the logging below */
+	WARN_ON_ONCE(MAX_EXECVE_AUDIT_LEN > 7500);
+	len_max = MAX_EXECVE_AUDIT_LEN;
+
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/* scratch buffer to hold the userspace args */
 	buf_head = kmalloc(MAX_EXECVE_AUDIT_LEN + 1, GFP_KERNEL);
 	if (!buf_head) {
@@ -1049,7 +1076,11 @@ static void audit_log_execve_info(struct audit_context *context,
 	}
 	buf = buf_head;
 
+<<<<<<< HEAD
 	audit_log_format(*ab, "argc=%d", context->execve.argc);
+=======
+	audit_log_format(*ab, "argc=%d", axi->argc);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	len_rem = len_max;
 	len_buf = 0;
@@ -1178,7 +1209,11 @@ static void audit_log_execve_info(struct audit_context *context,
 			require_data = true;
 			encode = false;
 		}
+<<<<<<< HEAD
 	} while (arg < context->execve.argc);
+=======
+	} while (arg < axi->argc);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* NOTE: the caller handles the final audit_log_end() call */
 
@@ -2080,6 +2115,22 @@ int audit_set_loginuid(kuid_t loginuid)
 	if (uid_valid(loginuid))
 		sessionid = (unsigned int)atomic_inc_return(&session_id);
 
+<<<<<<< HEAD
+=======
+		ab = audit_log_start(NULL, GFP_KERNEL, AUDIT_LOGIN);
+		if (ab) {
+			audit_log_format(ab, "login pid=%d uid=%u "
+				"old auid=%u new auid=%u"
+				" old ses=%u new ses=%u",
+				task_tgid_nr(task),
+				from_kuid(&init_user_ns, task_uid(task)),
+				from_kuid(&init_user_ns, task->loginuid),
+				from_kuid(&init_user_ns, loginuid),
+				task->sessionid, sessionid);
+			audit_log_end(ab);
+		}
+	}
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	task->sessionid = sessionid;
 	task->loginuid = loginuid;
 out:
@@ -2272,7 +2323,11 @@ void __audit_ptrace(struct task_struct *t)
 {
 	struct audit_context *context = current->audit_context;
 
+<<<<<<< HEAD
 	context->target_pid = task_pid_nr(t);
+=======
+	context->target_pid = task_tgid_nr(t);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	context->target_auid = audit_get_loginuid(t);
 	context->target_uid = task_uid(t);
 	context->target_sessionid = audit_get_sessionid(t);
@@ -2297,7 +2352,11 @@ int __audit_signal_info(int sig, struct task_struct *t)
 
 	if (audit_pid && t->tgid == audit_pid) {
 		if (sig == SIGTERM || sig == SIGHUP || sig == SIGUSR1 || sig == SIGUSR2) {
+<<<<<<< HEAD
 			audit_sig_pid = task_pid_nr(tsk);
+=======
+			audit_sig_pid = task_tgid_nr(tsk);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			if (uid_valid(tsk->loginuid))
 				audit_sig_uid = tsk->loginuid;
 			else
@@ -2400,7 +2459,11 @@ int __audit_log_bprm_fcaps(struct linux_binprm *bprm,
 void __audit_log_capset(const struct cred *new, const struct cred *old)
 {
 	struct audit_context *context = current->audit_context;
+<<<<<<< HEAD
 	context->capset.pid = task_pid_nr(current);
+=======
+	context->capset.pid = task_tgid_nr(current);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	context->capset.cap.effective   = new->cap_effective;
 	context->capset.cap.inheritable = new->cap_effective;
 	context->capset.cap.permitted   = new->cap_permitted;
@@ -2433,6 +2496,7 @@ static void audit_log_task(struct audit_buffer *ab)
 			 from_kgid(&init_user_ns, gid),
 			 sessionid);
 	audit_log_task_context(ab);
+<<<<<<< HEAD
 	audit_log_format(ab, " pid=%d comm=", task_pid_nr(current));
 	audit_log_untrustedstring(ab, get_task_comm(comm, current));
 	if (mm) {
@@ -2442,6 +2506,10 @@ static void audit_log_task(struct audit_buffer *ab)
 		up_read(&mm->mmap_sem);
 	} else
 		audit_log_format(ab, " exe=(null)");
+=======
+	audit_log_format(ab, " pid=%d comm=", task_tgid_nr(current));
+	audit_log_untrustedstring(ab, current->comm);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /**

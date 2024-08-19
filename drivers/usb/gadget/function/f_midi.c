@@ -198,8 +198,12 @@ static struct usb_gadget_strings *midi_strings[] = {
 	NULL,
 };
 
+<<<<<<< HEAD:drivers/usb/gadget/function/f_midi.c
 static inline struct usb_request *midi_alloc_ep_req(struct usb_ep *ep,
 						    unsigned length)
+=======
+static struct usb_request *midi_alloc_ep_req(struct usb_ep *ep, unsigned length)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/f_midi.c
 {
 	return alloc_ep_req(ep, length, length);
 }
@@ -406,7 +410,7 @@ static void f_midi_unbind(struct usb_configuration *c, struct usb_function *f)
 	card = midi->card;
 	midi->card = NULL;
 	if (card)
-		snd_card_free(card);
+		snd_card_free_when_closed(card);
 
 	kfree(midi->id);
 	midi->id = NULL;
@@ -544,7 +548,11 @@ static void f_midi_transmit(struct f_midi *midi, struct usb_request *req)
 		return;
 
 	if (!req)
+<<<<<<< HEAD:drivers/usb/gadget/function/f_midi.c
 		req = midi_alloc_ep_req(ep, midi->buflen + extra_buf_alloc);
+=======
+		req = midi_alloc_ep_req(ep, midi->buflen);
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/f_midi.c
 
 	if (!req) {
 		ERROR(midi, "gmidi_transmit: midi_alloc_ep_request failed\n");
@@ -926,7 +934,11 @@ int /* __init */ f_midi_bind_config(struct usb_configuration *c,
 			      unsigned int out_ports,
 			      unsigned int buflen,
 			      unsigned int qlen,
+<<<<<<< HEAD:drivers/usb/gadget/function/f_midi.c
 			      struct midi_alsa_config *config)
+=======
+			      struct midi_alsa_config* config)
+>>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/f_midi.c
 {
 	struct f_midi *midi;
 	int status, i;
