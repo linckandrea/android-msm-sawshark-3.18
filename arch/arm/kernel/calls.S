@@ -389,7 +389,6 @@
 		CALL(sys_process_vm_writev)
 		CALL(sys_kcmp)
 		CALL(sys_finit_module)
-<<<<<<< HEAD
 /* 380 */	CALL(sys_sched_setattr)
 		CALL(sys_sched_getattr)
 		CALL(sys_renameat2)
@@ -397,13 +396,6 @@
 		CALL(sys_getrandom)
 /* 385 */	CALL(sys_memfd_create)
 		CALL(sys_bpf)
-=======
-/* 380 */	CALL(sys_ni_syscall)		/* reserved sys_sched_setattr */
-		CALL(sys_ni_syscall)		/* reserved sys_sched_getattr */
-		CALL(sys_ni_syscall)		/* reserved sys_renameat2     */
-		CALL(sys_seccomp)
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifndef syscalls_counted
 .equ syscalls_padding, ((NR_syscalls + 3) & ~3) - NR_syscalls
 #define syscalls_counted

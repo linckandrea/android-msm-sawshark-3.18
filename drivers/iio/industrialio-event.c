@@ -35,7 +35,6 @@
  */
 struct iio_event_interface {
 	wait_queue_head_t	wait;
-	struct mutex		read_lock;
 	DECLARE_KFIFO(det_events, struct iio_event_data, 16);
 
 	struct list_head	dev_attr_list;
@@ -111,7 +110,6 @@ static ssize_t iio_event_chrdev_read(struct file *filep,
 	if (count < sizeof(struct iio_event_data))
 		return -EINVAL;
 
-<<<<<<< HEAD
 	do {
 		if (kfifo_is_empty(&ev_int->det_events)) {
 			if (filep->f_flags & O_NONBLOCK)
@@ -131,19 +129,6 @@ static ssize_t iio_event_chrdev_read(struct file *filep,
 		ret = kfifo_to_user(&ev_int->det_events, buf, count, &copied);
 		mutex_unlock(&ev_int->read_lock);
 
-=======
-	if (mutex_lock_interruptible(&ev_int->read_lock))
-		return -ERESTARTSYS;
-
-	if (kfifo_is_empty(&ev_int->det_events)) {
-		if (filep->f_flags & O_NONBLOCK) {
-			ret = -EAGAIN;
-			goto error_unlock;
-		}
-		/* Blocking on device; waiting for something to be there */
-		ret = wait_event_interruptible(ev_int->wait,
-					!kfifo_is_empty(&ev_int->det_events));
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (ret)
 			return ret;
 
@@ -156,12 +141,7 @@ static ssize_t iio_event_chrdev_read(struct file *filep,
 		if (copied == 0 && (filep->f_flags & O_NONBLOCK))
 			return -EAGAIN;
 
-<<<<<<< HEAD
 	} while (copied == 0);
-=======
-error_unlock:
-	mutex_unlock(&ev_int->read_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return copied;
 }
@@ -511,11 +491,7 @@ int iio_device_register_eventset(struct iio_dev *indio_dev)
 	return 0;
 
 error_free_setup_event_lines:
-<<<<<<< HEAD
 	iio_free_chan_devattr_list(&indio_dev->event_interface->dev_attr_list);
-=======
-	__iio_remove_event_config_attrs(indio_dev);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mutex_destroy(&indio_dev->event_interface->read_lock);
 	kfree(indio_dev->event_interface);
 	indio_dev->event_interface = NULL;

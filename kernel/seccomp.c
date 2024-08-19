@@ -73,7 +73,6 @@ static void populate_seccomp_data(struct seccomp_data *sd)
 	struct pt_regs *regs = task_pt_regs(task);
 	unsigned long args[6];
 
-<<<<<<< HEAD
 	sd->nr = syscall_get_nr(task, regs);
 	sd->arch = syscall_get_arch();
 	syscall_get_arguments(task, regs, 0, 6, args);
@@ -84,38 +83,6 @@ static void populate_seccomp_data(struct seccomp_data *sd)
 	sd->args[4] = args[4];
 	sd->args[5] = args[5];
 	sd->instruction_pointer = KSTK_EIP(task);
-=======
-/* Helper for bpf_load below. */
-#define BPF_DATA(_name) offsetof(struct seccomp_data, _name)
-/**
- * bpf_load: checks and returns a pointer to the requested offset
- * @off: offset into struct seccomp_data to load from
- *
- * Returns the requested 32-bits of data.
- * seccomp_check_filter() should assure that @off is 32-bit aligned
- * and not out of bounds.  Failure to do so is a BUG.
- */
-u32 seccomp_bpf_load(int off)
-{
-	struct pt_regs *regs = task_pt_regs(current);
-	if (off == BPF_DATA(nr))
-		return syscall_get_nr(current, regs);
-	if (off == BPF_DATA(arch))
-		return syscall_get_arch();
-	if (off >= BPF_DATA(args[0]) && off < BPF_DATA(args[6])) {
-		unsigned long value;
-		int arg = (off - BPF_DATA(args[0])) / sizeof(u64);
-		int index = !!(off % sizeof(u64));
-		syscall_get_arguments(current, regs, arg, 1, &value);
-		return get_u32(value, index);
-	}
-	if (off == BPF_DATA(instruction_pointer))
-		return get_u32(KSTK_EIP(current), 0);
-	if (off == BPF_DATA(instruction_pointer) + sizeof(u32))
-		return get_u32(KSTK_EIP(current), 1);
-	/* seccomp_check_filter should make this impossible. */
-	BUG();
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /**
@@ -209,10 +176,7 @@ static int seccomp_check_filter(struct sock_filter *filter, unsigned int flen)
 static u32 seccomp_run_filters(struct seccomp_data *sd)
 {
 	struct seccomp_filter *f = ACCESS_ONCE(current->seccomp.filter);
-<<<<<<< HEAD
 	struct seccomp_data sd_local;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	u32 ret = SECCOMP_RET_ALLOW;
 
 	/* Ensure unexpected behavior doesn't result in failing open. */
@@ -222,26 +186,18 @@ static u32 seccomp_run_filters(struct seccomp_data *sd)
 	/* Make sure cross-thread synced filter points somewhere sane. */
 	smp_read_barrier_depends();
 
-<<<<<<< HEAD
 	if (!sd) {
 		populate_seccomp_data(&sd_local);
 		sd = &sd_local;
 	}
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/*
 	 * All filters in the list are evaluated and the lowest BPF return
 	 * value always takes priority (ignoring the DATA).
 	 */
 	for (; f; f = f->prev) {
-<<<<<<< HEAD
 		u32 cur_ret = BPF_PROG_RUN(f->prog, (void *)sd);
 
-=======
-		u32 cur_ret = sk_run_filter(NULL, f->insns);
-		
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if ((cur_ret & SECCOMP_RET_ACTION) < (ret & SECCOMP_RET_ACTION))
 			ret = cur_ret;
 	}
@@ -269,11 +225,7 @@ static inline void seccomp_assign_mode(struct task_struct *task,
 	 * Make sure TIF_SECCOMP cannot be set before the mode (and
 	 * filter) is set.
 	 */
-<<<<<<< HEAD
 	smp_mb__before_atomic();
-=======
-	smp_mb();
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	set_tsk_thread_flag(task, TIF_SECCOMP);
 }
 
@@ -403,15 +355,7 @@ static struct seccomp_filter *seccomp_prepare_filter(struct sock_fprog *fprog)
 	if (fprog->len == 0 || fprog->len > BPF_MAXINSNS)
 		return ERR_PTR(-EINVAL);
 	BUG_ON(INT_MAX / fprog->len < sizeof(struct sock_filter));
-<<<<<<< HEAD
 	fp_size = fprog->len * sizeof(struct sock_filter);
-=======
-
-	for (filter = current->seccomp.filter; filter; filter = filter->prev)
-		total_insns += filter->len + 4;  /* include a 4 instr penalty */
-	if (total_insns > MAX_INSNS_PER_PATH)
-		return ERR_PTR(-ENOMEM);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/*
 	 * Installing a seccomp filter requires that the task has
@@ -424,19 +368,9 @@ static struct seccomp_filter *seccomp_prepare_filter(struct sock_fprog *fprog)
 				     CAP_SYS_ADMIN) != 0)
 		return ERR_PTR(-EACCES);
 
-<<<<<<< HEAD
 	fp = kzalloc(fp_size, GFP_KERNEL|__GFP_NOWARN);
 	if (!fp)
 		return ERR_PTR(-ENOMEM);
-=======
-	/* Allocate a new seccomp_filter */
-	filter = kzalloc(sizeof(struct seccomp_filter) + fp_size,
-			 GFP_KERNEL|__GFP_NOWARN);
-	if (!filter)
-		return ERR_PTR(-ENOMEM);;
-	atomic_set(&filter->usage, 1);
-	filter->len = fprog->len;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Copy the instructions from fprog. */
 	ret = -EFAULT;
@@ -453,7 +387,6 @@ static struct seccomp_filter *seccomp_prepare_filter(struct sock_fprog *fprog)
 	if (ret)
 		goto free_prog;
 
-<<<<<<< HEAD
 	/* Convert 'sock_filter' insns to 'bpf_insn' insns */
 	ret = bpf_convert_filter(fp, fprog->len, NULL, &new_len);
 	if (ret)
@@ -488,12 +421,6 @@ free_filter:
 	kfree(filter);
 free_prog:
 	kfree(fp);
-=======
-	return filter;
-
-fail:
-	kfree(filter);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return ERR_PTR(ret);
 }
 
@@ -543,15 +470,9 @@ static long seccomp_attach_filter(unsigned int flags,
 	assert_spin_locked(&current->sighand->siglock);
 
 	/* Validate resulting filter length. */
-<<<<<<< HEAD
 	total_insns = filter->prog->len;
 	for (walker = current->seccomp.filter; walker; walker = walker->prev)
 		total_insns += walker->prog->len + 4;  /* 4 instr penalty */
-=======
-	total_insns = filter->len;
-	for (walker = current->seccomp.filter; walker; walker = walker->prev)
-		total_insns += walker->len + 4;  /* 4 instr penalty */
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (total_insns > MAX_INSNS_PER_PATH)
 		return -ENOMEM;
 
@@ -591,10 +512,7 @@ void get_seccomp_filter(struct task_struct *tsk)
 static inline void seccomp_filter_free(struct seccomp_filter *filter)
 {
 	if (filter) {
-<<<<<<< HEAD
 		bpf_prog_free(filter->prog);
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		kfree(filter);
 	}
 }
@@ -651,96 +569,15 @@ static int mode1_syscalls_32[] = {
 
 static void __secure_computing_strict(int this_syscall)
 {
-<<<<<<< HEAD
 	int *syscall_whitelist = mode1_syscalls;
-=======
-	int exit_sig = 0;
-	int *syscall;
-	u32 ret;
-
-	/*
-	 * Make sure that any changes to mode from another thread have
-	 * been seen after TIF_SECCOMP was seen.
-	 */
-	rmb();
-
-	switch (current->seccomp.mode) {
-	case SECCOMP_MODE_STRICT:
-		syscall = mode1_syscalls;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifdef CONFIG_COMPAT
 	if (is_compat_task())
 		syscall_whitelist = mode1_syscalls_32;
 #endif
-<<<<<<< HEAD
 	do {
 		if (*syscall_whitelist == this_syscall)
 			return;
 	} while (*++syscall_whitelist);
-=======
-		do {
-			if (*syscall == this_syscall)
-				return 0;
-		} while (*++syscall);
-		exit_sig = SIGKILL;
-		ret = SECCOMP_RET_KILL;
-		break;
-#ifdef CONFIG_SECCOMP_FILTER
-	case SECCOMP_MODE_FILTER: {
-		int data;
-		struct pt_regs *regs = task_pt_regs(current);
-		ret = seccomp_run_filters(this_syscall);
-		data = ret & SECCOMP_RET_DATA;
-		ret &= SECCOMP_RET_ACTION;
-		switch (ret) {
-		case SECCOMP_RET_ERRNO:
-			/* Set low-order bits as an errno, capped at MAX_ERRNO. */
-			if (data > MAX_ERRNO)
-				data = MAX_ERRNO;
-			syscall_set_return_value(current, regs,
-						 -data, 0);
-			goto skip;
-		case SECCOMP_RET_TRAP:
-			/* Show the handler the original registers. */
-			syscall_rollback(current, regs);
-			/* Let the filter pass back 16 bits of data. */
-			seccomp_send_sigsys(this_syscall, data);
-			goto skip;
-		case SECCOMP_RET_TRACE:
-			/* Skip these calls if there is no tracer. */
-			if (!ptrace_event_enabled(current, PTRACE_EVENT_SECCOMP)) {
-				syscall_set_return_value(current, regs,
-							 -ENOSYS, 0);
-				goto skip;
-			}
-			/* Allow the BPF to provide the event message */
-			ptrace_event(PTRACE_EVENT_SECCOMP, data);
-			/*
-			 * The delivery of a fatal signal during event
-			 * notification may silently skip tracer notification.
-			 * Terminating the task now avoids executing a system
-			 * call that may not be intended.
-			 */
-			if (fatal_signal_pending(current))
-				break;
-			if (syscall_get_nr(current, regs) < 0)
-				goto skip;  /* Explicit request to skip. */
-
-			return 0;
-		case SECCOMP_RET_ALLOW:
-			return 0;
-		case SECCOMP_RET_KILL:
-		default:
-			break;
-		}
-		exit_sig = SIGSYS;
-		break;
-	}
-#endif
-	default:
-		BUG();
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #ifdef SECCOMP_DEBUG
 	dump_stack();

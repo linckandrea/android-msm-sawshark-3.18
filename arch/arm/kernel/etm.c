@@ -491,10 +491,6 @@ out:
 
 out_unmap:
 	mutex_lock(&t->mutex);
-<<<<<<< HEAD
-=======
-	amba_set_drvdata(dev, NULL);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	iounmap(t->etb_regs);
 	t->etb_regs = NULL;
 
@@ -983,10 +979,6 @@ out:
 	return ret;
 
 out_unmap:
-<<<<<<< HEAD
-=======
-	amba_set_drvdata(dev, NULL);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	iounmap(t->etm_regs[t->etm_regs_count]);
 
 out_release:
@@ -1008,11 +1000,6 @@ static int etm_remove(struct amba_device *dev)
 	sysfs_remove_file(&dev->dev.kobj, &trace_range_attr.attr);
 	sysfs_remove_file(&dev->dev.kobj, &trace_data_range_attr.attr);
 
-<<<<<<< HEAD
-=======
-	amba_set_drvdata(dev, NULL);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mutex_lock(&t->mutex);
 	for (i = 0; i < t->etm_regs_count; i++)
 		if (t->etm_regs[i] == etm_regs)

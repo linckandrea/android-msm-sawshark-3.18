@@ -93,7 +93,6 @@ static int vti_rcv_cb(struct sk_buff *skb, int err)
 	u32 orig_mark = skb->mark;
 	int ret;
 
-<<<<<<< HEAD
 	if (!tunnel)
 		return 1;
 
@@ -104,19 +103,6 @@ static int vti_rcv_cb(struct sk_buff *skb, int err)
 		dev->stats.rx_dropped++;
 
 		return 0;
-=======
-	memset(&fl4, 0, sizeof(fl4));
-	flowi4_init_output(&fl4, tunnel->parms.link,
-			   be32_to_cpu(tunnel->parms.i_key), RT_TOS(tos),
-			   RT_SCOPE_UNIVERSE,
-			   IPPROTO_IPIP, 0,
-			   dst, tiph->saddr, 0, 0,
-			   sock_net_uid(dev_net(dev), NULL));
-	rt = ip_route_output_key(dev_net(dev), &fl4);
-	if (IS_ERR(rt)) {
-		dev->stats.tx_carrier_errors++;
-		goto tx_error_icmp;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 
 	x = xfrm_input_state(skb);
@@ -275,7 +261,6 @@ static int vti4_err(struct sk_buff *skb, u32 info)
 	if (!tunnel)
 		return -1;
 
-<<<<<<< HEAD
 	mark = be32_to_cpu(tunnel->parms.o_key);
 
 	switch (protocol) {
@@ -293,24 +278,6 @@ static int vti4_err(struct sk_buff *skb, u32 info)
 		break;
 	default:
 		return 0;
-=======
-	if (iph->daddr) {
-		struct rtable *rt;
-		struct flowi4 fl4;
-		memset(&fl4, 0, sizeof(fl4));
-		flowi4_init_output(&fl4, tunnel->parms.link,
-				   be32_to_cpu(tunnel->parms.i_key),
-				   RT_TOS(iph->tos), RT_SCOPE_UNIVERSE,
-				   IPPROTO_IPIP, 0,
-				   iph->daddr, iph->saddr, 0, 0,
-				   sock_net_uid(dev_net(dev), NULL));
-		rt = ip_route_output_key(dev_net(dev), &fl4);
-		if (!IS_ERR(rt)) {
-			tdev = rt->dst.dev;
-			ip_rt_put(rt);
-		}
-		dev->flags |= IFF_POINTOPOINT;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 
 	switch (icmp_hdr(skb)->type) {

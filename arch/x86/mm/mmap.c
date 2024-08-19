@@ -69,7 +69,6 @@ unsigned long arch_mmap_rnd(void)
 {
 	unsigned long rnd;
 
-<<<<<<< HEAD
 	/*
 	 *  8 bits of randomness in 32bit mmaps, 20 address space bits
 	 * 28 bits of randomness in 64bit mmaps, 40 address space bits
@@ -79,18 +78,6 @@ unsigned long arch_mmap_rnd(void)
 	else
 		rnd = get_random_long() % (1UL<<28);
 
-=======
-	if (current->flags & PF_RANDOMIZE) {
-		if (mmap_is_ia32())
-#ifdef CONFIG_COMPAT
-			rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
-#else
-			rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
-#endif
-		else
-			rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return rnd << PAGE_SHIFT;
 }
 

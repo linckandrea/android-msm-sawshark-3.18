@@ -52,11 +52,7 @@ ENDPROC(fpsimd_load_state)
 ENTRY(fpsimd_save_partial_state)
 	fpsimd_save_partial x0, 1, 8, 9
 	ret
-<<<<<<< HEAD
 ENDPROC(fpsimd_save_partial_state)
-=======
-ENDPROC(fpsimd_load_partial_state)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /*
  * Load the bottom n FP registers.
@@ -68,7 +64,6 @@ ENTRY(fpsimd_load_partial_state)
 	ret
 ENDPROC(fpsimd_load_partial_state)
 
-<<<<<<< HEAD
 #ifdef CONFIG_ENABLE_FP_SIMD_SETTINGS
 ENTRY(fpsimd_enable_trap)
 	mrs x0, cpacr_el1
@@ -101,6 +96,4 @@ ENTRY(fpsimd_settings_disable)
 ENDPROC(fpsimd_settings_disable)
 #endif
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif

@@ -47,27 +47,12 @@ static int mmap_is_legacy(void)
 	return sysctl_legacy_va_layout;
 }
 
-<<<<<<< HEAD
 unsigned long arch_mmap_rnd(void)
-=======
-static unsigned long mmap_rnd(void)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	unsigned long rnd;
 
-<<<<<<< HEAD
 	rnd = get_random_long() & STACK_RND_MASK;
 
-=======
-	if (current->flags & PF_RANDOMIZE) {
-#ifdef CONFIG_COMPAT
-		if (test_thread_flag(TIF_32BIT))
-			rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
-		else
-#endif
-			rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return rnd << PAGE_SHIFT;
 }
 

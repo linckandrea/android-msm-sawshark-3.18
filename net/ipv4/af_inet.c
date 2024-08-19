@@ -133,11 +133,8 @@ static inline int current_has_network(void)
 	return 1;
 }
 #endif
-<<<<<<< HEAD
 
 int sysctl_reserved_port_bind __read_mostly = 1;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /* The inetsw table contains everything that inet_create needs to
  * build a new socket.
@@ -280,13 +277,6 @@ static int inet_create(struct net *net, struct socket *sock, int protocol,
 
 	if (!current_has_network())
 		return -EACCES;
-<<<<<<< HEAD
-=======
-
-	if (unlikely(!inet_ehash_secret))
-		if (sock->type != SOCK_RAW && sock->type != SOCK_DGRAM)
-			build_ehash_secret();
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	sock->state = SS_UNCONNECTED;
 

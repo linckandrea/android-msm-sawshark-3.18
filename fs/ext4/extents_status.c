@@ -1085,19 +1085,7 @@ static unsigned long ext4_es_scan(struct shrinker *shrink,
 	nr_shrunk = __ext4_es_shrink(sbi, nr_to_scan, NULL);
 
 	trace_ext4_es_shrink_scan_exit(sbi->s_sb, nr_shrunk, ret);
-<<<<<<< HEAD
 	return nr_shrunk;
-=======
-	return percpu_counter_read_positive(&sbi->s_es_stats.es_stats_lru_cnt);
-}
-
-static int ext4_es_shrink(struct shrinker *shrink, struct shrink_control *sc)
-{
-	if (sc->nr_to_scan)
-		return ext4_es_scan(shrink, sc);
-	else
-		return ext4_es_count(shrink, sc);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static void *ext4_es_seq_shrinker_info_start(struct seq_file *seq, loff_t *pos)
@@ -1187,7 +1175,6 @@ static int
 ext4_es_seq_shrinker_info_release(struct inode *inode, struct file *file)
 {
 	return seq_release(inode, file);
-<<<<<<< HEAD
 }
 
 static const struct file_operations ext4_es_seq_shrinker_info_fops = {
@@ -1239,55 +1226,6 @@ err1:
 
 void ext4_es_unregister_shrinker(struct ext4_sb_info *sbi)
 {
-=======
-}
-
-static const struct file_operations ext4_es_seq_shrinker_info_fops = {
-	.owner		= THIS_MODULE,
-	.open		= ext4_es_seq_shrinker_info_open,
-	.read		= seq_read,
-	.llseek		= seq_lseek,
-	.release	= ext4_es_seq_shrinker_info_release,
-};
-
-int ext4_es_register_shrinker(struct ext4_sb_info *sbi)
-{
-	int err;
-
-	INIT_LIST_HEAD(&sbi->s_es_lru);
-	spin_lock_init(&sbi->s_es_lru_lock);
-	sbi->s_es_stats.es_stats_last_sorted = 0;
-	sbi->s_es_stats.es_stats_shrunk = 0;
-	sbi->s_es_stats.es_stats_cache_hits = 0;
-	sbi->s_es_stats.es_stats_cache_misses = 0;
-	sbi->s_es_stats.es_stats_scan_time = 0;
-	sbi->s_es_stats.es_stats_max_scan_time = 0;
-	err = percpu_counter_init(&sbi->s_es_stats.es_stats_all_cnt, 0);
-	if (err)
-		return err;
-	err = percpu_counter_init(&sbi->s_es_stats.es_stats_lru_cnt, 0);
-	if (err)
-		goto err1;
-
-	sbi->s_es_shrinker.shrink = ext4_es_shrink;
-	sbi->s_es_shrinker.seeks = DEFAULT_SEEKS;
-	register_shrinker(&sbi->s_es_shrinker);
-
-	if (sbi->s_proc)
-		proc_create_data("es_shrinker_info", S_IRUGO, sbi->s_proc,
-				 &ext4_es_seq_shrinker_info_fops, sbi);
-
-	return 0;
-
-	percpu_counter_destroy(&sbi->s_es_stats.es_stats_lru_cnt);
-err1:
-	percpu_counter_destroy(&sbi->s_es_stats.es_stats_all_cnt);
-	return err;
-}
-
-void ext4_es_unregister_shrinker(struct ext4_sb_info *sbi)
-{
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (sbi->s_proc)
 		remove_proc_entry("es_shrinker_info", sbi->s_proc);
 	percpu_counter_destroy(&sbi->s_es_stats.es_stats_all_cnt);

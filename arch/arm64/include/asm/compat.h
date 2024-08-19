@@ -210,11 +210,7 @@ typedef struct compat_siginfo {
 		struct {
 			compat_uptr_t _call_addr; /* calling user insn */
 			int _syscall;	/* triggering system call number */
-<<<<<<< HEAD
 			compat_uint_t _arch;	/* AUDIT_ARCH_* of syscall */
-=======
-			unsigned int _arch;	/* AUDIT_ARCH_* of syscall */
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		} _sigsys;
 	} _sifields;
 } compat_siginfo_t;

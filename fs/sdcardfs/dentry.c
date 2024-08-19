@@ -139,11 +139,7 @@ static void sdcardfs_d_release(struct dentry *dentry)
 }
 
 static int sdcardfs_hash_ci(const struct dentry *dentry,
-<<<<<<< HEAD
 				struct qstr *qstr)
-=======
-				const struct inode *inode, struct qstr *qstr)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	/*
 	 * This function is copy of vfat_hashi.
@@ -170,12 +166,7 @@ static int sdcardfs_hash_ci(const struct dentry *dentry,
  * Case insensitive compare of two vfat names.
  */
 static int sdcardfs_cmp_ci(const struct dentry *parent,
-<<<<<<< HEAD
 		const struct dentry *dentry,
-=======
-		const struct inode *pinode,
-		const struct dentry *dentry, const struct inode *inode,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		unsigned int len, const char *str, const struct qstr *name)
 {
 	/* FIXME Should we support national language? */

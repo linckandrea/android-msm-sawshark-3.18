@@ -262,11 +262,7 @@ void sel_netif_flush(void)
 static int sel_netif_netdev_notifier_handler(struct notifier_block *this,
 					     unsigned long event, void *ptr)
 {
-<<<<<<< HEAD
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
-=======
-	struct net_device *dev = ptr;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (event == NETDEV_DOWN)
 		sel_netif_kill(dev_net(dev), dev->ifindex);
@@ -290,11 +286,7 @@ static __init int sel_netif_init(void)
 
 	register_netdevice_notifier(&sel_netif_netdev_notifier);
 
-<<<<<<< HEAD
 	return 0;
-=======
-	return err;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 __initcall(sel_netif_init);

@@ -63,16 +63,6 @@ unsigned long arch_mmap_rnd(void)
 	else
 		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
 
-<<<<<<< HEAD:arch/powerpc/mm/mmap.c
-=======
-	if (current->flags & PF_RANDOMIZE) {
-		/* 8MB for 32bit, 1GB for 64bit */
-		if (is_32bit_task())
-			rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
-		else
-			rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:arch/powerpc/mm/mmap_64.c
 	return rnd << PAGE_SHIFT;
 }
 

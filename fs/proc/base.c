@@ -2817,11 +2817,7 @@ static const struct pid_entry tgid_base_stuff[] = {
 #ifdef CONFIG_CGROUPS
 	ONE("cgroup",  S_IRUGO, proc_cgroup_show),
 #endif
-<<<<<<< HEAD
 	ONE("oom_score",  S_IRUGO, proc_oom_score),
-=======
-	INF("oom_score",  S_IRUGO, proc_oom_score),
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	REG("oom_adj",    S_IRUSR, proc_oom_adj_operations),
 	REG("oom_score_adj", S_IRUSR, proc_oom_score_adj_operations),
 #ifdef CONFIG_AUDITSYSCALL
@@ -3206,11 +3202,7 @@ static const struct pid_entry tid_base_stuff[] = {
 #ifdef CONFIG_CGROUPS
 	ONE("cgroup",  S_IRUGO, proc_cgroup_show),
 #endif
-<<<<<<< HEAD
 	ONE("oom_score", S_IRUGO, proc_oom_score),
-=======
-	INF("oom_score", S_IRUGO, proc_oom_score),
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	REG("oom_adj",   S_IRUSR, proc_oom_adj_operations),
 	REG("oom_score_adj", S_IRUSR, proc_oom_score_adj_operations),
 #ifdef CONFIG_AUDITSYSCALL

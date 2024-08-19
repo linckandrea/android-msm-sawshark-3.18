@@ -428,21 +428,6 @@ bool capable(int cap)
 EXPORT_SYMBOL(capable);
 
 /**
-<<<<<<< HEAD
-=======
- * nsown_capable - Check superior capability to one's own user_ns
- * @cap: The capability in question
- *
- * Return true if the current task has the given superior capability
- * targeted at its own user namespace.
- */
-bool nsown_capable(int cap)
-{
-	return ns_capable(current_user_ns(), cap);
-}
-
-/**
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * capable_wrt_inode_uidgid - Check nsown_capable and uid and gid mapped
  * @inode: The inode in question
  * @cap: The capability in question

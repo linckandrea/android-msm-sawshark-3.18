@@ -872,14 +872,6 @@ void __cfg80211_disconnected(struct net_device *dev, const u8 *ie,
 		    wdev->iftype != NL80211_IFTYPE_P2P_CLIENT))
 		return;
 
-<<<<<<< HEAD
-=======
-#ifndef CONFIG_CFG80211_ALLOW_RECONNECT
-	if (wdev->sme_state != CFG80211_SME_CONNECTED)
-		return;
-#endif
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (wdev->current_bss) {
 		cfg80211_unhold_bss(wdev->current_bss);
 		cfg80211_put_bss(wdev->wiphy, &wdev->current_bss->pub);
@@ -949,20 +941,8 @@ int cfg80211_connect(struct cfg80211_registered_device *rdev,
 
 	ASSERT_WDEV_LOCK(wdev);
 
-<<<<<<< HEAD
 	if (WARN_ON(wdev->connect_keys)) {
 		kzfree(wdev->connect_keys);
-=======
-#ifndef CONFIG_CFG80211_ALLOW_RECONNECT
-	if (wdev->sme_state != CFG80211_SME_IDLE)
-		return -EALREADY;
-
-	if (WARN_ON(wdev->connect_keys)) {
-#else
-	if (wdev->connect_keys) {
-#endif
-		kfree(wdev->connect_keys);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		wdev->connect_keys = NULL;
 	}
 

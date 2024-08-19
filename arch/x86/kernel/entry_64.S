@@ -829,40 +829,6 @@ ENTRY(native_iret)
 #ifdef CONFIG_X86_ESPFIX64
 	testb $4,(SS-RIP)(%rsp)
 	jnz native_irq_return_ldt
-<<<<<<< HEAD
-=======
-#endif
-
-.global native_irq_return_iret
-native_irq_return_iret:
-	iretq
-	_ASM_EXTABLE(native_irq_return_iret, bad_iret)
-
-#ifdef CONFIG_X86_ESPFIX64
-native_irq_return_ldt:
-	pushq_cfi %rax
-	pushq_cfi %rdi
-	SWAPGS
-	movq PER_CPU_VAR(espfix_waddr),%rdi
-	movq %rax,(0*8)(%rdi)	/* RAX */
-	movq (2*8)(%rsp),%rax	/* RIP */
-	movq %rax,(1*8)(%rdi)
-	movq (3*8)(%rsp),%rax	/* CS */
-	movq %rax,(2*8)(%rdi)
-	movq (4*8)(%rsp),%rax	/* RFLAGS */
-	movq %rax,(3*8)(%rdi)
-	movq (6*8)(%rsp),%rax	/* SS */
-	movq %rax,(5*8)(%rdi)
-	movq (5*8)(%rsp),%rax	/* RSP */
-	movq %rax,(4*8)(%rdi)
-	andl $0xffff0000,%eax
-	popq_cfi %rdi
-	orq PER_CPU_VAR(espfix_stack),%rax
-	SWAPGS
-	movq %rax,%rsp
-	popq_cfi %rax
-	jmp native_irq_return_iret
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif
 
 .global native_irq_return_iret
@@ -945,14 +911,6 @@ ENTRY(retint_kernel)
 #endif
 	CFI_ENDPROC
 END(common_interrupt)
-<<<<<<< HEAD
-=======
-
-/*
- * End of kprobes section
- */
-       .popsection
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /*
  * APIC interrupts.
@@ -1291,20 +1249,9 @@ apicinterrupt3 HYPERVISOR_CALLBACK_VECTOR \
 	hyperv_callback_vector hyperv_vector_handler
 #endif /* CONFIG_HYPERV */
 
-<<<<<<< HEAD
 idtentry debug do_debug has_error_code=0 paranoid=1 shift_ist=DEBUG_STACK
 idtentry int3 do_int3 has_error_code=0 paranoid=1 shift_ist=DEBUG_STACK
 idtentry stack_segment do_stack_segment has_error_code=1
-=======
-/*
- * Some functions should be protected against kprobes
- */
-	.pushsection .kprobes.text, "ax"
-
-paranoidzeroentry_ist debug do_debug DEBUG_STACK
-paranoidzeroentry_ist int3 do_int3 DEBUG_STACK
-errorentry stack_segment do_stack_segment
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifdef CONFIG_XEN
 idtentry xen_debug do_debug has_error_code=0
 idtentry xen_int3 do_int3 has_error_code=0

@@ -2273,7 +2273,6 @@ static void mmc_detect(struct mmc_host *host)
 	}
 }
 
-<<<<<<< HEAD
 static int mmc_cache_card_ext_csd(struct mmc_host *host)
 {
 	int err;
@@ -2337,13 +2336,9 @@ static int mmc_test_awake_ext_csd(struct mmc_host *host)
 	return err;
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static int _mmc_suspend(struct mmc_host *host, bool is_suspend)
 {
 	int err = 0;
-	unsigned int notify_type = is_suspend ? EXT_CSD_POWER_OFF_SHORT :
-					EXT_CSD_POWER_OFF_LONG;
 
 	BUG_ON(!host);
 	BUG_ON(!host->card);
@@ -2357,7 +2352,6 @@ static int _mmc_suspend(struct mmc_host *host, bool is_suspend)
 
 	mmc_claim_host(host);
 
-<<<<<<< HEAD
 	if (mmc_card_suspended(host->card))
 		goto out;
 
@@ -2380,26 +2374,15 @@ static int _mmc_suspend(struct mmc_host *host, bool is_suspend)
 			goto out;
 	}
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	err = mmc_flush_cache(host->card);
 	if (err)
 		goto out;
 
-<<<<<<< HEAD
 	if (mmc_can_sleepawake(host)) {
 		memcpy(&host->cached_ios, &host->ios, sizeof(host->cached_ios));
 		mmc_cache_card_ext_csd(host);
 		err = mmc_sleepawake(host, true);
 	} else if (!mmc_host_is_spi(host)) {
-=======
-	if (mmc_can_poweroff_notify(host->card) &&
-		((host->caps2 & MMC_CAP2_FULL_PWR_CYCLE) || !is_suspend))
-		err = mmc_poweroff_notify(host->card, notify_type);
-	else if (mmc_card_can_sleep(host))
-		err = mmc_card_sleep(host);
-	else if (!mmc_host_is_spi(host))
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		err = mmc_deselect_cards(host);
 	}
 
@@ -2501,27 +2484,6 @@ static int mmc_suspend(struct mmc_host *host)
 }
 
 /*
-<<<<<<< HEAD
-=======
- * Suspend callback from host.
- */
-static int mmc_suspend(struct mmc_host *host)
-{
-	return _mmc_suspend(host, true);
-}
-
-/*
- * Shutdown callback
- */
-static int mmc_shutdown(struct mmc_host *host)
-{
-	return _mmc_suspend(host, false);
-}
-
-/*
- * Resume callback from host.
- *
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * This function tries to determine if the same card is still present
  * and, if so, restore all state to it.
  */
@@ -2740,23 +2702,6 @@ no_suspend:
 }
 
 static const struct mmc_bus_ops mmc_ops = {
-<<<<<<< HEAD
-=======
-	.awake = mmc_awake,
-	.sleep = mmc_sleep,
-	.remove = mmc_remove,
-	.detect = mmc_detect,
-	.suspend = NULL,
-	.resume = NULL,
-	.power_restore = mmc_power_restore,
-	.alive = mmc_alive,
-	.shutdown = mmc_shutdown,
-};
-
-static const struct mmc_bus_ops mmc_ops_unsafe = {
-	.awake = mmc_awake,
-	.sleep = mmc_sleep,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	.remove = mmc_remove,
 	.detect = mmc_detect,
 	.suspend = mmc_suspend,
@@ -2766,11 +2711,7 @@ static const struct mmc_bus_ops mmc_ops_unsafe = {
 	.runtime_idle = mmc_runtime_idle,
 	.power_restore = mmc_power_restore,
 	.alive = mmc_alive,
-<<<<<<< HEAD
 	.change_bus_speed = mmc_change_bus_speed,
-=======
-	.shutdown = mmc_shutdown,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 /*

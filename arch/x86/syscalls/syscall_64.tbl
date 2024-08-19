@@ -320,7 +320,6 @@
 311	64	process_vm_writev	sys_process_vm_writev
 312	common	kcmp			sys_kcmp
 313	common	finit_module		sys_finit_module
-<<<<<<< HEAD
 314	common	sched_setattr		sys_sched_setattr
 315	common	sched_getattr		sys_sched_getattr
 316	common	renameat2		sys_renameat2
@@ -329,12 +328,6 @@
 319	common	memfd_create		sys_memfd_create
 320	common	kexec_file_load		sys_kexec_file_load
 321	common	bpf			sys_bpf
-=======
-# 314	common	sched_setattr		sys_sched_setattr
-# 315	common	sched_getattr		sys_sched_getattr
-# 316	common	renameat2		sys_renameat2
-317	common	seccomp			sys_seccomp
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #
 # x32-specific system call numbers start at 512 to avoid cache impact

@@ -48,18 +48,9 @@ static int gpio_get_time(struct timed_output_dev *dev)
 	struct timed_gpio_data *data;
 	struct timeval t;
 
-<<<<<<< HEAD
 	data = container_of(dev, struct timed_gpio_data, dev);
 
 	if (!hrtimer_active(&data->timer))
-=======
-	if (hrtimer_active(&data->timer)) {
-		ktime_t r = hrtimer_get_remaining(&data->timer);
-		struct timeval t = ktime_to_timeval(r);
-
-		return t.tv_sec * 1000 + t.tv_usec / 1000;
-	} else
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return 0;
 
 	t = ktime_to_timeval(hrtimer_get_remaining(&data->timer));

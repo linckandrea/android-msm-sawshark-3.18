@@ -55,16 +55,9 @@
 #define DEFCONTEXT_MNT	0x08
 #define SBLABEL_MNT	0x10
 /* Non-mount related flags */
-<<<<<<< HEAD
 #define SE_SBINITIALIZED	0x0100
 #define SE_SBPROC		0x0200
 #define SE_SBGENFS		0x0400
-=======
-#define SE_SBINITIALIZED	0x10
-#define SE_SBPROC		0x20
-#define SE_SBLABELSUPP	0x40
-#define SE_SBGENFS	0x80
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #define CONTEXT_STR	"context="
 #define FSCONTEXT_STR	"fscontext="

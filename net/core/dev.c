@@ -2458,17 +2458,11 @@ static inline bool skb_needs_check(struct sk_buff *skb, bool tx_path)
 struct sk_buff *__skb_gso_segment(struct sk_buff *skb,
 				  netdev_features_t features, bool tx_path)
 {
-	struct sk_buff *segs;
-
 	if (unlikely(skb_needs_check(skb, tx_path))) {
 		int err;
 
-<<<<<<< HEAD
 		skb_warn_bad_offload(skb);
 
-=======
-		/* We're going to init ->check field in TCP or UDP header */
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		err = skb_cow_head(skb, 0);
 		if (err < 0)
 			return ERR_PTR(err);
@@ -2480,12 +2474,7 @@ struct sk_buff *__skb_gso_segment(struct sk_buff *skb,
 	skb_reset_mac_header(skb);
 	skb_reset_mac_len(skb);
 
-	segs = skb_mac_gso_segment(skb, features);
-
-	if (unlikely(skb_needs_check(skb, tx_path)))
-		skb_warn_bad_offload(skb);
-
-	return segs;
+	return skb_mac_gso_segment(skb, features);
 }
 EXPORT_SYMBOL(__skb_gso_segment);
 

@@ -457,28 +457,7 @@ static int __rfcomm_dlc_close(struct rfcomm_dlc *d, int err)
 
 	switch (d->state) {
 	case BT_CONNECT:
-<<<<<<< HEAD
 	case BT_CONFIG:
-=======
-		if (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {
-			set_bit(RFCOMM_AUTH_REJECT, &d->flags);
-			rfcomm_schedule();
-			break;
-		}
-		/* Fall through */
-
-	case BT_CONNECTED:
-		d->state = BT_DISCONN;
-		if (skb_queue_empty(&d->tx_queue)) {
-			rfcomm_send_disc(s, d->dlci);
-			rfcomm_dlc_set_timer(d, RFCOMM_DISC_TIMEOUT);
-		} else {
-			rfcomm_queue_disc(d);
-			rfcomm_dlc_set_timer(d, RFCOMM_DISC_TIMEOUT * 2);
-		}
-		break;
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	case BT_OPEN:
 	case BT_CONNECT2:
 		if (test_and_clear_bit(RFCOMM_DEFER_SETUP, &d->flags)) {

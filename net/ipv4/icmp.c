@@ -680,11 +680,7 @@ void icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info)
 	ipc.tos = -1;
 
 	rt = icmp_route_lookup(net, &fl4, skb_in, iph, saddr, tos, mark,
-<<<<<<< HEAD
 			       type, code, icmp_param);
-=======
-			       type, code, &icmp_param);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (IS_ERR(rt))
 		goto out_unlock;
 

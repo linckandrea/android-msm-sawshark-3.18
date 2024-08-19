@@ -506,11 +506,7 @@ static int rawv6_recvmsg(struct kiocb *iocb, struct sock *sk,
 		sin6->sin6_addr = ipv6_hdr(skb)->saddr;
 		sin6->sin6_flowinfo = 0;
 		sin6->sin6_scope_id = ipv6_iface_scope_id(&sin6->sin6_addr,
-<<<<<<< HEAD
 							  inet6_iif(skb));
-=======
-							  IP6CB(skb)->iif);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		*addr_len = sizeof(*sin6);
 	}
 
@@ -628,8 +624,6 @@ static int rawv6_send_hdrinc(struct sock *sk, void *from, int length,
 		ipv6_local_error(sk, EMSGSIZE, fl6, rt->dst.dev->mtu);
 		return -EMSGSIZE;
 	}
-	if (length < sizeof(struct ipv6hdr))
-		return -EINVAL;
 	if (flags&MSG_PROBE)
 		goto out;
 
@@ -913,11 +907,7 @@ done:
 out:
 	fl6_sock_release(flowlabel);
 	txopt_put(opt_to_free);
-<<<<<<< HEAD
 	return err < 0 ? err : len;
-=======
-	return err<0?err:len;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 do_confirm:
 	dst_confirm(dst);
 	if (!(msg->msg_flags & MSG_PROBE) || len)

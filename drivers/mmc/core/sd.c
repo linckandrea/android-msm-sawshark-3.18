@@ -918,11 +918,7 @@ int mmc_sd_setup_card(struct mmc_host *host, struct mmc_card *card,
 			if (!err) {
 				if (retries > 1) {
 					printk(KERN_WARNING
-<<<<<<< HEAD
 					       "%s: recovered\n",
-=======
-					       "%s: recovered\n", 
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 					       mmc_hostname(host));
 				}
 				break;
@@ -1171,10 +1167,7 @@ static void mmc_sd_detect(struct mmc_host *host)
 	if (!retries) {
 		printk(KERN_ERR "%s(%s): Unable to re-detect card (%d)\n",
 		       __func__, mmc_hostname(host), err);
-<<<<<<< HEAD
 		err = _mmc_detect_card_removed(host);
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 #else
 	err = _mmc_detect_card_removed(host);
@@ -1246,11 +1239,7 @@ static int mmc_sd_suspend(struct mmc_host *host)
  */
 static int _mmc_sd_resume(struct mmc_host *host)
 {
-<<<<<<< HEAD
 	int err = 0;
-=======
-	int err;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifdef CONFIG_MMC_PARANOID_SD_INIT
 	int retries;
 #endif
@@ -1259,7 +1248,6 @@ static int _mmc_sd_resume(struct mmc_host *host)
 	BUG_ON(!host->card);
 
 	mmc_claim_host(host);
-<<<<<<< HEAD
 
 	if (!mmc_card_suspended(host->card))
 		goto out;
@@ -1269,32 +1257,20 @@ static int _mmc_sd_resume(struct mmc_host *host)
 	retries = 5;
 	while (retries) {
 		err = mmc_sd_init_card(host, host->card->ocr, host->card);
-=======
-#ifdef CONFIG_MMC_PARANOID_SD_INIT
-	retries = 5;
-	while (retries) {
-		err = mmc_sd_init_card(host, host->ocr, host->card);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		if (err) {
 			printk(KERN_ERR "%s: Re-init card rc = %d (retries = %d)\n",
 			       mmc_hostname(host), err, retries);
-<<<<<<< HEAD
 			retries--;
 			mmc_power_off(host);
 			usleep_range(5000, 5500);
 			mmc_power_up(host, host->card->ocr);
 			mmc_select_voltage(host, host->card->ocr);
-=======
-			mdelay(5);
-			retries--;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			continue;
 		}
 		break;
 	}
 #else
-<<<<<<< HEAD
 	err = mmc_sd_init_card(host, host->card->ocr, host->card);
 #endif
 	mmc_card_clr_suspended(host->card);
@@ -1307,10 +1283,6 @@ static int _mmc_sd_resume(struct mmc_host *host)
 	}
 
 out:
-=======
-	err = mmc_sd_init_card(host, host->ocr, host->card);
-#endif
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mmc_release_host(host);
 	return err;
 }
@@ -1395,30 +1367,13 @@ static int mmc_sd_power_restore(struct mmc_host *host)
 static const struct mmc_bus_ops mmc_sd_ops = {
 	.remove = mmc_sd_remove,
 	.detect = mmc_sd_detect,
-<<<<<<< HEAD
 	.runtime_suspend = mmc_sd_runtime_suspend,
 	.runtime_resume = mmc_sd_runtime_resume,
-=======
-	.suspend = NULL,
-	.resume = NULL,
-	.power_restore = mmc_sd_power_restore,
-	.alive = mmc_sd_alive,
-	.shutdown = mmc_sd_suspend,
-};
-
-static const struct mmc_bus_ops mmc_sd_ops_unsafe = {
-	.remove = mmc_sd_remove,
-	.detect = mmc_sd_detect,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	.suspend = mmc_sd_suspend,
 	.resume = mmc_sd_resume,
 	.power_restore = mmc_sd_power_restore,
 	.alive = mmc_sd_alive,
-<<<<<<< HEAD
 	.change_bus_speed = mmc_sd_change_bus_speed,
-=======
-	.shutdown = mmc_sd_suspend,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 /*
@@ -1427,11 +1382,7 @@ static const struct mmc_bus_ops mmc_sd_ops_unsafe = {
 int mmc_attach_sd(struct mmc_host *host)
 {
 	int err;
-<<<<<<< HEAD
 	u32 ocr, rocr;
-=======
-	u32 ocr;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifdef CONFIG_MMC_PARANOID_SD_INIT
 	int retries;
 #endif
@@ -1474,7 +1425,6 @@ int mmc_attach_sd(struct mmc_host *host)
 #ifdef CONFIG_MMC_PARANOID_SD_INIT
 	retries = 5;
 	while (retries) {
-<<<<<<< HEAD
 		err = mmc_sd_init_card(host, rocr, NULL);
 		if (err) {
 			retries--;
@@ -1482,11 +1432,6 @@ int mmc_attach_sd(struct mmc_host *host)
 			usleep_range(5000, 5500);
 			mmc_power_up(host, rocr);
 			mmc_select_voltage(host, rocr);
-=======
-		err = mmc_sd_init_card(host, host->ocr, NULL);
-		if (err) {
-			retries--;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			continue;
 		}
 		break;
@@ -1498,11 +1443,7 @@ int mmc_attach_sd(struct mmc_host *host)
 		goto err;
 	}
 #else
-<<<<<<< HEAD
 	err = mmc_sd_init_card(host, rocr, NULL);
-=======
-	err = mmc_sd_init_card(host, host->ocr, NULL);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (err)
 		goto err;
 #endif

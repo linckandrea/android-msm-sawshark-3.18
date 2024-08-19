@@ -1022,11 +1022,7 @@ static enum print_line_t trace_graph_ret_raw(struct trace_iterator *iter, int fl
 			      field->ret.calltime,
 			      field->ret.rettime,
 			      field->ret.overrun,
-<<<<<<< HEAD
 			      field->ret.depth))
-=======
-			      field->ret.depth));
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return TRACE_TYPE_PARTIAL_LINE;
 
 	return TRACE_TYPE_HANDLED;

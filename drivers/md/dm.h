@@ -17,11 +17,8 @@
 #include <linux/hdreg.h>
 #include <linux/completion.h>
 #include <linux/kobject.h>
-<<<<<<< HEAD
 
 #include "dm-stats.h"
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /*
  * Suspend feature flags

@@ -82,7 +82,6 @@
  */
 #define fixup_tmp_permissions(x)	\
 	do {						\
-<<<<<<< HEAD
 		(x)->i_uid = make_kuid(&init_user_ns,	\
 				SDCARDFS_I(x)->data->d_uid);	\
 		(x)->i_gid = make_kgid(&init_user_ns, AID_SDCARD_RW);	\
@@ -114,13 +113,6 @@
 
 #define REVERT_CRED(saved_cred)	revert_fsids(saved_cred)
 
-=======
-		(x)->i_uid = SDCARDFS_I(x)->data->d_uid;	\
-		(x)->i_gid = AID_SDCARD_RW;	\
-		(x)->i_mode = ((x)->i_mode & S_IFMT) | 0775;\
-	} while (0)
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /* Android 5.0 support */
 
 /* Permission mode for a specific node. Controls how file permissions
@@ -228,10 +220,6 @@ struct sdcardfs_mount_options {
 	userid_t fs_user_id;
 	bool multiuser;
 	bool gid_derivation;
-<<<<<<< HEAD
-=======
-	bool default_normal;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	unsigned int reserved_mb;
 };
 
@@ -425,21 +413,11 @@ static inline void set_top(struct sdcardfs_inode_info *info,
 }
 
 static inline int get_gid(struct vfsmount *mnt,
-<<<<<<< HEAD
 		struct sdcardfs_inode_data *data)
 {
 	struct sdcardfs_vfsmount_options *opts = mnt->data;
 
 	if (opts->gid == AID_SDCARD_RW)
-=======
-		struct super_block *sb,
-		struct sdcardfs_inode_data *data)
-{
-	struct sdcardfs_vfsmount_options *vfsopts = mnt->data;
-	struct sdcardfs_sb_info *sbi = SDCARDFS_SB(sb);
-
-	if (vfsopts->gid == AID_SDCARD_RW && !sbi->options.default_normal)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		/* As an optimization, certain trusted system components only run
 		 * as owner but operate across all users. Since we're now handing
 		 * out the sdcard_rw GID only to trusted apps, we're okay relaxing
@@ -448,11 +426,7 @@ static inline int get_gid(struct vfsmount *mnt,
 		 */
 		return AID_SDCARD_RW;
 	else
-<<<<<<< HEAD
 		return multiuser_get_uid(data->userid, opts->gid);
-=======
-		return multiuser_get_uid(data->userid, vfsopts->gid);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static inline int get_mode(struct vfsmount *mnt,
@@ -589,19 +563,11 @@ static inline int prepare_dir(const char *path_s, uid_t uid, gid_t gid, mode_t m
 		goto out_dput;
 	}
 
-<<<<<<< HEAD
 	attrs.ia_uid = make_kuid(&init_user_ns, uid);
 	attrs.ia_gid = make_kgid(&init_user_ns, gid);
 	attrs.ia_valid = ATTR_UID | ATTR_GID;
 	mutex_lock(&dent->d_inode->i_mutex);
 	notify_change2(parent.mnt, dent, &attrs, NULL);
-=======
-	attrs.ia_uid = uid;
-	attrs.ia_gid = gid;
-	attrs.ia_valid = ATTR_UID | ATTR_GID;
-	mutex_lock(&dent->d_inode->i_mutex);
-	notify_change2(parent.mnt, dent, &attrs);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mutex_unlock(&dent->d_inode->i_mutex);
 
 out_dput:
@@ -665,18 +631,10 @@ static inline int check_min_free_space(struct dentry *dentry, size_t size, int d
  */
 static inline void sdcardfs_copy_and_fix_attrs(struct inode *dest, const struct inode *src)
 {
-<<<<<<< HEAD
 	dest->i_mode = (src->i_mode  & S_IFMT) | S_IRWXU | S_IRWXG |
 			S_IROTH | S_IXOTH; /* 0775 */
 	dest->i_uid = make_kuid(&init_user_ns, SDCARDFS_I(dest)->data->d_uid);
 	dest->i_gid = make_kgid(&init_user_ns, AID_SDCARD_RW);
-=======
-
-	dest->i_mode = (src->i_mode  & S_IFMT) | S_IRWXU | S_IRWXG |
-			S_IROTH | S_IXOTH; /* 0775 */
-	dest->i_uid = SDCARDFS_I(dest)->data->d_uid;
-	dest->i_gid = AID_SDCARD_RW;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	dest->i_rdev = src->i_rdev;
 	dest->i_atime = src->i_atime;
 	dest->i_mtime = src->i_mtime;
@@ -701,10 +659,7 @@ static inline bool qstr_case_eq(const struct qstr *q1, const struct qstr *q2)
 	return q1->len == q2->len && str_case_eq(q1->name, q2->name);
 }
 
-<<<<<<< HEAD
 /* */
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #define QSTR_LITERAL(string) QSTR_INIT(string, sizeof(string)-1)
 
 #endif	/* not _SDCARDFS_H_ */

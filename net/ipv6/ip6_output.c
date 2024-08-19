@@ -1058,8 +1058,6 @@ static inline int ip6_ufo_append_data(struct sock *sk,
 	 * udp datagram
 	 */
 	if ((skb = skb_peek_tail(&sk->sk_write_queue)) == NULL) {
-		struct frag_hdr fhdr;
-
 		skb = sock_alloc_send_skb(sk,
 			hh_len + fragheaderlen + transhdrlen + 20,
 			(flags & MSG_DONTWAIT), &err);
@@ -1081,7 +1079,6 @@ static inline int ip6_ufo_append_data(struct sock *sk,
 		skb->protocol = htons(ETH_P_IPV6);
 		skb->csum = 0;
 
-<<<<<<< HEAD
 		__skb_queue_tail(&sk->sk_write_queue, skb);
 	} else if (skb_is_gso(skb)) {
 		goto append;
@@ -1098,19 +1095,6 @@ static inline int ip6_ufo_append_data(struct sock *sk,
 	skb_shinfo(skb)->ip6_frag_id = fhdr.identification;
 
 append:
-=======
-		/* Specify the length of each IPv6 datagram fragment.
-		 * It has to be a multiple of 8.
-		 */
-		skb_shinfo(skb)->gso_size = (mtu - fragheaderlen -
-					     sizeof(struct frag_hdr)) & ~7;
-		skb_shinfo(skb)->gso_type = SKB_GSO_UDP;
-		ipv6_select_ident(&fhdr, rt);
-		skb_shinfo(skb)->ip6_frag_id = fhdr.identification;
-		__skb_queue_tail(&sk->sk_write_queue, skb);
-	}
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return skb_append_datato_frags(sk, skb, getfrag, from,
 				       (length - transhdrlen));
 }
@@ -1218,19 +1202,11 @@ int ip6_append_data(struct sock *sk, int getfrag(void *from, char *to,
 		np->cork.hop_limit = hlimit;
 		np->cork.tclass = tclass;
 		if (rt->dst.flags & DST_XFRM_TUNNEL)
-<<<<<<< HEAD
 			mtu = np->pmtudisc >= IPV6_PMTUDISC_PROBE ?
 			      READ_ONCE(rt->dst.dev->mtu) : dst_mtu(&rt->dst);
 		else
 			mtu = np->pmtudisc >= IPV6_PMTUDISC_PROBE ?
 			      READ_ONCE(rt->dst.dev->mtu) : dst_mtu(rt->dst.path);
-=======
-			mtu = np->pmtudisc == IPV6_PMTUDISC_PROBE ?
-			      ACCESS_ONCE(rt->dst.dev->mtu) : dst_mtu(&rt->dst);
-		else
-			mtu = np->pmtudisc == IPV6_PMTUDISC_PROBE ?
-			      ACCESS_ONCE(rt->dst.dev->mtu) : dst_mtu(rt->dst.path);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (np->frag_size < mtu) {
 			if (np->frag_size)
 				mtu = np->frag_size;
@@ -1318,7 +1294,6 @@ emsgsize:
 	 * --yoshfuji
 	 */
 
-<<<<<<< HEAD
 	skb = skb_peek_tail(&sk->sk_write_queue);
 	cork->length += length;
 	if ((skb && skb_is_gso(skb)) ||
@@ -1334,30 +1309,6 @@ emsgsize:
 		return 0;
 	}
 
-=======
-	if ((length > mtu) && dontfrag && (sk->sk_protocol == IPPROTO_UDP ||
-					   sk->sk_protocol == IPPROTO_RAW)) {
-		ipv6_local_rxpmtu(sk, fl6, mtu-exthdrlen);
-		return -EMSGSIZE;
-	}
-
-	skb = skb_peek_tail(&sk->sk_write_queue);
-	cork->length += length;
-	if ((skb && skb_has_frags(skb)) ||
-	    (((length + fragheaderlen) > mtu) &&
-	    (skb_queue_len(&sk->sk_write_queue) <= 1) &&
-	    (sk->sk_protocol == IPPROTO_UDP) &&
-	    (rt->dst.dev->features & NETIF_F_UFO) &&
-	    (sk->sk_type == SOCK_DGRAM))) {
-		err = ip6_ufo_append_data(sk, getfrag, from, length,
-					  hh_len, fragheaderlen,
-					  transhdrlen, mtu, flags, rt);
-		if (err)
-			goto error;
-		return 0;
-	}
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!skb)
 		goto alloc_new_skb;
 

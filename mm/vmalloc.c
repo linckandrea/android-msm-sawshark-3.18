@@ -29,11 +29,7 @@
 #include <linux/atomic.h>
 #include <linux/compiler.h>
 #include <linux/llist.h>
-<<<<<<< HEAD
 
-=======
-#include <linux/sizes.h>
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <asm/uaccess.h>
 #include <asm/tlbflush.h>
 #include <asm/shmparam.h>

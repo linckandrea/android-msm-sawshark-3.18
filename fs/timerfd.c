@@ -50,12 +50,8 @@ static DEFINE_SPINLOCK(cancel_lock);
 static inline bool isalarm(struct timerfd_ctx *ctx)
 {
 	return ctx->clockid == CLOCK_REALTIME_ALARM ||
-<<<<<<< HEAD
 		ctx->clockid == CLOCK_BOOTTIME_ALARM ||
 		ctx->clockid == CLOCK_POWEROFF_ALARM;
-=======
-		ctx->clockid == CLOCK_BOOTTIME_ALARM;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /*
@@ -134,13 +130,6 @@ static void timerfd_remove_cancel(struct timerfd_ctx *ctx)
 	spin_unlock(&ctx->cancel_lock);
 }
 
-static void timerfd_remove_cancel(struct timerfd_ctx *ctx)
-{
-	spin_lock(&ctx->cancel_lock);
-	__timerfd_remove_cancel(ctx);
-	spin_unlock(&ctx->cancel_lock);
-}
-
 static bool timerfd_canceled(struct timerfd_ctx *ctx)
 {
 	if (!ctx->might_cancel || ctx->moffs.tv64 != KTIME_MAX)
@@ -153,12 +142,8 @@ static void timerfd_setup_cancel(struct timerfd_ctx *ctx, int flags)
 {
 	spin_lock(&ctx->cancel_lock);
 	if ((ctx->clockid == CLOCK_REALTIME ||
-<<<<<<< HEAD
 	     ctx->clockid == CLOCK_REALTIME_ALARM ||
 	     ctx->clockid == CLOCK_POWEROFF_ALARM) &&
-=======
-	     ctx->clockid == CLOCK_REALTIME_ALARM) &&
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	    (flags & TFD_TIMER_ABSTIME) && (flags & TFD_TIMER_CANCEL_ON_SET)) {
 		if (!ctx->might_cancel) {
 			ctx->might_cancel = true;
@@ -168,11 +153,7 @@ static void timerfd_setup_cancel(struct timerfd_ctx *ctx, int flags)
 		}
 	} else {
 		__timerfd_remove_cancel(ctx);
-<<<<<<< HEAD
  	}
-=======
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	spin_unlock(&ctx->cancel_lock);
 }
 
@@ -180,10 +161,7 @@ static ktime_t timerfd_get_remaining(struct timerfd_ctx *ctx)
 {
 	ktime_t remaining;
 
-<<<<<<< HEAD
 	spin_lock_init(&ctx->cancel_lock);
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (isalarm(ctx))
 		remaining = alarm_expires_remaining(&ctx->t.alarm);
 	else
@@ -209,15 +187,8 @@ static int timerfd_setup(struct timerfd_ctx *ctx, int flags,
 	ctx->tintv = timespec_to_ktime(ktmr->it_interval);
 
 	if (isalarm(ctx)) {
-<<<<<<< HEAD
 		type = clock2alarm(ctx->clockid);
 		alarm_init(&ctx->t.alarm, type, timerfd_alarmproc);
-=======
-		alarm_init(&ctx->t.alarm,
-			   ctx->clockid == CLOCK_REALTIME_ALARM ?
-			   ALARM_REALTIME : ALARM_BOOTTIME,
-			   timerfd_alarmproc);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	} else {
 		hrtimer_init(&ctx->t.tmr, clockid, htmode);
 		hrtimer_set_expires(&ctx->t.tmr, texp);
@@ -427,12 +398,8 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
 	     clockid != CLOCK_REALTIME &&
 	     clockid != CLOCK_REALTIME_ALARM &&
 	     clockid != CLOCK_BOOTTIME &&
-<<<<<<< HEAD
 	     clockid != CLOCK_BOOTTIME_ALARM &&
 	     clockid != CLOCK_POWEROFF_ALARM))
-=======
-	     clockid != CLOCK_BOOTTIME_ALARM))
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return -EINVAL;
 
 	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
@@ -440,10 +407,8 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
 		return -ENOMEM;
 
 	init_waitqueue_head(&ctx->wqh);
-	spin_lock_init(&ctx->cancel_lock);
 	ctx->clockid = clockid;
 
-<<<<<<< HEAD
 	if (isalarm(ctx)) {
 		type = clock2alarm(ctx->clockid);
 		alarm_init(&ctx->t.alarm, type, timerfd_alarmproc);
@@ -452,17 +417,6 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
 	}
 
 	ctx->moffs = ktime_mono_to_real((ktime_t){ .tv64 = 0 });
-=======
-	if (isalarm(ctx))
-		alarm_init(&ctx->t.alarm,
-			   ctx->clockid == CLOCK_REALTIME_ALARM ?
-			   ALARM_REALTIME : ALARM_BOOTTIME,
-			   timerfd_alarmproc);
-	else
-		hrtimer_init(&ctx->t.tmr, clockid, HRTIMER_MODE_ABS);
-
-	ctx->moffs = ktime_get_monotonic_offset();
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx,
 			       O_RDWR | (flags & TFD_SHARED_FCNTL_FLAGS));

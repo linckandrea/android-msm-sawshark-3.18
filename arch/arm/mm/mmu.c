@@ -54,8 +54,6 @@ EXPORT_SYMBOL(empty_zero_page);
  */
 pmd_t *top_pmd;
 
-pmdval_t user_pmd_table = _PAGE_USER_TABLE;
-
 #define CPOLICY_UNCACHED	0
 #define CPOLICY_BUFFERED	1
 #define CPOLICY_WRITETHROUGH	2
@@ -567,25 +565,6 @@ static void __init build_mem_type_table(void)
 		vecs_pgprot |= L_PTE_MT_VECTORS;
 #endif
 
-#ifndef CONFIG_ARM_LPAE
-	/*
-	 * We don't use domains on ARMv6 (since this causes problems with
-	 * v6/v7 kernels), so we must use a separate memory type for user
-	 * r/o, kernel r/w to map the vectors page.
-	 */
-	if (cpu_arch == CPU_ARCH_ARMv6)
-		vecs_pgprot |= L_PTE_MT_VECTORS;
-
-	/*
-	 * Check is it with support for the PXN bit
-	 * in the Short-descriptor translation table format descriptors.
-	 */
-	if (cpu_arch == CPU_ARCH_ARMv7 &&
-		(read_cpuid_ext(CPUID_EXT_MMFR0) & 0xF) >= 4) {
-		user_pmd_table |= PMD_PXNTABLE;
-	}
-#endif
-
 	/*
 	 * ARMv6 and above have extended page tables.
 	 */
@@ -653,11 +632,6 @@ static void __init build_mem_type_table(void)
 	}
 	kern_pgprot |= PTE_EXT_AF;
 	vecs_pgprot |= PTE_EXT_AF;
-
-	/*
-	 * Set PXN for user mappings
-	 */
-	user_pgprot |= PTE_EXT_PXN;
 #endif
 
 	for (i = 0; i < 16; i++) {
@@ -733,25 +707,11 @@ static void __init *early_alloc(unsigned long sz)
 	return early_alloc_aligned(sz, sz);
 }
 
-static pte_t * __init early_pte_alloc(pmd_t *pmd)
-{
-	if (pmd_none(*pmd) || pmd_bad(*pmd))
-		return early_alloc(PTE_HWTABLE_OFF + PTE_HWTABLE_SIZE);
-	return pmd_page_vaddr(*pmd);
-}
-
-static void __init early_pte_install(pmd_t *pmd, pte_t *pte, unsigned long prot)
-{
-	__pmd_populate(pmd, __pa(pte), prot);
-	BUG_ON(pmd_bad(*pmd));
-}
-
-static pte_t * __init early_pte_alloc_and_install(pmd_t *pmd,
-	unsigned long addr, unsigned long prot)
+static pte_t * __init early_pte_alloc(pmd_t *pmd, unsigned long addr, unsigned long prot)
 {
 	if (pmd_none(*pmd)) {
-		pte_t *pte = early_pte_alloc(pmd);
-		early_pte_install(pmd, pte, prot);
+		pte_t *pte = early_alloc(PTE_HWTABLE_OFF + PTE_HWTABLE_SIZE);
+		__pmd_populate(pmd, __pa(pte), prot);
 	}
 	BUG_ON(pmd_bad(*pmd));
 	return pte_offset_kernel(pmd, addr);
@@ -761,17 +721,11 @@ static void __init alloc_init_pte(pmd_t *pmd, unsigned long addr,
 				  unsigned long end, unsigned long pfn,
 				  const struct mem_type *type)
 {
-	pte_t *start_pte = early_pte_alloc(pmd);
-	pte_t *pte = start_pte + pte_index(addr);
-
-	/* If replacing a section mapping, the whole section must be replaced */
-	BUG_ON(!pmd_none(*pmd) && pmd_bad(*pmd) && ((addr | end) & ~PMD_MASK));
-
+	pte_t *pte = early_pte_alloc(pmd, addr, type->prot_l1);
 	do {
 		set_pte_ext(pte, pfn_pte(pfn, __pgprot(type->prot_pte)), 0);
 		pfn++;
 	} while (pte++, addr += PAGE_SIZE, addr != end);
-	early_pte_install(pmd, start_pte, type->prot_l1);
 }
 
 static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
@@ -803,8 +757,7 @@ static void __init __map_init_section(pmd_t *pmd, unsigned long addr,
 
 static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 				      unsigned long end, phys_addr_t phys,
-				      const struct mem_type *type,
-				      bool force_pages)
+				      const struct mem_type *type)
 {
 	pmd_t *pmd = pmd_offset(pud, addr);
 	unsigned long next;
@@ -821,8 +774,7 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 		 * aligned to a section boundary.
 		 */
 		if (type->prot_sect &&
-				((addr | next | phys) & ~SECTION_MASK) == 0 &&
-				!force_pages) {
+				((addr | next | phys) & ~SECTION_MASK) == 0) {
 			__map_init_section(pmd, addr, next, phys, type);
 		} else {
 			alloc_init_pte(pmd, addr, next,
@@ -835,20 +787,15 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 }
 
 static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
-<<<<<<< HEAD
 				  unsigned long end, phys_addr_t phys,
 				  const struct mem_type *type)
-=======
-	unsigned long end, unsigned long phys, const struct mem_type *type,
-	bool force_pages)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	pud_t *pud = pud_offset(pgd, addr);
 	unsigned long next;
 
 	do {
 		next = pud_addr_end(addr, end);
-		alloc_init_pmd(pud, addr, next, phys, type, force_pages);
+		alloc_init_pmd(pud, addr, next, phys, type);
 		phys += next - addr;
 	} while (pud++, addr = next, addr != end);
 }
@@ -922,11 +869,7 @@ static void __init create_36bit_mapping(struct map_desc *md,
  * offsets, and we take full advantage of sections and
  * supersections.
  */
-<<<<<<< HEAD
 void __init create_mapping(struct map_desc *md)
-=======
-static void __init create_mapping(struct map_desc *md, bool force_pages)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	unsigned long addr, length, end;
 	phys_addr_t phys;
@@ -976,7 +919,7 @@ static void __init create_mapping(struct map_desc *md, bool force_pages)
 	do {
 		unsigned long next = pgd_addr_end(addr, end);
 
-		alloc_init_pud(pgd, addr, next, phys, type, force_pages);
+		alloc_init_pud(pgd, addr, next, phys, type);
 
 		phys += next - addr;
 		addr = next;
@@ -998,7 +941,7 @@ void __init iotable_init(struct map_desc *io_desc, int nr)
 	svm = early_alloc_aligned(sizeof(*svm) * nr, __alignof__(*svm));
 
 	for (md = io_desc; nr; md++, nr--) {
-		create_mapping(md, false);
+		create_mapping(md);
 
 		vm = &svm->vm;
 		vm->addr = (void *)(md->virtual & PAGE_MASK);
@@ -1119,11 +1062,7 @@ void __init debug_ll_io_init(void)
 	map.virtual &= PAGE_MASK;
 	map.length = PAGE_SIZE;
 	map.type = MT_DEVICE;
-<<<<<<< HEAD
 	iotable_init(&map, 1);
-=======
-	create_mapping(&map, false);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 #endif
 
@@ -1170,7 +1109,6 @@ void __init sanity_check_meminfo(void)
 #ifdef CONFIG_ENABLE_VMALLOC_SAVING
 	struct memblock_region *prev_reg = NULL;
 
-<<<<<<< HEAD
 	for_each_memblock(memory, reg) {
 		if (prev_reg == NULL) {
 			prev_reg = reg;
@@ -1187,31 +1125,6 @@ void __init sanity_check_meminfo(void)
 		phys_addr_t size_limit = reg->size;
 
 		if (reg->base >= vmalloc_limit)
-=======
-#ifdef CONFIG_SPARSEMEM
-		if (pfn_to_section_nr(bank_pfn_start(bank)) !=
-		    pfn_to_section_nr(bank_pfn_end(bank) - 1)) {
-			phys_addr_t sz;
-			unsigned long start_pfn = bank_pfn_start(bank);
-			unsigned long end_pfn = SECTION_ALIGN_UP(start_pfn + 1);
-			sz = ((phys_addr_t)(end_pfn - start_pfn) << PAGE_SHIFT);
-
-			if (meminfo.nr_banks >= NR_BANKS) {
-				pr_crit("NR_BANKS too low, ignoring %lld bytes of memory\n",
-					(unsigned long long)(bank->size - sz));
-			} else {
-				memmove(bank + 1, bank,
-					(meminfo.nr_banks - i) * sizeof(*bank));
-				meminfo.nr_banks++;
-				bank[1].size -= sz;
-				bank[1].start = __pfn_to_phys(end_pfn);
-			}
-			bank->size = sz;
-		}
-#endif
-
-		if (bank->start > ULONG_MAX)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			highmem = 1;
 		else
 			size_limit = vmalloc_limit - reg->base;
@@ -1376,7 +1289,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	map.virtual = MODULES_VADDR;
 	map.length = ((unsigned long)_etext - map.virtual + ~SECTION_MASK) & SECTION_MASK;
 	map.type = MT_ROM;
-	create_mapping(&map, false);
+	create_mapping(&map);
 #endif
 
 	/*
@@ -1387,14 +1300,14 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	map.virtual = FLUSH_BASE;
 	map.length = SZ_1M;
 	map.type = MT_CACHECLEAN;
-	create_mapping(&map, false);
+	create_mapping(&map);
 #endif
 #ifdef FLUSH_BASE_MINICACHE
 	map.pfn = __phys_to_pfn(FLUSH_BASE_PHYS + SZ_1M);
 	map.virtual = FLUSH_BASE_MINICACHE;
 	map.length = SZ_1M;
 	map.type = MT_MINICLEAN;
-	create_mapping(&map, false);
+	create_mapping(&map);
 #endif
 
 	/*
@@ -1410,17 +1323,13 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 #else
 	map.type = MT_LOW_VECTORS;
 #endif
-<<<<<<< HEAD
 	create_mapping(&map);
-=======
-	create_mapping(&map, false);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (!vectors_high()) {
 		map.virtual = 0;
 		map.length = PAGE_SIZE * 2;
 		map.type = MT_LOW_VECTORS;
-		create_mapping(&map, false);
+		create_mapping(&map);
 	}
 
 	/* Now create a kernel read-only mapping */
@@ -1428,11 +1337,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	map.virtual = 0xffff0000 + PAGE_SIZE;
 	map.length = PAGE_SIZE;
 	map.type = MT_LOW_VECTORS;
-<<<<<<< HEAD
 	create_mapping(&map);
-=======
-	create_mapping(&map, false);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/*
 	 * Ask the machine support to map in the statically mapped devices.
@@ -1459,7 +1364,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 static void __init kmap_init(void)
 {
 #ifdef CONFIG_HIGHMEM
-	pkmap_page_table = early_pte_alloc_and_install(pmd_off_k(PKMAP_BASE),
+	pkmap_page_table = early_pte_alloc(pmd_off_k(PKMAP_BASE),
 		PKMAP_BASE, _PAGE_KERNEL_TABLE);
 #endif
 
@@ -1467,11 +1372,9 @@ static void __init kmap_init(void)
 			_PAGE_KERNEL_TABLE);
 }
 
-
 static void __init map_lowmem(void)
 {
 	struct memblock_region *reg;
-<<<<<<< HEAD
 	unsigned long kernel_x_start = round_down(__pa(_stext), SECTION_SIZE);
 	unsigned long kernel_x_end = round_up(__pa(__init_end), SECTION_SIZE);
 	struct static_vm *svm;
@@ -1489,16 +1392,6 @@ static void __init map_lowmem(void)
 		start = reg->base;
 		end = start + reg->size;
 		nr++;
-=======
-	phys_addr_t start;
-	phys_addr_t end;
-	struct map_desc map;
-
-	/* Map all the lowmem memory banks. */
-	for_each_memblock(memory, reg) {
-		start = reg->base;
-		end = start + reg->size;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		if (end > arm_lowmem_limit)
 			end = arm_lowmem_limit;
@@ -1511,7 +1404,6 @@ static void __init map_lowmem(void)
 			map.length = end - start;
 			map.type = MT_MEMORY_RWX;
 
-<<<<<<< HEAD
 			create_mapping(&map);
 		} else if (start >= kernel_x_end) {
 			map.pfn = __phys_to_pfn(start);
@@ -1575,22 +1467,7 @@ static void __init map_lowmem(void)
 		vm->caller = map_lowmem;
 		add_static_vm_early(svm++);
 		mark_vmalloc_reserved_area(vm->addr, vm->size);
-=======
-		create_mapping(&map, false);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
-
-#ifdef CONFIG_DEBUG_RODATA
-	start = __pa(_stext) & PMD_MASK;
-	end = ALIGN(__pa(__end_rodata), PMD_SIZE);
-
-	map.pfn = __phys_to_pfn(start);
-	map.virtual = __phys_to_virt(start);
-	map.length = end - start;
-	map.type = MT_MEMORY;
-
-	create_mapping(&map, true);
-#endif
 }
 
 #ifdef CONFIG_ARM_LPAE

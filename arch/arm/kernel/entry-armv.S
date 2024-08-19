@@ -1181,7 +1181,6 @@ vector_rst:
  * These aren't too critical.
  * (they're not supposed to happen, and won't happen in 32-bit data mode).
  */
-<<<<<<< HEAD
 
 vector_addrexcptn:
 	b	vector_addrexcptn
@@ -1214,28 +1213,6 @@ vector_addrexcptn:
 	.globl	vector_fiq_offset
 	.equ	vector_fiq_offset, vector_fiq
 
-=======
-
-vector_addrexcptn:
-	b	vector_addrexcptn
-
-/*=============================================================================
- * Undefined FIQs
- *-----------------------------------------------------------------------------
- * Enter in FIQ mode, spsr = ANY CPSR, lr = ANY PC
- * MUST PRESERVE SVC SPSR, but need to switch to SVC mode to show our msg.
- * Basically to switch modes, we *HAVE* to clobber one register...  brain
- * damage alert!  I don't think that we can execute any code in here in any
- * other mode than FIQ...  Ok you can switch to another mode, but you can't
- * get out of that mode without clobbering one register.
- */
-vector_fiq:
-	subs	pc, lr, #4
-
-	.globl	vector_fiq_offset
-	.equ	vector_fiq_offset, vector_fiq
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	.section .vectors, "ax", %progbits
 __vectors_start:
 	W(b)	vector_rst

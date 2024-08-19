@@ -253,7 +253,6 @@ static ssize_t dio_complete(struct dio *dio, loff_t offset, ssize_t ret,
 
 	if (dio->end_io && dio->result)
 		dio->end_io(dio->iocb, offset, transferred, dio->private);
-<<<<<<< HEAD
 
 	inode_dio_done(dio->inode);
 	if (is_async) {
@@ -269,13 +268,6 @@ static ssize_t dio_complete(struct dio *dio, loff_t offset, ssize_t ret,
 		aio_complete(dio->iocb, ret, 0);
 	}
 
-=======
-
-	inode_dio_done(dio->inode);
-	if (is_async)
-		aio_complete(dio->iocb, ret, 0);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	kmem_cache_free(dio_cache, dio);
 	return ret;
 }
@@ -556,10 +548,7 @@ static inline int dio_bio_reap(struct dio *dio, struct dio_submit *sdio)
  */
 static int sb_init_dio_done_wq(struct super_block *sb)
 {
-<<<<<<< HEAD
 	struct workqueue_struct *old;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	struct workqueue_struct *wq = alloc_workqueue("dio/%s",
 						      WQ_MEM_RECLAIM, 0,
 						      sb->s_id);
@@ -568,15 +557,9 @@ static int sb_init_dio_done_wq(struct super_block *sb)
 	/*
 	 * This has to be atomic as more DIOs can race to create the workqueue
 	 */
-<<<<<<< HEAD
 	old = cmpxchg(&sb->s_dio_done_wq, NULL, wq);
 	/* Someone created workqueue before us? Free ours... */
 	if (old)
-=======
-	cmpxchg(&sb->s_dio_done_wq, NULL, wq);
-	/* Someone created workqueue before us? Free ours... */
-	if (wq != sb->s_dio_done_wq)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		destroy_workqueue(wq);
 	return 0;
 }

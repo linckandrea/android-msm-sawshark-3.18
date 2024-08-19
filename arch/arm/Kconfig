@@ -31,7 +31,7 @@ config ARM
 	select HAVE_ARCH_JUMP_LABEL if !XIP_KERNEL
 	select HAVE_ARCH_KGDB
 	select HAVE_ARCH_MMAP_RND_BITS if MMU
-	select HAVE_ARCH_SECCOMP_FILTER
+	select HAVE_ARCH_SECCOMP_FILTER if (AEABI && !OABI_COMPAT)
 	select HAVE_ARCH_TRACEHOOK
 	select HAVE_BPF_JIT
 	select HAVE_CC_STACKPROTECTOR
@@ -2215,8 +2215,7 @@ config NEON
 
 config KERNEL_MODE_NEON
 	bool "Support for NEON in kernel mode"
-	default n
-	depends on NEON
+	depends on NEON && AEABI
 	help
 	  Say Y to include support for NEON in kernel mode.
 

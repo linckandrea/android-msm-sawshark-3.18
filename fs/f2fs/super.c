@@ -560,7 +560,6 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 #endif
 	if (test_opt(sbi, DISABLE_EXT_IDENTIFY))
 		seq_puts(seq, ",disable_ext_identify");
-<<<<<<< HEAD
 	if (test_opt(sbi, INLINE_DATA))
 		seq_puts(seq, ",inline_data");
 	if (!f2fs_readonly(sbi->sb) && test_opt(sbi, FLUSH_MERGE))
@@ -568,9 +567,6 @@ static int f2fs_show_options(struct seq_file *seq, struct dentry *root)
 	if (test_opt(sbi, NOBARRIER))
 		seq_puts(seq, ",nobarrier");
 	seq_printf(seq, ",active_logs=%u", sbi->active_logs);
-=======
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return 0;
 }
@@ -758,83 +754,7 @@ static const struct export_operations f2fs_export_ops = {
 
 loff_t max_file_size(unsigned bits)
 {
-<<<<<<< HEAD
 	loff_t result = (DEF_ADDRS_PER_INODE - F2FS_INLINE_XATTR_ADDRS);
-=======
-	substring_t args[MAX_OPT_ARGS];
-	char *p;
-	int arg = 0;
-
-	if (!options)
-		return 0;
-
-	while ((p = strsep(&options, ",")) != NULL) {
-		int token;
-		if (!*p)
-			continue;
-		/*
-		 * Initialize args struct so we know whether arg was
-		 * found; some options take optional arguments.
-		 */
-		args[0].to = args[0].from = NULL;
-		token = match_token(p, f2fs_tokens, args);
-
-		switch (token) {
-		case Opt_gc_background_off:
-			clear_opt(sbi, BG_GC);
-			break;
-		case Opt_disable_roll_forward:
-			set_opt(sbi, DISABLE_ROLL_FORWARD);
-			break;
-		case Opt_discard:
-			set_opt(sbi, DISCARD);
-			break;
-		case Opt_noheap:
-			set_opt(sbi, NOHEAP);
-			break;
-#ifdef CONFIG_F2FS_FS_XATTR
-		case Opt_nouser_xattr:
-			clear_opt(sbi, XATTR_USER);
-			break;
-#else
-		case Opt_nouser_xattr:
-			f2fs_msg(sb, KERN_INFO,
-				"nouser_xattr options not supported");
-			break;
-#endif
-#ifdef CONFIG_F2FS_FS_POSIX_ACL
-		case Opt_noacl:
-			clear_opt(sbi, POSIX_ACL);
-			break;
-#else
-		case Opt_noacl:
-			f2fs_msg(sb, KERN_INFO, "noacl options not supported");
-			break;
-#endif
-		case Opt_active_logs:
-			if (args->from && match_int(args, &arg))
-				return -EINVAL;
-			if (arg != 2 && arg != 4 && arg != NR_CURSEG_TYPE)
-				return -EINVAL;
-			sbi->active_logs = arg;
-			break;
-		case Opt_disable_ext_identify:
-			set_opt(sbi, DISABLE_EXT_IDENTIFY);
-			break;
-		default:
-			f2fs_msg(sb, KERN_ERR,
-				"Unrecognized mount option \"%s\" or missing value",
-				p);
-			return -EINVAL;
-		}
-	}
-	return 0;
-}
-
-loff_t max_file_size(unsigned bits)
-{
-	loff_t result = ADDRS_PER_INODE;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	loff_t leaf_count = ADDRS_PER_BLOCK;
 
 	/* two direct node blocks */
@@ -881,24 +801,10 @@ static int sanity_check_raw_super(struct super_block *sb,
 		return 1;
 	}
 
-<<<<<<< HEAD
 	if (le32_to_cpu(raw_super->segment_count) > F2FS_MAX_SEGMENT) {
 		f2fs_msg(sb, KERN_INFO,
 			"Invalid segment count (%u)",
 			le32_to_cpu(raw_super->segment_count));
-=======
-	/* check log blocks per segment */
-	if (le32_to_cpu(raw_super->log_blocks_per_seg) != 9) {
-		f2fs_msg(sb, KERN_INFO,
-			"Invalid log blocks per segment (%u)\n",
-			le32_to_cpu(raw_super->log_blocks_per_seg));
-		return 1;
-	}
-
-	if (le32_to_cpu(raw_super->log_sectorsize) !=
-					F2FS_LOG_SECTOR_SIZE) {
-		f2fs_msg(sb, KERN_INFO, "Invalid log sectorsize");
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return 1;
 	}
 
@@ -935,14 +841,6 @@ static int sanity_check_raw_super(struct super_block *sb,
 			le32_to_cpu(raw_super->segment_count));
 		return 1;
 	}
-
-	if (le32_to_cpu(raw_super->segment_count) > F2FS_MAX_SEGMENT) {
-		f2fs_msg(sb, KERN_INFO,
-			"Invalid segment count (%u)",
-			le32_to_cpu(raw_super->segment_count));
-		return 1;
-	}
-
 	return 0;
 }
 

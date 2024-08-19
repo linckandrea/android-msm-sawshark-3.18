@@ -422,7 +422,6 @@ config CPU_32v3
 	select NEEDS_SYSCALL_FOR_CMPXCHG if SMP
 	select NEED_KUSER_HELPERS
 	select TLS_REG_EMUL if SMP || !MMU
-	select NEED_KUSER_HELPERS
 
 config CPU_32v4
 	bool
@@ -430,7 +429,6 @@ config CPU_32v4
 	select NEEDS_SYSCALL_FOR_CMPXCHG if SMP
 	select NEED_KUSER_HELPERS
 	select TLS_REG_EMUL if SMP || !MMU
-	select NEED_KUSER_HELPERS
 
 config CPU_32v4T
 	bool
@@ -438,7 +436,6 @@ config CPU_32v4T
 	select NEEDS_SYSCALL_FOR_CMPXCHG if SMP
 	select NEED_KUSER_HELPERS
 	select TLS_REG_EMUL if SMP || !MMU
-	select NEED_KUSER_HELPERS
 
 config CPU_32v5
 	bool
@@ -446,7 +443,6 @@ config CPU_32v5
 	select NEEDS_SYSCALL_FOR_CMPXCHG if SMP
 	select NEED_KUSER_HELPERS
 	select TLS_REG_EMUL if SMP || !MMU
-	select NEED_KUSER_HELPERS
 
 config CPU_32v6
 	bool
@@ -802,10 +798,7 @@ config NEED_KUSER_HELPERS
 
 config KUSER_HELPERS
 	bool "Enable kuser helpers in vector page" if !NEED_KUSER_HELPERS
-<<<<<<< HEAD
 	depends on MMU
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	default y
 	help
 	  Warning: disabling this option may break user programs.
@@ -816,27 +809,18 @@ config KUSER_HELPERS
 	  the CPU type fitted to the system.  This permits binaries to be
 	  run on ARMv4 through to ARMv7 without modification.
 
-<<<<<<< HEAD
 	  See Documentation/arm/kernel_user_helpers.txt for details.
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	  However, the fixed address nature of these helpers can be used
 	  by ROP (return orientated programming) authors when creating
 	  exploits.
 
 	  If all of the binaries and libraries which run on your platform
 	  are built specifically for your platform, and make no use of
-<<<<<<< HEAD
 	  these helpers, then you can turn this option off to hinder
 	  such exploits. However, in that case, if a binary or library
 	  relying on those helpers is run, it will receive a SIGILL signal,
 	  which will terminate the program.
-=======
-	  these helpers, then you can turn this option off.  However,
-	  when such an binary or library is run, it will receive a SIGILL
-	  signal, which will terminate the program.
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	  Say N here only if you are absolutely certain that you do not
 	  need these helpers; otherwise, the safe option is to say Y.

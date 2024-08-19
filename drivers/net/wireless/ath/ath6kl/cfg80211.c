@@ -3256,12 +3256,8 @@ static int ath6kl_cfg80211_sscan_start(struct wiphy *wiphy,
 	int ret, rssi_thold;
 	int n_match_sets = request->n_match_sets;
 
-<<<<<<< HEAD
 	/*
 	 * If there's a matchset w/o an SSID, then assume it's just for
-=======
-	/* If there's a matchset w/o an SSID, then assume it's just for
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	 * the RSSI (nothing else is currently supported) and ignore it.
 	 * The device only supports a global RSSI filter that we set below.
 	 */

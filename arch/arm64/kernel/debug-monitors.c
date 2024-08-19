@@ -134,7 +134,7 @@ static int os_lock_notify(struct notifier_block *self,
 				    unsigned long action, void *data)
 {
 	int cpu = (unsigned long)data;
-	if ((action & ~CPU_TASKS_FROZEN) == CPU_ONLINE)
+	if (action == CPU_ONLINE)
 		smp_call_function_single(cpu, clear_os_lock, NULL, 1);
 	return NOTIFY_OK;
 }
@@ -265,7 +265,6 @@ static int single_step_handler(unsigned long addr, unsigned int esr,
 	return 0;
 }
 
-<<<<<<< HEAD
 /*
  * Breakpoint handler is re-entrant as another breakpoint can
  * hit within breakpoint handler, especically in kprobes.
@@ -302,14 +301,11 @@ static int call_break_hook(struct pt_regs *regs, unsigned int esr)
 	return fn ? fn(regs, esr) : DBG_HOOK_ERROR;
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static int brk_handler(unsigned long addr, unsigned int esr,
 		       struct pt_regs *regs)
 {
 	siginfo_t info;
 
-<<<<<<< HEAD
 	if (user_mode(regs)) {
 		info = (siginfo_t) {
 			.si_signo = SIGTRAP,
@@ -324,31 +320,14 @@ static int brk_handler(unsigned long addr, unsigned int esr,
 		return -EFAULT;
 	}
 
-=======
-	if (!user_mode(regs))
-		return -EFAULT;
-
-	info = (siginfo_t) {
-		.si_signo = SIGTRAP,
-		.si_errno = 0,
-		.si_code  = TRAP_BRKPT,
-		.si_addr  = (void __user *)instruction_pointer(regs),
-	};
-
-	force_sig_info(SIGTRAP, &info, current);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return 0;
 }
 
 int aarch32_break_handler(struct pt_regs *regs)
 {
 	siginfo_t info;
-<<<<<<< HEAD
 	u32 arm_instr;
 	u16 thumb_instr;
-=======
-	unsigned int instr;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	bool bp = false;
 	void __user *pc = (void __user *)instruction_pointer(regs);
 
@@ -357,7 +336,6 @@ int aarch32_break_handler(struct pt_regs *regs)
 
 	if (compat_thumb_mode(regs)) {
 		/* get 16-bit Thumb instruction */
-<<<<<<< HEAD
 		get_user(thumb_instr, (u16 __user *)pc);
 		thumb_instr = le16_to_cpu(thumb_instr);
 		if (thumb_instr == AARCH32_BREAK_THUMB2_LO) {
@@ -373,20 +351,6 @@ int aarch32_break_handler(struct pt_regs *regs)
 		get_user(arm_instr, (u32 __user *)pc);
 		arm_instr = le32_to_cpu(arm_instr);
 		bp = (arm_instr & ~0xf0000000) == AARCH32_BREAK_ARM;
-=======
-		get_user(instr, (u16 __user *)pc);
-		if (instr == AARCH32_BREAK_THUMB2_LO) {
-			/* get second half of 32-bit Thumb-2 instruction */
-			get_user(instr, (u16 __user *)(pc + 2));
-			bp = instr == AARCH32_BREAK_THUMB2_HI;
-		} else {
-			bp = instr == AARCH32_BREAK_THUMB;
-		}
-	} else {
-		/* 32-bit ARM instruction */
-		get_user(instr, (u32 __user *)pc);
-		bp = (instr & ~0xf0000000) == AARCH32_BREAK_ARM;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 
 	if (!bp)

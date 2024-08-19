@@ -171,7 +171,7 @@ hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 		addr = ALIGN(addr, huge_page_size(h));
 		vma = find_vma(mm, addr);
 		if (TASK_SIZE - len >= addr &&
-		    (!vma || addr + len <= vm_start_gap(vma)))
+		    (!vma || addr + len <= vma->vm_start))
 			return addr;
 	}
 
@@ -937,11 +937,7 @@ static int get_hstate_idx(int page_size_log)
 	return h - hstates;
 }
 
-<<<<<<< HEAD
 static const struct dentry_operations anon_ops = {
-=======
-static struct dentry_operations anon_ops = {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	.d_dname = simple_dname
 };
 

@@ -238,12 +238,8 @@ static int inet_csk_diag_fill(struct sock *sk,
 			      bool net_admin)
 {
 	return inet_sk_diag_fill(sk, inet_csk(sk),
-<<<<<<< HEAD
 			skb, req, user_ns, portid, seq, nlmsg_flags, unlh,
 			net_admin);
-=======
-			skb, req, user_ns, portid, seq, nlmsg_flags, unlh, net_admin);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static int inet_twsk_diag_fill(struct inet_timewait_sock *tw,
@@ -306,19 +302,11 @@ static int sk_diag_fill(struct sock *sk, struct sk_buff *skb,
 			const struct nlmsghdr *unlh, bool net_admin)
 {
 	if (sk->sk_state == TCP_TIME_WAIT)
-<<<<<<< HEAD
 		return inet_twsk_diag_fill(inet_twsk(sk), skb, r, portid, seq,
 					   nlmsg_flags, unlh);
 
 	return inet_csk_diag_fill(sk, skb, r, user_ns, portid, seq,
 				  nlmsg_flags, unlh, net_admin);
-=======
-		return inet_twsk_diag_fill((struct inet_timewait_sock *)sk,
-					   skb, r, portid, seq, nlmsg_flags,
-					   unlh);
-	return inet_csk_diag_fill(sk, skb, r, user_ns, portid, seq, nlmsg_flags,
-				  unlh, net_admin);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 struct sock *inet_diag_find_one_icsk(struct net *net,
@@ -356,37 +344,9 @@ struct sock *inet_diag_find_one_icsk(struct net *net,
 		return ERR_PTR(-ENOENT);
 
 	if (sock_diag_check_cookie(sk, req->id.idiag_cookie)) {
-<<<<<<< HEAD
 		sock_gen_put(sk);
 		return ERR_PTR(-ENOENT);
 	}
-=======
-		/* NOTE: forward-ports should use sock_gen_put(sk) instead. */
-		if (sk->sk_state == TCP_TIME_WAIT)
-			inet_twsk_put((struct inet_timewait_sock *)sk);
-		else
-			sock_put(sk);
-		return ERR_PTR(-ENOENT);
-	}
-
-	return sk;
-}
-EXPORT_SYMBOL_GPL(inet_diag_find_one_icsk);
-
-int inet_diag_dump_one_icsk(struct inet_hashinfo *hashinfo,
-			    struct sk_buff *in_skb,
-			    const struct nlmsghdr *nlh,
-			    struct inet_diag_req_v2 *req)
-{
-	struct net *net = sock_net(in_skb->sk);
-	struct sk_buff *rep;
-	struct sock *sk;
-	int err;
-
-	sk = inet_diag_find_one_icsk(net, hashinfo, req);
-	if (IS_ERR(sk))
-		return PTR_ERR(sk);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return sk;
 }
@@ -416,12 +376,7 @@ int inet_diag_dump_one_icsk(struct inet_hashinfo *hashinfo,
 			   sk_user_ns(NETLINK_CB(in_skb).sk),
 			   NETLINK_CB(in_skb).portid,
 			   nlh->nlmsg_seq, 0, nlh,
-<<<<<<< HEAD
 			   netlink_net_capable(in_skb, CAP_NET_ADMIN));
-=======
-			   ns_capable(sock_net(in_skb->sk)->user_ns,
-				      CAP_NET_ADMIN));
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (err < 0) {
 		WARN_ON(err == -EMSGSIZE);
 		nlmsg_free(rep);
@@ -433,18 +388,9 @@ int inet_diag_dump_one_icsk(struct inet_hashinfo *hashinfo,
 		err = 0;
 
 out:
-<<<<<<< HEAD
 	if (sk)
 		sock_gen_put(sk);
 
-=======
-	if (sk) {
-		if (sk->sk_state == TCP_TIME_WAIT)
-			inet_twsk_put((struct inet_timewait_sock *)sk);
-		else
-			sock_put(sk);
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return err;
 }
 EXPORT_SYMBOL_GPL(inet_diag_dump_one_icsk);
@@ -620,12 +566,8 @@ int inet_diag_bc_sk(const struct nlattr *bc, struct sock *sk)
 	}
 	entry.sport = inet->inet_num;
 	entry.dport = ntohs(inet->inet_dport);
-	entry.ifindex = sk->sk_bound_dev_if;
 	entry.userlocks = sk->sk_userlocks;
-<<<<<<< HEAD
 	entry.ifindex = sk->sk_bound_dev_if;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	entry.mark = sk->sk_mark;
 
 	return inet_diag_bc_run(bc, &entry);
@@ -719,11 +661,7 @@ static bool valid_markcond(const struct inet_diag_bc_op *op, int len,
 static int inet_diag_bc_audit(const struct nlattr *attr,
 			      const struct sk_buff *skb)
 {
-<<<<<<< HEAD
 	bool net_admin = netlink_net_capable(skb, CAP_NET_ADMIN);
-=======
-	bool net_admin = ns_capable(sock_net(skb->sk)->user_ns, CAP_NET_ADMIN);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	const void *bytecode, *bc;
 	int bytecode_len, len;
 
@@ -899,23 +837,14 @@ static int inet_diag_fill_req(struct sk_buff *skb, struct sock *sk,
 		tmo = 0;
 
 	r->id.idiag_sport = inet->inet_sport;
-<<<<<<< HEAD
 	r->id.idiag_dport = ireq->ir_rmt_port;
-=======
-	r->id.idiag_dport = ireq->rmt_port;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	memset(&r->id.idiag_src, 0, sizeof(r->id.idiag_src));
 	memset(&r->id.idiag_dst, 0, sizeof(r->id.idiag_dst));
 
-<<<<<<< HEAD
 	r->id.idiag_src[0] = ireq->ir_loc_addr;
 	r->id.idiag_dst[0] = ireq->ir_rmt_addr;
 
-=======
-	r->id.idiag_src[0] = ireq->loc_addr;
-	r->id.idiag_dst[0] = ireq->rmt_addr;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	r->idiag_expires = jiffies_to_msecs(tmo);
 	r->idiag_rqueue = 0;
 	r->idiag_wqueue = 0;
@@ -1013,11 +942,7 @@ void inet_diag_dump_icsk(struct inet_hashinfo *hashinfo, struct sk_buff *skb,
 	int i, num;
 	int s_i, s_num;
 	struct net *net = sock_net(skb->sk);
-<<<<<<< HEAD
 	bool net_admin = netlink_net_capable(cb->skb, CAP_NET_ADMIN);
-=======
-	bool net_admin = ns_capable(net->user_ns, CAP_NET_ADMIN);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	s_i = cb->args[1];
 	s_num = num = cb->args[2];
@@ -1128,17 +1053,12 @@ skip_listen_ht:
 			if (r->id.idiag_dport != sk->sk_dport &&
 			    r->id.idiag_dport)
 				goto next_normal;
-<<<<<<< HEAD
 			if (sk->sk_state == TCP_TIME_WAIT)
 				res = inet_twsk_diag_dump(sk, skb, cb, r, bc);
 			else
 				res = inet_csk_diag_dump(sk, skb, cb, r, bc,
 							 net_admin);
 			if (res < 0) {
-=======
-			if (inet_csk_diag_dump(sk, skb, cb, r,
-					       bc, net_admin) < 0) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				spin_unlock_bh(lock);
 				goto done;
 			}

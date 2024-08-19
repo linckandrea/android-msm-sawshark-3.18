@@ -91,13 +91,10 @@ static void sync_timeline_free(struct kref *kref)
 void sync_timeline_destroy(struct sync_timeline *obj)
 {
 	obj->destroyed = true;
-<<<<<<< HEAD
 	/*
 	 * Ensure timeline is marked as destroyed before
 	 * changing timeline's fences status.
 	 */
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	smp_wmb();
 
 	/*

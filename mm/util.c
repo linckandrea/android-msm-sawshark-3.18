@@ -8,14 +8,10 @@
 #include <linux/security.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
-<<<<<<< HEAD
 #include <linux/mman.h>
 #include <linux/hugetlb.h>
 #include <linux/vmalloc.h>
 
-=======
-#include <linux/vmalloc.h>
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <asm/uaccess.h>
 
 #include "internal.h"

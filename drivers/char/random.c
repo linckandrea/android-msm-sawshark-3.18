@@ -1753,11 +1753,7 @@ unsigned long get_random_long(void)
 
 	hash = get_cpu_var(get_random_int_hash);
 
-<<<<<<< HEAD
 	hash[0] += current->pid + jiffies + random_get_entropy();
-=======
-	hash[0] += current->pid + jiffies + get_cycles();
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	md5_transform(hash, random_int_secret);
 	ret = *(unsigned long *)hash;
 	put_cpu_var(get_random_int_hash);

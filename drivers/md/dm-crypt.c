@@ -1007,11 +1007,7 @@ retry:
 		bvec->bv_len = len;
 		bvec->bv_offset = 0;
 
-<<<<<<< HEAD
 		clone->bi_iter.bi_size += len;
-=======
-		clone->bi_size += len;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 		remaining_size -= len;
 	}
@@ -1253,14 +1249,11 @@ static void kcryptd_crypt_write_io_submit(struct dm_crypt_io *io, int async)
 
 	clone->bi_iter.bi_sector = cc->start + io->sector;
 
-<<<<<<< HEAD
 	if (likely(!async) && test_bit(DM_CRYPT_NO_OFFLOAD, &cc->flags)) {
 		generic_make_request(clone);
 		return;
 	}
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	spin_lock_irqsave(&cc->write_thread_wait.lock, flags);
 	rbp = &cc->write_tree.rb_node;
 	parent = NULL;
@@ -1293,21 +1286,14 @@ static void kcryptd_crypt_write_convert(struct dm_crypt_io *io)
 	crypt_inc_pending(io);
 	crypt_convert_init(cc, &io->ctx, NULL, io->base_bio, sector);
 
-<<<<<<< HEAD
 	clone = crypt_alloc_buffer(io, io->base_bio->bi_iter.bi_size);
-=======
-	clone = crypt_alloc_buffer(io, io->base_bio->bi_size);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (unlikely(!clone)) {
 		io->error = -EIO;
 		goto dec;
 	}
 
 	io->ctx.bio_out = clone;
-<<<<<<< HEAD
 	io->ctx.iter_out = clone->bi_iter;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	sector += bio_sectors(clone);
 
@@ -1855,32 +1841,17 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	}
 
 	ret = -ENOMEM;
-<<<<<<< HEAD
 	cc->io_queue = alloc_workqueue("kcryptd_io", WQ_MEM_RECLAIM, 1);
-=======
-	cc->io_queue = alloc_workqueue("kcryptd_io",
-				       WQ_HIGHPRI |
-				       WQ_NON_REENTRANT|
-				       WQ_MEM_RECLAIM,
-				       1);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!cc->io_queue) {
 		ti->error = "Couldn't create kcryptd io queue";
 		goto bad;
 	}
 
-<<<<<<< HEAD
 	if (test_bit(DM_CRYPT_SAME_CPU, &cc->flags))
 		cc->crypt_queue = alloc_workqueue("kcryptd", WQ_CPU_INTENSIVE | WQ_MEM_RECLAIM, 1);
 	else
 		cc->crypt_queue = alloc_workqueue("kcryptd", WQ_CPU_INTENSIVE | WQ_MEM_RECLAIM | WQ_UNBOUND,
 						  num_online_cpus());
-=======
-	cc->crypt_queue = alloc_workqueue("kcryptd",
-					  WQ_HIGHPRI |
-					  WQ_MEM_RECLAIM |
-					  WQ_UNBOUND, num_online_cpus());
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!cc->crypt_queue) {
 		ti->error = "Couldn't create kcryptd queue";
 		goto bad;
@@ -1927,11 +1898,7 @@ static int crypt_map(struct dm_target *ti, struct bio *bio)
 	}
 
 	io = dm_per_bio_data(bio, cc->per_bio_data_size);
-<<<<<<< HEAD
 	crypt_io_init(io, cc, bio, dm_target_offset(ti, bio->bi_iter.bi_sector));
-=======
-	crypt_io_init(io, cc, bio, dm_target_offset(ti, bio->bi_sector));
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	io->ctx.req = (struct ablkcipher_request *)(io + 1);
 
 	if (bio_data_dir(io->base_bio) == READ) {

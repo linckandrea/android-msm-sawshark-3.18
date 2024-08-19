@@ -1469,11 +1469,7 @@ static int fanout_add(struct sock *sk, u16 id, u16 type_flags)
 		list_add(&match->list, &fanout_list);
 	}
 	err = -EINVAL;
-<<<<<<< HEAD
 	
-=======
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	spin_lock(&po->bind_lock);
 	if (po->running &&
 	    match->type == type &&
@@ -1507,11 +1503,7 @@ static void fanout_release(struct sock *sk)
 
 	mutex_lock(&fanout_mutex);
 	f = po->fanout;
-<<<<<<< HEAD
 	if (f){
-=======
-	if (f) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		po->fanout = NULL;
 
 		if (atomic_dec_and_test(&f->sk_ref)) {
@@ -2664,37 +2656,19 @@ static int packet_release(struct socket *sock)
 static int packet_do_bind(struct sock *sk, struct net_device *dev, __be16 proto)
 {
 	struct packet_sock *po = pkt_sk(sk);
-<<<<<<< HEAD
 	struct net_device *dev_curr;
 	__be16 proto_curr;
 	bool need_rehook;
-=======
-	int ret = 0;
-
-	lock_sock(sk);
-
-	spin_lock(&po->bind_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (po->fanout) {
 		if (dev)
 			dev_put(dev);
 
-		ret = -EINVAL;
-		goto out_unlock;
+		return -EINVAL;
 	}
 
-<<<<<<< HEAD
 	lock_sock(sk);
 	spin_lock(&po->bind_lock);
-=======
-	unregister_prot_hook(sk, true);
-	po->num = protocol;
-	po->prot_hook.type = protocol;
-	if (po->prot_hook.dev)
-		dev_put(po->prot_hook.dev);
-	po->prot_hook.dev = dev;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	proto_curr = po->prot_hook.type;
 	dev_curr = po->prot_hook.dev;
@@ -2728,7 +2702,7 @@ static int packet_do_bind(struct sock *sk, struct net_device *dev, __be16 proto)
 out_unlock:
 	spin_unlock(&po->bind_lock);
 	release_sock(sk);
-	return ret;
+	return 0;
 }
 
 /*
@@ -3826,11 +3800,7 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 		if (unlikely(req->tp_block_size & (PAGE_SIZE - 1)))
 			goto out;
 		if (po->tp_version >= TPACKET_V3 &&
-<<<<<<< HEAD
 			req->tp_block_size <=
-=======
-		    req->tp_block_size <=
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			  BLK_PLUS_PRIV((u64)req_u->req3.tp_sizeof_priv))
 			goto out;
 		if (unlikely(req->tp_frame_size < po->tp_hdrlen +

@@ -2,10 +2,7 @@
  * drivers/staging/android/ion/ion.h
  *
  * Copyright (C) 2011 Google, Inc.
-<<<<<<< HEAD
  * Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -21,12 +18,7 @@
 #ifndef _LINUX_ION_H
 #define _LINUX_ION_H
 
-<<<<<<< HEAD
 #include <linux/err.h>
-=======
-#include <linux/types.h>
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include "../uapi/ion.h"
 
 struct ion_handle;
@@ -40,11 +32,7 @@ struct ion_buffer;
    plumbed in the kernel, and all instances of ion_phys_addr_t should
    be converted to phys_addr_t.  For the time being many kernel interfaces
    do not accept phys_addr_t's that would have to */
-<<<<<<< HEAD
 #define ion_phys_addr_t dma_addr_t
-=======
-#define ion_phys_addr_t unsigned long
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /**
  * struct ion_platform_heap - defines a heap in the given platform
@@ -55,12 +43,9 @@ struct ion_buffer;
  * @name:	used for debug purposes
  * @base:	base address of heap in physical memory if applicable
  * @size:	size of the heap in bytes if applicable
-<<<<<<< HEAD
  * @has_outer_cache:    set to 1 if outer cache is used, 0 otherwise.
  * @extra_data:	Extra data specific to each heap type
  * @priv:	heap private data
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * @align:	required alignment in physical memory if applicable
  * @priv:	private info passed from the board file
  *
@@ -72,53 +57,35 @@ struct ion_platform_heap {
 	const char *name;
 	ion_phys_addr_t base;
 	size_t size;
-<<<<<<< HEAD
 	unsigned int has_outer_cache;
 	void *extra_data;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	ion_phys_addr_t align;
 	void *priv;
 };
 
 /**
  * struct ion_platform_data - array of platform heaps passed from board file
-<<<<<<< HEAD
  * @has_outer_cache:    set to 1 if outer cache is used, 0 otherwise.
  * @nr:    number of structures in the array
  * @heaps: array of platform_heap structions
-=======
- * @nr:		number of structures in the array
- * @heaps:	array of platform_heap structions
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * Provided by the board file in the form of platform data to a platform device.
  */
 struct ion_platform_data {
-<<<<<<< HEAD
 	unsigned int has_outer_cache;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	int nr;
 	struct ion_platform_heap *heaps;
 };
 
-<<<<<<< HEAD
 #ifdef CONFIG_ION
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /**
  * ion_reserve() - reserve memory for ion heaps if applicable
  * @data:	platform data specifying starting physical address and
  *		size
  *
  * Calls memblock reserve to set aside memory for heaps that are
-<<<<<<< HEAD
  * located at specific memory addresses or of specific sizes not
-=======
- * located at specific memory addresses or of specfic sizes not
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * managed by the kernel
  */
 void ion_reserve(struct ion_platform_data *data);
@@ -126,10 +93,6 @@ void ion_reserve(struct ion_platform_data *data);
 /**
  * ion_client_create() -  allocate a client and returns it
  * @dev:		the global ion device
-<<<<<<< HEAD
-=======
- * @heap_type_mask:	mask of heaps this client can allocate from
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * @name:		used for debugging
  */
 struct ion_client *ion_client_create(struct ion_device *dev,
@@ -246,7 +209,6 @@ int ion_share_dma_buf_fd(struct ion_client *client, struct ion_handle *handle);
  */
 struct ion_handle *ion_import_dma_buf(struct ion_client *client, int fd);
 
-<<<<<<< HEAD
 #else
 static inline void ion_reserve(struct ion_platform_data *data)
 {
@@ -311,6 +273,4 @@ static inline int ion_handle_get_flags(struct ion_client *client,
 }
 
 #endif /* CONFIG_ION */
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* _LINUX_ION_H */

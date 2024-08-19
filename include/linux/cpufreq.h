@@ -13,21 +13,12 @@
 
 #include <linux/clk.h>
 #include <linux/cpumask.h>
-<<<<<<< HEAD
 #include <linux/completion.h>
 #include <linux/kobject.h>
 #include <linux/notifier.h>
 #include <linux/spinlock.h>
 #include <linux/sysfs.h>
 #include <asm/cputime.h>
-=======
-#include <asm/div64.h>
-#include <asm/cputime.h>
-
-#define CPUFREQ_NAME_LEN 16
-/* Print length for names. Extra 1 space for accomodating '\n' in prints */
-#define CPUFREQ_NAME_PLEN (CPUFREQ_NAME_LEN + 1)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 
 /*********************************************************************
@@ -227,20 +218,10 @@ static struct global_attr _name =		\
 __ATTR(_name, 0644, show_##_name, store_##_name)
 
 
-<<<<<<< HEAD
 struct cpufreq_driver {
 	char		name[CPUFREQ_NAME_LEN];
 	u8		flags;
 	void		*driver_data;
-=======
-/*********************************************************************
- *                        CPUFREQ 2.6. INTERFACE                     *
- *********************************************************************/
-int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
-int cpufreq_update_policy(unsigned int cpu);
-bool have_governor_per_policy(void);
-struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* needed by all drivers */
 	int		(*init)(struct cpufreq_policy *policy);
@@ -659,15 +640,4 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
 
 void acct_update_power(struct task_struct *p, cputime_t cputime);
 
-<<<<<<< HEAD
-=======
-void cpufreq_frequency_table_put_attr(unsigned int cpu);
-
-/*********************************************************************
- *                         CPUFREQ STATS                             *
- *********************************************************************/
-
-void acct_update_power(struct task_struct *p, cputime_t cputime);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* _LINUX_CPUFREQ_H */

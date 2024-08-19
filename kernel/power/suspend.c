@@ -28,10 +28,7 @@
 #include <linux/ftrace.h>
 #include <linux/rtc.h>
 #include <trace/events/power.h>
-<<<<<<< HEAD
 #include <linux/compiler.h>
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <linux/wakeup_reason.h>
 
 #include "power.h"
@@ -246,7 +243,7 @@ static int suspend_prepare(suspend_state_t state)
 	trace_suspend_resume(TPS("freeze_processes"), 0, false);
 	if (!error)
 		return 0;
-	log_suspend_abort_reason("One or more tasks refusing to freeze");
+
 	suspend_stats.failed_freeze++;
 	dpm_save_failed_step(SUSPEND_FREEZE);
  Finish:
@@ -287,11 +284,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 	if (error) {
 		last_dev = suspend_stats.last_failed_dev + REC_FAILED_NUM - 1;
 		last_dev %= REC_FAILED_NUM;
-<<<<<<< HEAD
 		printk(KERN_ERR "PM: late suspend of devices failed\n");
-=======
-		printk(KERN_ERR "PM: Some devices failed to power down\n");
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		log_suspend_abort_reason("%s device failed to power down",
 			suspend_stats.failed_devs[last_dev]);
 		goto Platform_finish;
@@ -400,13 +393,8 @@ int suspend_devices_and_enter(suspend_state_t state)
 	suspend_test_start();
 	error = dpm_suspend_start(PMSG_SUSPEND);
 	if (error) {
-<<<<<<< HEAD
 		pr_err("PM: Some devices failed to suspend, or early wake event detected\n");
 		log_suspend_abort_reason("Some devices failed to suspend, or early wake event detected");
-=======
-		printk(KERN_ERR "PM: Some devices failed to suspend\n");
-		log_suspend_abort_reason("Some devices failed to suspend");
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		goto Recover_platform;
 	}
 	suspend_test_finish("suspend devices");

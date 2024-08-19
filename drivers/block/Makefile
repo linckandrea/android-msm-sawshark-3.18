@@ -41,10 +41,7 @@ obj-$(CONFIG_BLK_DEV_RBD)     += rbd.o
 obj-$(CONFIG_BLK_DEV_PCIESSD_MTIP32XX)	+= mtip32xx/
 
 obj-$(CONFIG_BLK_DEV_RSXX) += rsxx/
-<<<<<<< HEAD
 obj-$(CONFIG_BLK_DEV_NULL_BLK)	+= null_blk.o
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 obj-$(CONFIG_ZRAM) += zram/
 
 nvme-y		:= nvme-core.o nvme-scsi.o

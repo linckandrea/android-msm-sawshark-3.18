@@ -238,11 +238,7 @@ int sensor_hub_get_feature(struct hid_sensor_hub_device *hsdev, u32 report_id,
 
 	mutex_lock(&data->mutex);
 	report = sensor_hub_report(report_id, hsdev->hdev, HID_FEATURE_REPORT);
-<<<<<<< HEAD
 	if (!report || (field_index >= report->maxfield) ||
-=======
-	if (!report || (field_index >=  report->maxfield) ||
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	    report->field[field_index]->report_count < 1) {
 		ret = -EINVAL;
 		goto done_proc;

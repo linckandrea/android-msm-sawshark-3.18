@@ -1208,11 +1208,7 @@ static void hidinput_led_worker(struct work_struct *work)
 					      led_work);
 	struct hid_field *field;
 	struct hid_report *report;
-<<<<<<< HEAD
 	int len, ret;
-=======
-	int len;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	__u8 *buf;
 
 	field = hidinput_get_led_field(hid);
@@ -1234,7 +1230,6 @@ static void hidinput_led_worker(struct work_struct *work)
 
 	report = field->report;
 
-<<<<<<< HEAD
 	/* use custom SET_REPORT request if possible (asynchronous) */
 	if (hid->ll_driver->request)
 		return hid->ll_driver->request(hid, report, HID_REQ_SET_REPORT);
@@ -1242,23 +1237,15 @@ static void hidinput_led_worker(struct work_struct *work)
 	/* fall back to generic raw-output-report */
 	len = ((report->size - 1) >> 3) + 1 + (report->id > 0);
 	buf = hid_alloc_report_buf(report, GFP_KERNEL);
-=======
-	len = ((report->size - 1) >> 3) + 1 + (report->id > 0);
-	buf = kmalloc(len, GFP_KERNEL);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!buf)
 		return;
 
 	hid_output_report(report, buf);
 	/* synchronous output report */
-<<<<<<< HEAD
 	ret = hid_hw_output_report(hid, buf, len);
 	if (ret == -ENOSYS)
 		hid_hw_raw_request(hid, report->id, buf, len, HID_OUTPUT_REPORT,
 				HID_REQ_SET_REPORT);
-=======
-	hid->hid_output_raw_report(hid, buf, len, HID_OUTPUT_REPORT);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	kfree(buf);
 }
 
@@ -1337,16 +1324,7 @@ static struct hid_input *hidinput_allocate(struct hid_device *hid)
 	}
 
 	input_set_drvdata(input_dev, hid);
-<<<<<<< HEAD
 	input_dev->event = hidinput_input_event;
-=======
-	if(hid->ll_driver->hidinput_input_event) {
-		input_dev->event =
-				hid->ll_driver->hidinput_input_event;
-	} else if (hid->hid_output_raw_report) {
-		input_dev->event = hidinput_input_event;
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	input_dev->open = hidinput_open;
 	input_dev->close = hidinput_close;
 	input_dev->setkeycode = hidinput_setkeycode;

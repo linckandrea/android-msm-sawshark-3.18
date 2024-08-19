@@ -175,22 +175,15 @@ config INPUT_APMPOWER
 	  module will be called apm-power.
 
 config INPUT_KEYRESET
-<<<<<<< HEAD
 	tristate "Reset key"
-=======
-	bool "Reset key"
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	depends on INPUT
 	select INPUT_KEYCOMBO
 	---help---
 	  Say Y here if you want to reboot when some keys are pressed;
 
-<<<<<<< HEAD
 	  To compile this driver as a module, choose M here: the
 	  module will be called keyreset.
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 config INPUT_KEYCOMBO
 	tristate "Key combo"
 	depends on INPUT

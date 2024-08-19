@@ -888,21 +888,12 @@ static int __ip_append_data(struct sock *sk,
 		csummode = CHECKSUM_PARTIAL;
 
 	cork->length += length;
-<<<<<<< HEAD
 	if ((skb && skb_is_gso(skb)) ||
             ((length > mtu) &&
             (skb_queue_len(queue) <= 1) &&
 	    (sk->sk_protocol == IPPROTO_UDP) &&
 	    (rt->dst.dev->features & NETIF_F_UFO) && !rt->dst.header_len &&
 	    (sk->sk_type == SOCK_DGRAM) && !sk->sk_no_check_tx)) {
-=======
-	if ((skb && skb_has_frags(skb)) ||
-	    ((length > mtu) &&
-	    (skb_queue_len(queue) <= 1) &&
-	    (sk->sk_protocol == IPPROTO_UDP) &&
-	    (rt->dst.dev->features & NETIF_F_UFO) && !rt->dst.header_len &&
-	    (sk->sk_type == SOCK_DGRAM))) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		err = ip_ufo_append_data(sk, queue, getfrag, from, length,
 					 hh_len, fragheaderlen, transhdrlen,
 					 maxfraglen, flags);
@@ -1520,15 +1511,10 @@ static int ip_reply_glue_bits(void *dptr, char *to, int offset,
  *	Generic function to send a packet as reply to another packet.
  *	Used to send some TCP resets/acks so far.
  */
-<<<<<<< HEAD
 void ip_send_unicast_reply(struct sock *sk, struct sk_buff *skb,
 			   const struct ip_options *sopt,
 			   __be32 daddr, __be32 saddr,
 			   const struct ip_reply_arg *arg,
-=======
-void ip_send_unicast_reply(struct sock *sk, struct sk_buff *skb, __be32 daddr,
-			   __be32 saddr, const struct ip_reply_arg *arg,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			   unsigned int len)
 {
 	struct ip_options_data replyopts;

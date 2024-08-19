@@ -75,10 +75,7 @@ struct idletimer_tg {
 	bool send_nl_msg;
 	bool active;
 	uid_t uid;
-<<<<<<< HEAD
 	bool suspend_time_valid;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 static LIST_HEAD(idletimer_tg_list);
@@ -248,7 +245,6 @@ static int idletimer_resume(struct notifier_block *notifier,
 	switch (pm_event) {
 	case PM_SUSPEND_PREPARE:
 		get_monotonic_boottime(&timer->last_suspend_time);
-<<<<<<< HEAD
 		timer->suspend_time_valid = true;
 		break;
 	case PM_POST_SUSPEND:
@@ -256,10 +252,6 @@ static int idletimer_resume(struct notifier_block *notifier,
 			break;
 		timer->suspend_time_valid = false;
 
-=======
-		break;
-	case PM_POST_SUSPEND:
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		spin_lock_bh(&timestamp_lock);
 		if (!timer->active) {
 			spin_unlock_bh(&timestamp_lock);
@@ -368,17 +360,8 @@ static void reset_timer(const struct idletimer_tg_info *info,
 
 		/* Stores the uid resposible for waking up the radio */
 		if (skb && (skb->sk)) {
-<<<<<<< HEAD
 			timer->uid = from_kuid_munged(current_user_ns(),
 						sock_i_uid(skb->sk));
-=======
-			struct sock *sk = skb->sk;
-			read_lock_bh(&sk->sk_callback_lock);
-			if ((sk->sk_socket) && (sk->sk_socket->file) &&
-		    (sk->sk_socket->file->f_cred))
-				timer->uid = sk->sk_socket->file->f_cred->uid;
-			read_unlock_bh(&sk->sk_callback_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		}
 
 		/* checks if there is a pending inactive notification*/

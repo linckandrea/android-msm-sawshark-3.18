@@ -220,21 +220,11 @@ static int ptrace_hbp_fill_attr_ctrl(unsigned int note_type,
 				     struct arch_hw_breakpoint_ctrl ctrl,
 				     struct perf_event_attr *attr)
 {
-	int err, len, type, offset, disabled = !ctrl.enabled;
+	int err, len, type, disabled = !ctrl.enabled;
 
-<<<<<<< HEAD
 	attr->disabled = disabled;
 	if (disabled)
 		return 0;
-=======
-	if (disabled) {
-		len = 0;
-		type = HW_BREAKPOINT_EMPTY;
-        } else {
-		err = arch_bp_generic_fields(ctrl, &len, &type, &offset);
-		if (err)
-			return err;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	err = arch_bp_generic_fields(ctrl, &len, &type);
 	if (err)
@@ -255,11 +245,6 @@ static int ptrace_hbp_fill_attr_ctrl(unsigned int note_type,
 
 	attr->bp_len	= len;
 	attr->bp_type	= type;
-<<<<<<< HEAD
-=======
-	attr->disabled	= disabled;
-	attr->bp_addr	+= offset;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return 0;
 }
@@ -312,7 +297,7 @@ static int ptrace_hbp_get_addr(unsigned int note_type,
 	if (IS_ERR(bp))
 		return PTR_ERR(bp);
 
-	*addr = bp ? counter_arch_bp(bp)->address : 0;
+	*addr = bp ? bp->attr.bp_addr : 0;
 	return 0;
 }
 
@@ -1133,24 +1118,9 @@ const struct user_regset_view *task_user_regset_view(struct task_struct *task)
 long arch_ptrace(struct task_struct *child, long request,
 		 unsigned long addr, unsigned long data)
 {
-	int ret;
-
-<<<<<<< HEAD
-=======
-	switch (request) {
-		case PTRACE_SET_SYSCALL:
-			task_pt_regs(child)->syscallno = data;
-			ret = 0;
-			break;
-		default:
-			ret = ptrace_request(child, request, addr, data);
-			break;
-	}
-
-	return ret;
+	return ptrace_request(child, request, addr, data);
 }
 
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 enum ptrace_syscall_dir {
 	PTRACE_SYSCALL_ENTER = 0,
 	PTRACE_SYSCALL_EXIT,
@@ -1180,49 +1150,18 @@ static void tracehook_report_syscall(struct pt_regs *regs,
 
 asmlinkage int syscall_trace_enter(struct pt_regs *regs)
 {
-<<<<<<< HEAD
 	/* Do the secure computing check first; failures should be fast. */
 	if (secure_computing() == -1)
 		return -1;
-=======
-	unsigned int saved_syscallno = regs->syscallno;
-
-	/* Do the secure computing check first; failures should be fast. */
-	if (secure_computing(regs->syscallno) == -1)
-		return RET_SKIP_SYSCALL_TRACE;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (test_thread_flag(TIF_SYSCALL_TRACE))
 		tracehook_report_syscall(regs, PTRACE_SYSCALL_ENTER);
 
-<<<<<<< HEAD
 	if (test_thread_flag(TIF_SYSCALL_TRACEPOINT))
 		trace_sys_enter(regs, regs->syscallno);
 
 	audit_syscall_entry(regs->syscallno, regs->orig_x0, regs->regs[1],
 			    regs->regs[2], regs->regs[3]);
-=======
-	if (IS_SKIP_SYSCALL(regs->syscallno)) {
-		/*
-		 * RESTRICTION: we can't modify a return value of user
-		 * issued syscall(-1) here. In order to ease this flavor,
-		 * we need to treat whatever value in x0 as a return value,
-		 * but this might result in a bogus value being returned.
-		 */
-		/*
-		 * NOTE: syscallno may also be set to -1 if fatal signal is
-		 * detected in tracehook_report_syscall_entry(), but since
-		 * a value set to x0 here is not used in this case, we may
-		 * neglect the case.
-		 */
-		if (!test_thread_flag(TIF_SYSCALL_TRACE) ||
-				(IS_SKIP_SYSCALL(saved_syscallno)))
-			regs->regs[0] = -ENOSYS;
-	}
-
-	audit_syscall_entry(syscall_get_arch(), regs->syscallno,
-		regs->orig_x0, regs->regs[1], regs->regs[2], regs->regs[3]);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return regs->syscallno;
 }
@@ -1231,12 +1170,9 @@ asmlinkage void syscall_trace_exit(struct pt_regs *regs)
 {
 	audit_syscall_exit(regs);
 
-<<<<<<< HEAD
 	if (test_thread_flag(TIF_SYSCALL_TRACEPOINT))
 		trace_sys_exit(regs, regs_return_value(regs));
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (test_thread_flag(TIF_SYSCALL_TRACE))
 		tracehook_report_syscall(regs, PTRACE_SYSCALL_EXIT);
 }

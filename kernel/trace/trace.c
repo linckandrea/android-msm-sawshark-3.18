@@ -1286,14 +1286,6 @@ void tracing_reset_all_online_cpus(void)
 
 #define SAVED_CMDLINES_DEFAULT 128
 #define NO_CMDLINE_MAP UINT_MAX
-<<<<<<< HEAD
-=======
-static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
-static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
-static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
-static unsigned saved_tgids[SAVED_CMDLINES];
-static int cmdline_idx;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static arch_spinlock_t trace_cmdline_lock = __ARCH_SPIN_LOCK_UNLOCKED;
 struct saved_cmdlines_buffer {
 	unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
@@ -1546,14 +1538,8 @@ static int trace_save_cmdline(struct task_struct *tsk)
 		savedcmd->cmdline_idx = idx;
 	}
 
-<<<<<<< HEAD
 	set_cmdline(idx, tsk->comm);
 	savedcmd->map_cmdline_to_tgid[idx] = tsk->tgid;
-=======
-	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
-	saved_tgids[idx] = tsk->tgid;
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	arch_spin_unlock(&trace_cmdline_lock);
 	preempt_enable();
 
@@ -1597,16 +1583,11 @@ void trace_find_cmdline(int pid, char comm[])
 	preempt_enable();
 }
 
-<<<<<<< HEAD
 static int __find_tgid_locked(int pid)
-=======
-int trace_find_tgid(int pid)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 {
 	unsigned map;
 	int tgid;
 
-<<<<<<< HEAD
 	map = savedcmd->map_pid_to_cmdline[pid];
 	if (map != NO_CMDLINE_MAP)
 		tgid = savedcmd->map_cmdline_to_tgid[map];
@@ -1624,15 +1605,6 @@ int trace_find_tgid(int pid)
 	arch_spin_lock(&trace_cmdline_lock);
 
 	tgid = __find_tgid_locked(pid);
-=======
-	preempt_disable();
-	arch_spin_lock(&trace_cmdline_lock);
-	map = map_pid_to_cmdline[pid];
-	if (map != NO_CMDLINE_MAP)
-		tgid = saved_tgids[map];
-	else
-		tgid = -1;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	arch_spin_unlock(&trace_cmdline_lock);
 	preempt_enable();
@@ -4076,53 +4048,6 @@ tracing_saved_tgids_read(struct file *file, char __user *ubuf,
 	return len;
 }
 
-<<<<<<< HEAD
-=======
-static const struct file_operations tracing_saved_cmdlines_fops = {
-	.open	= tracing_open_generic,
-	.read	= tracing_saved_cmdlines_read,
-	.llseek	= generic_file_llseek,
-};
-
-static ssize_t
-tracing_saved_tgids_read(struct file *file, char __user *ubuf,
-				size_t cnt, loff_t *ppos)
-{
-	char *file_buf;
-	char *buf;
-	int len = 0;
-	int pid;
-	int i;
-
-	file_buf = kmalloc(SAVED_CMDLINES*(16+1+16), GFP_KERNEL);
-	if (!file_buf)
-		return -ENOMEM;
-
-	buf = file_buf;
-
-	for (i = 0; i < SAVED_CMDLINES; i++) {
-		int tgid;
-		int r;
-
-		pid = map_cmdline_to_pid[i];
-		if (pid == -1 || pid == NO_CMDLINE_MAP)
-			continue;
-
-		tgid = trace_find_tgid(pid);
-		r = sprintf(buf, "%d %d\n", pid, tgid);
-		buf += r;
-		len += r;
-	}
-
-	len = simple_read_from_buffer(ubuf, cnt, ppos,
-				      file_buf, len);
-
-	kfree(file_buf);
-
-	return len;
-}
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static const struct file_operations tracing_saved_tgids_fops = {
 	.open	= tracing_open_generic,
 	.read	= tracing_saved_tgids_read,

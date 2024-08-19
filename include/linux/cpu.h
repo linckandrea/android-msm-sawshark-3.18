@@ -219,13 +219,10 @@ static inline void cpu_notifier_register_done(void)
 {
 }
 
-<<<<<<< HEAD
 static inline void smpboot_thread_init(void)
 {
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif /* CONFIG_SMP */
 extern struct bus_type cpu_subsys;
 

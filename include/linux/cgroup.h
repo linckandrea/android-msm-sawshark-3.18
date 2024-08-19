@@ -615,7 +615,6 @@ struct cgroup_subsys {
 	void (*css_free)(struct cgroup_subsys_state *css);
 	void (*css_reset)(struct cgroup_subsys_state *css);
 
-<<<<<<< HEAD
 	int (*allow_attach)(struct cgroup_subsys_state *css,
 			    struct cgroup_taskset *tset);
 	int (*can_attach)(struct cgroup_subsys_state *css,
@@ -624,12 +623,6 @@ struct cgroup_subsys {
 			      struct cgroup_taskset *tset);
 	void (*attach)(struct cgroup_subsys_state *css,
 		       struct cgroup_taskset *tset);
-=======
-	int (*allow_attach)(struct cgroup *cgrp, struct cgroup_taskset *tset);
-	int (*can_attach)(struct cgroup *cgrp, struct cgroup_taskset *tset);
-	void (*cancel_attach)(struct cgroup *cgrp, struct cgroup_taskset *tset);
-	void (*attach)(struct cgroup *cgrp, struct cgroup_taskset *tset);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	void (*fork)(struct task_struct *task);
 	void (*exit)(struct cgroup_subsys_state *css,
 		     struct cgroup_subsys_state *old_css,
@@ -931,17 +924,6 @@ int subsys_cgroup_allow_attach(struct cgroup_subsys_state *css,
 			       struct cgroup_taskset *tset);
 
 
-/*
- * Default Android check for whether the current process is allowed to move a
- * task across cgroups, either because CAP_SYS_NICE is set or because the uid
- * of the calling process is the same as the moved task or because we are
- * running as root.
- * Returns 0 if this is allowed, or -EACCES otherwise.
- */
-int subsys_cgroup_allow_attach(struct cgroup *cgrp,
-			       struct cgroup_taskset *tset);
-
-
 #else /* !CONFIG_CGROUPS */
 
 static inline int cgroup_init_early(void) { return 0; }
@@ -963,17 +945,10 @@ static inline int cgroup_attach_task_all(struct task_struct *from,
 	return 0;
 }
 
-<<<<<<< HEAD
 static inline int subsys_cgroup_allow_attach(struct cgroup_subsys_state *css,
 					     void *tset)
 {
 	return -EINVAL;
-=======
-static inline int subsys_cgroup_allow_attach(struct cgroup *cgrp,
-					     struct cgroup_taskset *tset)
-{
-	return 0;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 #endif /* !CONFIG_CGROUPS */
 

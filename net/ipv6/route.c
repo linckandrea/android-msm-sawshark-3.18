@@ -743,11 +743,7 @@ int rt6_route_rcv(struct net_device *dev, u8 *opt, int len,
 	if (rinfo->prefix_len == 0)
 		rt = rt6_get_dflt_router(gwaddr, dev);
 	else
-<<<<<<< HEAD
 		rt = rt6_get_route_info(dev, prefix, rinfo->prefix_len,	gwaddr);
-=======
-		rt = rt6_get_route_info(dev, prefix, rinfo->prefix_len, gwaddr);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (rt && !lifetime) {
 		ip6_del_rt(rt);
@@ -1168,10 +1164,6 @@ void ip6_update_pmtu(struct sk_buff *skb, struct net *net, __be32 mtu,
 	memset(&fl6, 0, sizeof(fl6));
 	fl6.flowi6_oif = oif;
 	fl6.flowi6_mark = mark ? mark : IP6_REPLY_MARK(net, skb->mark);
-<<<<<<< HEAD
-=======
-	fl6.flowi6_flags = 0;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	fl6.daddr = iph->daddr;
 	fl6.saddr = iph->saddr;
 	fl6.flowlabel = ip6_flowinfo(iph);
@@ -1191,7 +1183,6 @@ void ip6_sk_update_pmtu(struct sk_buff *skb, struct sock *sk, __be32 mtu)
 }
 EXPORT_SYMBOL_GPL(ip6_sk_update_pmtu);
 
-<<<<<<< HEAD
 /* Handle redirects */
 struct ip6rd_flowi {
 	struct flowi6 fl6;
@@ -1263,8 +1254,6 @@ static struct dst_entry *ip6_route_redirect(struct net *net,
 				flags, __ip6_route_redirect);
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 void ip6_redirect(struct sk_buff *skb, struct net *net, int oif, u32 mark,
 		  kuid_t uid)
 {
@@ -2031,11 +2020,7 @@ int rt6_addrconf_purge(struct rt6_info *rt, void *arg) {
 
 void rt6_purge_dflt_routers(struct net *net)
 {
-<<<<<<< HEAD
 	fib6_clean_all(net, rt6_addrconf_purge, NULL);
-=======
-	fib6_clean_all(net, rt6_addrconf_purge, 0, NULL);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static void rtmsg_to_fib6_config(struct net *net,

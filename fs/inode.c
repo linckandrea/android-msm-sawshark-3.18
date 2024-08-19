@@ -1603,15 +1603,11 @@ static int __remove_suid(struct vfsmount *mnt, struct dentry *dentry, int kill)
 	struct iattr newattrs;
 
 	newattrs.ia_valid = ATTR_FORCE | kill;
-<<<<<<< HEAD
 	/*
 	 * Note we call this on write, so notify_change will not
 	 * encounter any conflicting delegations:
 	 */
 	return notify_change2(mnt, dentry, &newattrs, NULL);
-=======
-	return notify_change2(mnt, dentry, &newattrs);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 int file_remove_suid(struct file *file)
@@ -1635,13 +1631,8 @@ int file_remove_suid(struct file *file)
 		error = security_inode_killpriv(dentry);
 	if (!error && killsuid)
 		error = __remove_suid(file->f_path.mnt, dentry, killsuid);
-<<<<<<< HEAD
 	if (!error)
 		inode_has_no_xattr(inode);
-=======
-	if (!error && (inode->i_sb->s_flags & MS_NOSEC))
-		inode->i_flags |= S_NOSEC;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	return error;
 }

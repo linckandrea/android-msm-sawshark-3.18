@@ -83,13 +83,6 @@ int gfs2_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 
 		if (!acl)
 			posix_acl_release(old_acl);
-<<<<<<< HEAD
-=======
-		if (error)
-			goto out_release;
-
-		error = gfs2_set_mode(inode, mode);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (error)
 			return error;
 		if (mode != inode->i_mode)

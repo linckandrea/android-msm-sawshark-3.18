@@ -191,10 +191,7 @@ typedef struct rndis_params
 
 	u32			vendorID;
 	u8			max_pkt_per_xfer;
-<<<<<<< HEAD:drivers/usb/gadget/function/rndis.h
 	u8			pkt_alignment_factor;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.h
 	const char		*vendorDescr;
 	void			(*resp_avail)(void *v);
 	void			(*flow_ctrl_enable)(bool enable);
@@ -219,11 +216,8 @@ int  rndis_set_param_vendor (u8 configNr, u32 vendorID,
 			    const char *vendorDescr);
 int  rndis_set_param_medium (u8 configNr, u32 medium, u32 speed);
 void rndis_set_max_pkt_xfer(u8 configNr, u8 max_pkt_per_xfer);
-<<<<<<< HEAD:drivers/usb/gadget/function/rndis.h
 u32  rndis_get_ul_max_xfer_size(u8 configNr);
 u32  rndis_get_dl_max_xfer_size(u8 configNr);
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/usb/gadget/rndis.h
 void rndis_add_hdr (struct sk_buff *skb);
 int rndis_rm_hdr(struct gether *port, struct sk_buff *skb,
 			struct sk_buff_head *list);

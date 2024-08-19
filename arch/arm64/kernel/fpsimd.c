@@ -89,13 +89,10 @@
  *   whatever is in the FPSIMD registers is not saved to memory, but discarded.
  */
 static DEFINE_PER_CPU(struct fpsimd_state *, fpsimd_last_state);
-<<<<<<< HEAD
 static DEFINE_PER_CPU(int, fpsimd_stg_enable);
 
 static int fpsimd_settings = 0x1; /* default = 0x1 */
 module_param(fpsimd_settings, int, 0644);
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /*
  * Trapped FP/ASIMD access.
@@ -157,14 +154,11 @@ void fpsimd_thread_switch(struct task_struct *next)
 	if (current->mm && !test_thread_flag(TIF_FOREIGN_FPSTATE))
 		fpsimd_save_state(&current->thread.fpsimd_state);
 
-<<<<<<< HEAD
 	if (fpsimd_settings && __this_cpu_read(fpsimd_stg_enable)) {
 		fpsimd_settings_disable();
 		this_cpu_write(fpsimd_stg_enable, 0);
 	}
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (next->mm) {
 		/*
 		 * If we are switching to a task whose most recent userland
@@ -182,7 +176,6 @@ void fpsimd_thread_switch(struct task_struct *next)
 		else
 			set_ti_thread_flag(task_thread_info(next),
 					   TIF_FOREIGN_FPSTATE);
-<<<<<<< HEAD
 
 		if (!fpsimd_settings)
 			return;
@@ -191,8 +184,6 @@ void fpsimd_thread_switch(struct task_struct *next)
 			fpsimd_enable_trap();
 		else
 			fpsimd_disable_trap();
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 }
 
@@ -338,7 +329,6 @@ static void fpsimd_pm_init(void)
 static inline void fpsimd_pm_init(void) { }
 #endif /* CONFIG_CPU_PM */
 
-<<<<<<< HEAD
 #ifdef CONFIG_HOTPLUG_CPU
 static int fpsimd_cpu_hotplug_notifier(struct notifier_block *nfb,
 				       unsigned long action,
@@ -368,8 +358,6 @@ static inline void fpsimd_hotplug_init(void)
 static inline void fpsimd_hotplug_init(void) { }
 #endif
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /*
  * FP/SIMD support code initialisation.
  */

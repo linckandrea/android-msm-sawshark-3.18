@@ -241,15 +241,9 @@ static int dccp_v6_send_response(struct sock *sk, struct request_sock *req)
 		struct dccp_hdr *dh = dccp_hdr(skb);
 
 		dh->dccph_checksum = dccp_v6_csum_finish(skb,
-<<<<<<< HEAD
 							 &ireq->ir_v6_loc_addr,
 							 &ireq->ir_v6_rmt_addr);
 		fl6.daddr = ireq->ir_v6_rmt_addr;
-=======
-							 &ireq6->loc_addr,
-							 &ireq6->rmt_addr);
-		fl6.daddr = ireq6->rmt_addr;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		rcu_read_lock();
 		err = ip6_xmit(sk, skb, &fl6, rcu_dereference(np->opt),
 			       np->tclass);
@@ -555,11 +549,6 @@ static struct sock *dccp_v6_request_recv_sock(struct sock *sk,
 	newnp->ipv6_mc_list = NULL;
 	newnp->ipv6_ac_list = NULL;
 	newnp->ipv6_fl_list = NULL;
-<<<<<<< HEAD
-=======
-
-	/* Clone pktoptions received with SYN */
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	newnp->pktoptions = NULL;
 	if (ireq->pktopts != NULL) {
 		newnp->pktoptions = skb_clone(ireq->pktopts, GFP_ATOMIC);

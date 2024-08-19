@@ -66,10 +66,6 @@ struct uart_ops {
 	void		(*set_ldisc)(struct uart_port *, int new);
 	void		(*pm)(struct uart_port *, unsigned int state,
 			      unsigned int oldstate);
-<<<<<<< HEAD
-=======
-	int		(*set_wake)(struct uart_port *, unsigned int state);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	void		(*wake_peer)(struct uart_port *);
 
 	/*

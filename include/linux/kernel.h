@@ -816,7 +816,6 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
 #endif
 
-<<<<<<< HEAD
 /* Permissions on a sysfs file: you didn't miss the 0 prefix did you? */
 #define VERIFY_OCTAL_PERMISSIONS(perms)					\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +				\
@@ -828,8 +827,6 @@ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
 	 BUILD_BUG_ON_ZERO((perms) & 2) +				\
 	 (perms))
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /* To identify board information in panic logs, set this */
 extern char *mach_panic_string;
 

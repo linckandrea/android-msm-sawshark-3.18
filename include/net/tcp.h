@@ -276,12 +276,9 @@ extern int sysctl_tcp_thin_dupack;
 extern int sysctl_tcp_early_retrans;
 extern int sysctl_tcp_limit_output_bytes;
 extern int sysctl_tcp_challenge_ack_limit;
-<<<<<<< HEAD
 extern unsigned int sysctl_tcp_notsent_lowat;
 extern int sysctl_tcp_min_tso_segs;
 extern int sysctl_tcp_autocorking;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 extern int sysctl_tcp_default_init_rwnd;
 
 extern atomic_long_t tcp_memory_allocated;
@@ -1104,8 +1101,6 @@ void tcp_done(struct sock *sk);
 
 int tcp_abort(struct sock *sk, int err);
 
-int tcp_abort(struct sock *sk, int err);
-
 static inline void tcp_sack_reset(struct tcp_options_received *rx_opt)
 {
 	rx_opt->dsack = 0;
@@ -1624,8 +1619,6 @@ static inline bool tcp_stream_memory_free(const struct sock *sk)
 
 	return notsent_bytes < tcp_notsent_lowat(tp);
 }
-
-extern int tcp_nuke_addr(struct net *net, struct sockaddr *addr);
 
 extern int tcp_nuke_addr(struct net *net, struct sockaddr *addr);
 

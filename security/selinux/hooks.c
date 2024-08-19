@@ -173,17 +173,6 @@ static int selinux_netcache_avc_callback(u32 event)
 	return 0;
 }
 
-static int selinux_netcache_avc_callback(u32 event)
-{
-	if (event == AVC_CALLBACK_RESET) {
-		sel_netif_flush();
-		sel_netnode_flush();
-		sel_netport_flush();
-		synchronize_net();
-	}
-	return 0;
-}
-
 /*
  * initialise the security for the init task
  */
@@ -467,24 +456,9 @@ static int sb_finish_set_opts(struct super_block *sb)
 		       sb->s_id, sb->s_type->name,
 		       labeling_behaviors[sbsec->behavior-1]);
 
-<<<<<<< HEAD
 	sbsec->flags |= SE_SBINITIALIZED;
 	if (selinux_is_sblabel_mnt(sb))
 		sbsec->flags |= SBLABEL_MNT;
-=======
-	if (sbsec->behavior == SECURITY_FS_USE_GENFS ||
-	    sbsec->behavior == SECURITY_FS_USE_MNTPOINT ||
-	    sbsec->behavior == SECURITY_FS_USE_NONE ||
-	    sbsec->behavior > ARRAY_SIZE(labeling_behaviors))
-		sbsec->flags &= ~SE_SBLABELSUPP;
-
-	/* Special handling. Is genfs but also has in-core setxattr handler*/
-	if (!strcmp(sb->s_type->name, "sysfs") ||
-	    !strcmp(sb->s_type->name, "pstore") ||
-	    !strcmp(sb->s_type->name, "debugfs") ||
-	    !strcmp(sb->s_type->name, "rootfs"))
-		sbsec->flags |= SE_SBLABELSUPP;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Initialize the root inode. */
 	rc = inode_doinit_with_dentry(root_inode, root);
@@ -760,14 +734,6 @@ static int selinux_set_mnt_opts(struct super_block *sb,
 
 	if (strcmp(sb->s_type->name, "proc") == 0)
 		sbsec->flags |= SE_SBPROC | SE_SBGENFS;
-<<<<<<< HEAD
-=======
-
-	if (!strcmp(sb->s_type->name, "debugfs") ||
-	    !strcmp(sb->s_type->name, "sysfs") ||
-	    !strcmp(sb->s_type->name, "pstore"))
-		sbsec->flags |= SE_SBGENFS;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (!strcmp(sb->s_type->name, "debugfs") ||
 	    !strcmp(sb->s_type->name, "sysfs") ||
@@ -3698,38 +3664,6 @@ static int selinux_kernel_module_request(char *kmod_name)
 			    SYSTEM__MODULE_REQUEST, &ad);
 }
 
-static int selinux_kernel_module_from_file(struct file *file)
-{
-	struct common_audit_data ad;
-	struct inode_security_struct *isec;
-	struct file_security_struct *fsec;
-	struct inode *inode;
-	u32 sid = current_sid();
-	int rc;
-
-	/* init_module */
-	if (file == NULL)
-		return avc_has_perm(sid, sid, SECCLASS_SYSTEM,
-					SYSTEM__MODULE_LOAD, NULL);
-
-	/* finit_module */
-	ad.type = LSM_AUDIT_DATA_PATH;
-	ad.u.path = file->f_path;
-
-	inode = file_inode(file);
-	isec = inode->i_security;
-	fsec = file->f_security;
-
-	if (sid != fsec->sid) {
-		rc = avc_has_perm(sid, fsec->sid, SECCLASS_FD, FD__USE, &ad);
-		if (rc)
-			return rc;
-	}
-
-	return avc_has_perm(sid, isec->sid, SECCLASS_SYSTEM,
-				SYSTEM__MODULE_LOAD, &ad);
-}
-
 static int selinux_task_setpgid(struct task_struct *p, pid_t pgid)
 {
 	return current_has_perm(p, PROCESS__SETPGID);
@@ -5752,7 +5686,7 @@ static int selinux_setprocattr(struct task_struct *p,
 		return error;
 
 	/* Obtain a SID for the context, if one was specified. */
-	if (size && str[0] && str[0] != '\n') {
+	if (size && str[1] && str[1] != '\n') {
 		if (str[size-1] == '\n') {
 			str[size-1] = 0;
 			size--;
@@ -6057,7 +5991,6 @@ static struct security_operations selinux_ops = {
 	.kernel_act_as =		selinux_kernel_act_as,
 	.kernel_create_files_as =	selinux_kernel_create_files_as,
 	.kernel_module_request =	selinux_kernel_module_request,
-	.kernel_module_from_file =      selinux_kernel_module_from_file,
 	.task_setpgid =			selinux_task_setpgid,
 	.task_getpgid =			selinux_task_getpgid,
 	.task_getsid =			selinux_task_getsid,

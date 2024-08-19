@@ -359,11 +359,7 @@ enum fuse_opcode {
 	FUSE_BATCH_FORGET  = 42,
 	FUSE_FALLOCATE     = 43,
 	FUSE_READDIRPLUS   = 44,
-<<<<<<< HEAD
 	FUSE_RENAME2       = 45,
-=======
-	FUSE_CANONICAL_PATH= 2016,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* CUSE specific operations */
 	CUSE_INIT          = 4096,

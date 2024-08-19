@@ -16,11 +16,6 @@
 
 #include <linux/compat.h>
 
-<<<<<<< HEAD
-=======
-#include "uapi/ashmem.h"
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /* support of 32bit userspace on 64bit platforms */
 #ifdef CONFIG_COMPAT
 #define COMPAT_ASHMEM_SET_SIZE		_IOW(__ASHMEMIOC, 3, compat_size_t)

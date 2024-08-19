@@ -876,14 +876,9 @@ xfs_vm_invalidatepage(
 	unsigned int		offset,
 	unsigned int		length)
 {
-<<<<<<< HEAD
 	trace_xfs_invalidatepage(page->mapping->host, page, offset,
 				 length);
 	block_invalidatepage(page, offset, length);
-=======
-	trace_xfs_invalidatepage(page->mapping->host, page, offset);
-	block_invalidatepage(page, offset, PAGE_CACHE_SIZE - offset);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /*

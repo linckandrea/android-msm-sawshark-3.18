@@ -165,10 +165,7 @@ void fixup_lower_ownership(struct dentry *dentry, const char *name)
 {
 	struct path path;
 	struct inode *inode;
-<<<<<<< HEAD
 	struct inode *delegated_inode = NULL;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	int error;
 	struct sdcardfs_inode_info *info;
 	struct sdcardfs_inode_data *info_d;
@@ -243,12 +240,8 @@ void fixup_lower_ownership(struct dentry *dentry, const char *name)
 
 	sdcardfs_get_lower_path(dentry, &path);
 	inode = path.dentry->d_inode;
-<<<<<<< HEAD
 	if (path.dentry->d_inode->i_gid.val != gid || path.dentry->d_inode->i_uid.val != uid) {
 retry_deleg:
-=======
-	if (path.dentry->d_inode->i_gid != gid || path.dentry->d_inode->i_uid != uid) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		newattrs.ia_valid = ATTR_GID | ATTR_UID | ATTR_FORCE;
 		newattrs.ia_uid = make_kuid(current_user_ns(), uid);
 		newattrs.ia_gid = make_kgid(current_user_ns(), gid);
@@ -258,7 +251,6 @@ retry_deleg:
 		mutex_lock(&inode->i_mutex);
 		error = security_path_chown(&path, newattrs.ia_uid, newattrs.ia_gid);
 		if (!error)
-<<<<<<< HEAD
 			error = notify_change2(path.mnt, path.dentry, &newattrs, &delegated_inode);
 		mutex_unlock(&inode->i_mutex);
 		if (delegated_inode) {
@@ -266,10 +258,6 @@ retry_deleg:
 			if (!error)
 				goto retry_deleg;
 		}
-=======
-			error = notify_change2(path.mnt, path.dentry, &newattrs);
-		mutex_unlock(&inode->i_mutex);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (error)
 			pr_debug("sdcardfs: Failed to touch up lower fs gid/uid for %s\n", name);
 	}
@@ -314,11 +302,7 @@ static void __fixup_perms_recursive(struct dentry *dentry, struct limit_search *
 	info = SDCARDFS_I(dentry->d_inode);
 
 	if (needs_fixup(info->data->perm)) {
-<<<<<<< HEAD
 		list_for_each_entry(child, &dentry->d_subdirs, d_child) {
-=======
-		list_for_each_entry(child, &dentry->d_subdirs, d_u.d_child) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			spin_lock_nested(&child->d_lock, depth + 1);
 			if (!(limit->flags & BY_NAME) || qstr_case_eq(&child->d_name, &limit->name)) {
 				if (child->d_inode) {
@@ -331,11 +315,7 @@ static void __fixup_perms_recursive(struct dentry *dentry, struct limit_search *
 			spin_unlock(&child->d_lock);
 		}
 	} else if (descendant_may_need_fixup(info->data, limit)) {
-<<<<<<< HEAD
 		list_for_each_entry(child, &dentry->d_subdirs, d_child) {
-=======
-		list_for_each_entry(child, &dentry->d_subdirs, d_u.d_child) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			__fixup_perms_recursive(child, limit, depth + 1);
 		}
 	}

@@ -1509,20 +1509,6 @@ reread:
 			goto out;
 	}
 
-	/* Sanity checks for files in ICB so that we don't get confused later */
-	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
-		/*
-		 * For file in ICB data is stored in allocation descriptor
-		 * so sizes should match
-		 */
-		if (iinfo->i_lenAlloc != inode->i_size)
-			return;
-		/* File in ICB has to fit in there... */
-		if (inode->i_size > inode->i_sb->s_blocksize -
-					udf_file_entry_alloc_offset(inode))
-			return;
-	}
-
 	switch (fe->icbTag.fileType) {
 	case ICBTAG_FILE_TYPE_DIRECTORY:
 		inode->i_op = &udf_dir_inode_operations;

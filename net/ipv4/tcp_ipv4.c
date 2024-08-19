@@ -685,14 +685,9 @@ static void tcp_v4_send_reset(struct sock *sk, struct sk_buff *skb)
 	arg.tos = ip_hdr(skb)->tos;
 	arg.uid = sock_net_uid(net, sk && sk_fullsock(sk) ? sk : NULL);
 	ip_send_unicast_reply(*this_cpu_ptr(net->ipv4.tcp_sk),
-<<<<<<< HEAD
 			      skb, &TCP_SKB_CB(skb)->header.h4.opt,
 			      ip_hdr(skb)->saddr, ip_hdr(skb)->daddr,
 			      &arg, arg.iov[0].iov_len);
-=======
-			      skb, ip_hdr(skb)->saddr,
-			      ip_hdr(skb)->daddr, &arg, arg.iov[0].iov_len);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	TCP_INC_STATS_BH(net, TCP_MIB_OUTSEGS);
 	TCP_INC_STATS_BH(net, TCP_MIB_OUTRSTS);
@@ -777,14 +772,9 @@ static void tcp_v4_send_ack(const struct sock *sk, struct sk_buff *skb,
 	arg.tos = tos;
 	arg.uid = sock_net_uid(net, sk_fullsock(sk) ? sk : NULL);
 	ip_send_unicast_reply(*this_cpu_ptr(net->ipv4.tcp_sk),
-<<<<<<< HEAD
 			      skb, &TCP_SKB_CB(skb)->header.h4.opt,
 			      ip_hdr(skb)->saddr, ip_hdr(skb)->daddr,
 			      &arg, arg.iov[0].iov_len);
-=======
-			      skb, ip_hdr(skb)->saddr,
-			      ip_hdr(skb)->daddr, &arg, arg.iov[0].iov_len);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	TCP_INC_STATS_BH(net, TCP_MIB_OUTSEGS);
 }
@@ -1294,145 +1284,6 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
 	return tcp_conn_request(&tcp_request_sock_ops,
 				&tcp_request_sock_ipv4_ops, sk, skb);
 
-<<<<<<< HEAD
-=======
-	/* Accept backlog is full. If we have already queued enough
-	 * of warm entries in syn queue, drop request. It is better than
-	 * clogging syn queue with openreqs with exponentially increasing
-	 * timeout.
-	 */
-	if (sk_acceptq_is_full(sk) && inet_csk_reqsk_queue_young(sk) > 1) {
-		NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_LISTENOVERFLOWS);
-		goto drop;
-	}
-
-	req = inet_reqsk_alloc(&tcp_request_sock_ops);
-	if (!req)
-		goto drop;
-
-#ifdef CONFIG_TCP_MD5SIG
-	tcp_rsk(req)->af_specific = &tcp_request_sock_ipv4_ops;
-#endif
-
-	tcp_clear_options(&tmp_opt);
-	tmp_opt.mss_clamp = TCP_MSS_DEFAULT;
-	tmp_opt.user_mss  = tp->rx_opt.user_mss;
-	tcp_parse_options(skb, &tmp_opt, 0, want_cookie ? NULL : &foc);
-
-	if (want_cookie && !tmp_opt.saw_tstamp)
-		tcp_clear_options(&tmp_opt);
-
-	tmp_opt.tstamp_ok = tmp_opt.saw_tstamp;
-	tcp_openreq_init(req, &tmp_opt, skb);
-
-	ireq = inet_rsk(req);
-	ireq->loc_addr = daddr;
-	ireq->rmt_addr = saddr;
-	ireq->no_srccheck = inet_sk(sk)->transparent;
-	ireq->opt = tcp_v4_save_options(skb);
-	ireq->ir_mark = inet_request_mark(sk, skb);
-
-	if (security_inet_conn_request(sk, skb, req))
-		goto drop_and_free;
-
-	if (!want_cookie || tmp_opt.tstamp_ok)
-		TCP_ECN_create_request(req, skb, sock_net(sk));
-
-	if (want_cookie) {
-		isn = cookie_v4_init_sequence(sk, skb, &req->mss);
-		req->cookie_ts = tmp_opt.tstamp_ok;
-	} else if (!isn) {
-		/* VJ's idea. We save last timestamp seen
-		 * from the destination in peer table, when entering
-		 * state TIME-WAIT, and check against it before
-		 * accepting new connection request.
-		 *
-		 * If "isn" is not zero, this request hit alive
-		 * timewait bucket, so that all the necessary checks
-		 * are made in the function processing timewait state.
-		 */
-		if (tmp_opt.saw_tstamp &&
-		    tcp_death_row.sysctl_tw_recycle &&
-		    (dst = inet_csk_route_req(sk, &fl4, req)) != NULL &&
-		    fl4.daddr == saddr) {
-			if (!tcp_peer_is_proven(req, dst, true)) {
-				NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_PAWSPASSIVEREJECTED);
-				goto drop_and_release;
-			}
-		}
-		/* Kill the following clause, if you dislike this way. */
-		else if (!sysctl_tcp_syncookies &&
-			 (sysctl_max_syn_backlog - inet_csk_reqsk_queue_len(sk) <
-			  (sysctl_max_syn_backlog >> 2)) &&
-			 !tcp_peer_is_proven(req, dst, false)) {
-			/* Without syncookies last quarter of
-			 * backlog is filled with destinations,
-			 * proven to be alive.
-			 * It means that we continue to communicate
-			 * to destinations, already remembered
-			 * to the moment of synflood.
-			 */
-			LIMIT_NETDEBUG(KERN_DEBUG pr_fmt("drop open request from %pI4/%u\n"),
-				       &saddr, ntohs(tcp_hdr(skb)->source));
-			goto drop_and_release;
-		}
-
-		isn = tcp_v4_init_sequence(skb);
-	}
-	tcp_rsk(req)->snt_isn = isn;
-
-	if (dst == NULL) {
-		dst = inet_csk_route_req(sk, &fl4, req);
-		if (dst == NULL)
-			goto drop_and_free;
-	}
-	do_fastopen = tcp_fastopen_check(sk, skb, req, &foc, &valid_foc);
-
-	/* We don't call tcp_v4_send_synack() directly because we need
-	 * to make sure a child socket can be created successfully before
-	 * sending back synack!
-	 *
-	 * XXX (TFO) - Ideally one would simply call tcp_v4_send_synack()
-	 * (or better yet, call tcp_send_synack() in the child context
-	 * directly, but will have to fix bunch of other code first)
-	 * after syn_recv_sock() except one will need to first fix the
-	 * latter to remove its dependency on the current implementation
-	 * of tcp_v4_send_synack()->tcp_select_initial_window().
-	 */
-	skb_synack = tcp_make_synack(sk, dst, req,
-	    fastopen_cookie_present(&valid_foc) ? &valid_foc : NULL);
-
-	if (skb_synack) {
-		__tcp_v4_send_check(skb_synack, ireq->loc_addr, ireq->rmt_addr);
-		skb_set_queue_mapping(skb_synack, skb_get_queue_mapping(skb));
-	} else
-		goto drop_and_free;
-
-	if (likely(!do_fastopen)) {
-		int err;
-		err = ip_build_and_send_pkt(skb_synack, sk, ireq->loc_addr,
-		     ireq->rmt_addr, ireq->opt);
-		err = net_xmit_eval(err);
-		if (err || want_cookie)
-			goto drop_and_free;
-
-		tcp_rsk(req)->snt_synack = tcp_time_stamp;
-		tcp_rsk(req)->listener = NULL;
-		/* Add the request_sock to the SYN table */
-		inet_csk_reqsk_queue_hash_add(sk, req, TCP_TIMEOUT_INIT);
-		if (fastopen_cookie_present(&foc) && foc.len != 0)
-			NET_INC_STATS_BH(sock_net(sk),
-			    LINUX_MIB_TCPFASTOPENPASSIVEFAIL);
-	} else if (tcp_v4_conn_req_fastopen(sk, skb, skb_synack, req))
-		goto drop_and_free;
-
-	return 0;
-
-drop_and_release:
-	dst_release(dst);
-drop_and_free:
-	reqsk_free(req);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 drop:
 	NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_LISTENDROPS);
 	return 0;

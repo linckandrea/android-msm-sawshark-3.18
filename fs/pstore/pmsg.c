@@ -34,11 +34,7 @@ static ssize_t write_pmsg(struct file *file, const char __user *buf,
 		return -EFAULT;
 
 	mutex_lock(&pmsg_lock);
-<<<<<<< HEAD
 	ret = psinfo->write_buf_user(PSTORE_TYPE_PMSG, 0, &id, 0, buf, 0, count,
-=======
-	ret = psinfo->write_buf_user(PSTORE_TYPE_PMSG, 0, &id, 0, buf, count,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				     psinfo);
 	mutex_unlock(&pmsg_lock);
 	return ret ? ret : count;

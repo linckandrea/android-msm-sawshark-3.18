@@ -27,10 +27,8 @@
 #include <asm/cpufeature.h>
 #include <asm/errno.h>
 #include <asm/esr.h>
-#include <asm/ptrace.h>
 #include <asm/thread_info.h>
 #include <asm/unistd.h>
-<<<<<<< HEAD
 
 /*
  * Context tracking subsystem.  Used to instrument transitions
@@ -57,8 +55,6 @@
 	bl	context_tracking_user_enter
 #endif
 	.endm
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /*
  * Bad Abort numbers
@@ -412,7 +408,7 @@ el0_sync:
 	cmp	x24, #ESR_EL1_EC_FP_EXC64	// FP/ASIMD exception
 	b.eq	el0_fpsimd_exc
 	cmp	x24, #ESR_EL1_EC_SYS64		// configurable trap
-	b.eq	el0_sys
+	b.eq	el0_undef
 	cmp	x24, #ESR_EL1_EC_SP_ALIGN	// stack alignment exception
 	b.eq	el0_sp_pc
 	cmp	x24, #ESR_EL1_EC_PC_ALIGN	// pc alignment exception
@@ -473,15 +469,7 @@ el0_da:
 	/*
 	 * Data abort handling
 	 */
-<<<<<<< HEAD
 	mrs	x26, far_el1
-=======
-	mrs	x0, far_el1
-	bic	x0, x0, #(0xff << 56)
-	disable_step x1
-	isb
-	enable_dbg
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	// enable interrupts before calling the main handler
 	enable_dbg_and_irq
 	ct_user_exit
@@ -555,21 +543,8 @@ el0_undef:
 	enable_dbg_and_irq
 	ct_user_exit
 	mov	x0, sp
-<<<<<<< HEAD
 	bl	do_undefinstr
 	b	ret_to_user
-=======
-	b	do_undefinstr
-el0_sys:
-	/*
-	 * System instructions, for trapped cache maintenance instructions
-	 */
-	enable_dbg
-	enable_irq
-	mov	x0, x25
-	mov	x1, sp
-	b	do_sysinstr
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 el0_dbg:
 	/*
 	 * Debug exception handling
@@ -735,17 +710,9 @@ el0_svc_naked:					// compat entry point
 	enable_dbg_and_irq
 	ct_user_exit 1
 
-<<<<<<< HEAD
 	ldr	x16, [tsk, #TI_FLAGS]		// check for syscall hooks
 	tst	x16, #_TIF_SYSCALL_WORK
 	b.ne	__sys_trace
-=======
-	get_thread_info tsk
-	ldr	x16, [tsk, #TI_FLAGS]		// check for syscall hooks
-	tst	x16, #_TIF_SYSCALL_WORK
-	b.ne	__sys_trace
-	adr	lr, ret_fast_syscall		// return address
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	cmp     scno, sc_nr                     // check upper syscall limit
 	b.hs	ni_sys
 	ldr	x16, [stbl, scno, lsl #3]	// address in the syscall table
@@ -762,7 +729,6 @@ ENDPROC(el0_svc)
 	 * switches, and waiting for our parent to respond.
 	 */
 __sys_trace:
-<<<<<<< HEAD
 	mov	w0, #-1				// set default errno for
 	cmp     scno, x0			// user-issued syscall(-1)
 	b.ne	1f
@@ -771,14 +737,6 @@ __sys_trace:
 1:	mov	x0, sp
 	bl	syscall_trace_enter
 	cmp	w0, #-1				// skip the syscall?
-=======
-	mov	x0, sp
-	bl	syscall_trace_enter
-	adr	lr, __sys_trace_return		// return address
-	cmp	w0, #RET_SKIP_SYSCALL_TRACE	// skip syscall and tracing?
-	b.eq	ret_to_user
-	cmp	w0, #RET_SKIP_SYSCALL		// skip syscall?
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	b.eq	__sys_trace_return_skipped
 	uxtw	scno, w0			// syscall number (possibly new)
 	mov	x1, sp				// pointer to regs
@@ -792,13 +750,8 @@ __sys_trace:
 	blr	x16				// call sys_* routine
 
 __sys_trace_return:
-<<<<<<< HEAD
 	str	x0, [sp, #S_X0]			// save returned x0
 __sys_trace_return_skipped:
-=======
-	str	x0, [sp]			// save returned x0
-__sys_trace_return_skipped:			// x0 already in regs[0]
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mov	x0, sp
 	bl	syscall_trace_exit
 	b	ret_to_user

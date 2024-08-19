@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
  * drivers/staging/android/ion/ion_carveout_heap.c
-=======
- * drivers/gpu/ion/ion_carveout_heap.c
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  *
  * Copyright (C) 2011 Google, Inc.
  *
@@ -85,11 +81,7 @@ static int ion_carveout_heap_allocate(struct ion_heap *heap,
 	if (align > PAGE_SIZE)
 		return -EINVAL;
 
-<<<<<<< HEAD
 	table = kmalloc(sizeof(struct sg_table), GFP_KERNEL);
-=======
-	table = kzalloc(sizeof(struct sg_table), GFP_KERNEL);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!table)
 		return -ENOMEM;
 	ret = sg_alloc_table(table, 1, GFP_KERNEL);
@@ -141,10 +133,6 @@ static struct sg_table *ion_carveout_heap_map_dma(struct ion_heap *heap,
 static void ion_carveout_heap_unmap_dma(struct ion_heap *heap,
 					struct ion_buffer *buffer)
 {
-<<<<<<< HEAD
-=======
-	return;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static struct ion_heap_ops carveout_heap_ops = {
@@ -179,11 +167,7 @@ struct ion_heap *ion_carveout_heap_create(struct ion_platform_heap *heap_data)
 	if (!carveout_heap)
 		return ERR_PTR(-ENOMEM);
 
-<<<<<<< HEAD
 	carveout_heap->pool = gen_pool_create(PAGE_SHIFT, -1);
-=======
-	carveout_heap->pool = gen_pool_create(12, -1);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (!carveout_heap->pool) {
 		kfree(carveout_heap);
 		return ERR_PTR(-ENOMEM);

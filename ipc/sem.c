@@ -196,7 +196,6 @@ void __init sem_init(void)
 				IPC_SEM_IDS, sysvipc_sem_proc_show);
 }
 
-<<<<<<< HEAD
 /**
  * unmerge_queues - unmerge queues, if possible.
  * @sma: semaphore array
@@ -244,8 +243,6 @@ static void merge_queues(struct sem_array *sma)
 	}
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static void sem_rcu_free(struct rcu_head *head)
 {
 	struct ipc_rcu *p = container_of(head, struct ipc_rcu, rcu);
@@ -255,7 +252,6 @@ static void sem_rcu_free(struct rcu_head *head)
 	ipc_rcu_free(head);
 }
 
-<<<<<<< HEAD
 /*
  * spin_unlock_wait() and !spin_is_locked() are not memory barriers, they
  * are only control barriers.
@@ -292,8 +288,6 @@ static void sem_wait_array(struct sem_array *sma)
 	ipc_smp_acquire__after_spin_is_unlocked();
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /*
  * If the request contains only one semaphore operation, and there are
  * no complex transactions pending, lock only the semaphore involved.
@@ -1389,11 +1383,7 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
 			sem_unlock(sma, -1);
 			rcu_read_unlock();
 			sem_io = ipc_alloc(sizeof(ushort)*nsems);
-<<<<<<< HEAD
 			if (sem_io == NULL) {
-=======
-			if(sem_io == NULL) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				ipc_rcu_putref(sma, ipc_rcu_free);
 				return -ENOMEM;
 			}
@@ -1427,21 +1417,13 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
 
 		if (nsems > SEMMSL_FAST) {
 			sem_io = ipc_alloc(sizeof(ushort)*nsems);
-<<<<<<< HEAD
 			if (sem_io == NULL) {
-=======
-			if(sem_io == NULL) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				ipc_rcu_putref(sma, ipc_rcu_free);
 				return -ENOMEM;
 			}
 		}
 
-<<<<<<< HEAD
 		if (copy_from_user(sem_io, p, nsems*sizeof(ushort))) {
-=======
-		if (copy_from_user (sem_io, p, nsems*sizeof(ushort))) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			ipc_rcu_putref(sma, ipc_rcu_free);
 			err = -EFAULT;
 			goto out_free;

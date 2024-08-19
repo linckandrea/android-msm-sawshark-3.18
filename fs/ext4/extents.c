@@ -377,11 +377,7 @@ static int ext4_valid_extent(struct inode *inode, struct ext4_extent *ext)
 	ext4_lblk_t lblock = le32_to_cpu(ext->ee_block);
 	ext4_lblk_t last = lblock + len - 1;
 
-<<<<<<< HEAD
 	if (len == 0 || lblock > last)
-=======
-	if (lblock > last)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return 0;
 	return ext4_data_block_valid(EXT4_SB(inode->i_sb), block, len);
 }
@@ -3115,9 +3111,6 @@ static int ext4_ext_zeroout(struct inode *inode, struct ext4_extent *ex)
 	ee_len    = ext4_ext_get_actual_len(ex);
 	ee_pblock = ext4_ext_pblock(ex);
 
-	if (ext4_encrypted_inode(inode))
-		return ext4_encrypted_zeroout(inode, ex);
-
 	ret = sb_issue_zeroout(inode->i_sb, ee_pblock, ee_len, GFP_NOFS);
 	if (ret > 0)
 		ret = 0;
@@ -4917,23 +4910,6 @@ long ext4_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 	int flags;
 	ext4_lblk_t lblk;
 	unsigned int blkbits = inode->i_blkbits;
-<<<<<<< HEAD
-=======
-
-	/*
-	 * Encrypted inodes can't handle collapse range or insert
-	 * range since we would need to re-encrypt blocks with a
-	 * different IV or XTS tweak (which are based on the logical
-	 * block number).
-	 *
-	 * XXX It's not clear why zero range isn't working, but we'll
-	 * leave it disabled for encrypted inodes for now.  This is a
-	 * bug we should fix....
-	 */
-	if (ext4_encrypted_inode(inode) &&
-	    (mode & (FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_ZERO_RANGE)))
-		return -EOPNOTSUPP;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Return error if mode is not supported */
 	if (mode & ~(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE |
@@ -4946,12 +4922,6 @@ long ext4_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 	ret = ext4_convert_inline_data(inode);
 	if (ret)
 		return ret;
-
-	if (mode & FALLOC_FL_COLLAPSE_RANGE)
-		return ext4_collapse_range(inode, offset, len);
-
-	if (mode & FALLOC_FL_ZERO_RANGE)
-		return ext4_zero_range(file, offset, len, mode);
 
 	if (mode & FALLOC_FL_COLLAPSE_RANGE)
 		return ext4_collapse_range(inode, offset, len);
@@ -4974,7 +4944,6 @@ long ext4_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 
 	mutex_lock(&inode->i_mutex);
 
-<<<<<<< HEAD
 	/*
 	 * We only support preallocation for extent-based files only
 	 */
@@ -5000,25 +4969,6 @@ long ext4_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 		ret = jbd2_complete_transaction(EXT4_SB(inode->i_sb)->s_journal,
 						EXT4_I(inode)->i_sync_tid);
 	}
-=======
-	if (!(mode & FALLOC_FL_KEEP_SIZE) &&
-	     offset + len > i_size_read(inode)) {
-		new_size = offset + len;
-		ret = inode_newsize_ok(inode, new_size);
-		if (ret)
-			goto out;
-	}
-
-	ret = ext4_alloc_file_blocks(file, lblk, max_blocks, new_size,
-				     flags, mode);
-	if (ret)
-		goto out;
-
-	if (file->f_flags & O_SYNC && EXT4_SB(inode->i_sb)->s_journal) {
-		ret = jbd2_complete_transaction(EXT4_SB(inode->i_sb)->s_journal,
-						EXT4_I(inode)->i_sync_tid);
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 out:
 	mutex_unlock(&inode->i_mutex);
 	trace_ext4_fallocate_exit(inode, offset, max_blocks, ret);
@@ -5442,10 +5392,6 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 	handle_t *handle;
 	unsigned int credits;
 	loff_t new_size, ioffset;
-<<<<<<< HEAD
-=======
-	loff_t oldsize = i_size_read(inode);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	int ret;
 
 	/* Collapse range works only on fs block size aligned offsets. */
@@ -5487,11 +5433,7 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 	 * There is no need to overlap collapse range with EOF, in which case
 	 * it is effectively a truncate operation
 	 */
-<<<<<<< HEAD
 	if (offset + len >= i_size_read(inode)) {
-=======
-	if (offset + len >= oldsize) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		ret = -EINVAL;
 		goto out_mutex;
 	}
@@ -5502,11 +5444,7 @@ int ext4_collapse_range(struct inode *inode, loff_t offset, loff_t len)
 		goto out_mutex;
 	}
 
-<<<<<<< HEAD
 	truncate_pagecache(inode, ioffset);
-=======
-	truncate_pagecache(inode, oldsize, ioffset);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Wait for existing dio to complete */
 	ext4_inode_block_unlocked_dio(inode);

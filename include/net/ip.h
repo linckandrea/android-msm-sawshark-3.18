@@ -183,15 +183,10 @@ static inline __u8 ip_reply_arg_flowi_flags(const struct ip_reply_arg *arg)
 	return (arg->flags & IP_REPLY_ARG_NOSRCCHECK) ? FLOWI_FLAG_ANYSRC : 0;
 }
 
-<<<<<<< HEAD
 void ip_send_unicast_reply(struct sock *sk, struct sk_buff *skb,
 			   const struct ip_options *sopt,
 			   __be32 daddr, __be32 saddr,
 			   const struct ip_reply_arg *arg,
-=======
-void ip_send_unicast_reply(struct sock *sk, struct sk_buff *skb, __be32 daddr,
-			   __be32 saddr, const struct ip_reply_arg *arg,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			   unsigned int len);
 
 #define IP_INC_STATS(net, field)	SNMP_INC_STATS64((net)->mib.ip_statistics, field)
@@ -255,9 +250,6 @@ extern int sysctl_ip_dynaddr;
 void ipfrag_init(void);
 
 void ip_static_sysctl_init(void);
-
-#define IP4_REPLY_MARK(net, mark) \
-	((net)->ipv4.sysctl_fwmark_reflect ? (mark) : 0)
 
 #define IP4_REPLY_MARK(net, mark) \
 	((net)->ipv4.sysctl_fwmark_reflect ? (mark) : 0)
@@ -548,7 +540,6 @@ int compat_ip_getsockopt(struct sock *sk, int level, int optname,
 int ip_ra_control(struct sock *sk, unsigned char on,
 		  void (*destructor)(struct sock *));
 
-<<<<<<< HEAD
 int ip_recv_error(struct sock *sk, struct msghdr *msg, int len, int *addr_len);
 void ip_icmp_error(struct sock *sk, struct sk_buff *skb, int err, __be16 port,
 		   u32 info, u8 *payload);
@@ -558,13 +549,6 @@ void ip_local_error(struct sock *sk, int err, __be32 daddr, __be16 dport,
 bool icmp_global_allow(void);
 extern int sysctl_icmp_msgs_per_sec;
 extern int sysctl_icmp_msgs_burst;
-=======
-extern int 	ip_recv_error(struct sock *sk, struct msghdr *msg, int len, int *addr_len);
-extern void	ip_icmp_error(struct sock *sk, struct sk_buff *skb, int err, 
-			      __be16 port, u32 info, u8 *payload);
-extern void	ip_local_error(struct sock *sk, int err, __be32 daddr, __be16 dport,
-			       u32 info);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #ifdef CONFIG_PROC_FS
 int ip_misc_proc_init(void);

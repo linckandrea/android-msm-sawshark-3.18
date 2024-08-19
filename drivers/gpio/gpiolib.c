@@ -268,15 +268,6 @@ int gpiochip_add(struct gpio_chip *chip)
 
 	spin_unlock_irqrestore(&gpio_lock, flags);
 
-<<<<<<< HEAD
-=======
-#ifdef CONFIG_PINCTRL
-	INIT_LIST_HEAD(&chip->pin_ranges);
-#endif
-
-	of_gpiochip_add(chip);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	if (status)
 		goto fail;
 

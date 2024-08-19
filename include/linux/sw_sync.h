@@ -19,13 +19,8 @@
 
 #include <linux/types.h>
 #include <linux/kconfig.h>
-<<<<<<< HEAD:include/linux/sw_sync.h
 #include <linux/sync.h>
 #include <uapi/linux/sw_sync.h>
-=======
-#include "sync.h"
-#include "uapi/sw_sync.h"
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/staging/android/sw_sync.h
 
 struct sw_sync_timeline {
 	struct	sync_timeline	obj;
@@ -55,11 +50,7 @@ static inline void sw_sync_timeline_inc(struct sw_sync_timeline *obj, u32 inc)
 }
 
 static inline struct sync_pt *sw_sync_pt_create(struct sw_sync_timeline *obj,
-<<<<<<< HEAD:include/linux/sw_sync.h
 						u32 value)
-=======
-		u32 value)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f:drivers/staging/android/sw_sync.h
 {
 	return NULL;
 }

@@ -16,7 +16,6 @@
 #include <linux/device.h>
 #include <linux/devfreq.h>
 #include <linux/fault-inject.h>
-#include <linux/wakelock.h>
 
 #include <linux/mmc/core.h>
 #include <linux/mmc/card.h>
@@ -286,7 +285,6 @@ struct mmc_supply {
 	struct regulator *vqmmc;	/* Optional Vccq supply */
 };
 
-<<<<<<< HEAD
 enum dev_state {
 	DEV_SUSPENDING = 1,
 	DEV_SUSPENDED,
@@ -340,35 +338,6 @@ struct mmc_devfeq_clk_scaling {
 	bool		clk_scaling_in_progress;
 	bool		is_busy_started;
 	bool		enable;
-=======
-/*
- * X-axis for IO latency histogram support.
- */
-static const u_int64_t latency_x_axis_us[] = {
-	100,
-	200,
-	300,
-	400,
-	500,
-	600,
-	700,
-	800,
-	900,
-	1000,
-	1200,
-	1400,
-	1600,
-	1800,
-	2000,
-	2500,
-	3000,
-	4000,
-	5000,
-	6000,
-	7000,
-	9000,
-	10000
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 struct mmc_host {
@@ -442,15 +411,8 @@ struct mmc_host {
 	u32			caps2;		/* More host capabilities */
 
 #define MMC_CAP2_BOOTPART_NOACC	(1 << 0)	/* Boot partition no access */
-<<<<<<< HEAD
 #define MMC_CAP2_CACHE_CTRL	(1 << 1)        /* Allow cache control */
 #define MMC_CAP2_FULL_PWR_CYCLE	(1 << 2)	/* Can do full power cycle */
-=======
-#define MMC_CAP2_CACHE_CTRL	(1 << 1)	/* Allow cache control */
-#define MMC_CAP2_FULL_PWR_CYCLE	(1 << 2)	/* Can do full power cycle */
-#define MMC_CAP2_NO_MULTI_READ	(1 << 3)	/* Multiblock reads don't work */
-#define MMC_CAP2_NO_SLEEP_CMD	(1 << 4)	/* Don't allow sleep command */
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #define MMC_CAP2_HS200_1_8V_SDR	(1 << 5)        /* can support */
 #define MMC_CAP2_HS200_1_2V_SDR	(1 << 6)        /* can support */
 #define MMC_CAP2_HS200		(MMC_CAP2_HS200_1_8V_SDR | \
@@ -531,8 +493,6 @@ struct mmc_host {
 	int			claim_cnt;	/* "claim" nesting count */
 
 	struct delayed_work	detect;
-	struct wake_lock	detect_wake_lock;
-	const char		*wlock_name;
 	int			detect_change;	/* card detect flag */
 	struct mmc_slot		slot;
 
@@ -570,12 +530,9 @@ struct mmc_host {
 
 	unsigned int		slotno;	/* used for sdio acpi binding */
 
-<<<<<<< HEAD
 	int			dsr_req;	/* DSR value is valid */
 	u32			dsr;	/* optional driver stage (DSR) value */
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #ifdef CONFIG_MMC_EMBEDDED_SDIO
 	struct {
 		struct sdio_cis			*cis;
@@ -585,7 +542,6 @@ struct mmc_host {
 	} embedded_sdio_data;
 #endif
 
-<<<<<<< HEAD
 	/*
 	 * Set to 1 to just stop the SDCLK to the card without
 	 * actually disabling the clock from it's source.
@@ -617,17 +573,6 @@ struct mmc_host {
 	 */
 	void *cmdq_private;
 	struct mmc_request	*err_mrq;
-=======
-#define MMC_IO_LAT_HIST_DISABLE         0
-#define MMC_IO_LAT_HIST_ENABLE          1
-#define MMC_IO_LAT_HIST_ZERO            2
-	int		latency_hist_enabled;
-	u_int64_t	latency_y_axis_read[ARRAY_SIZE(latency_x_axis_us) + 1];
-	u_int64_t	latency_reads_elems;
-	u_int64_t	latency_y_axis_write[ARRAY_SIZE(latency_x_axis_us) + 1];
-	u_int64_t	latency_writes_elems;
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	unsigned long		private[0] ____cacheline_aligned;
 };
 
@@ -637,14 +582,6 @@ int mmc_add_host(struct mmc_host *);
 void mmc_remove_host(struct mmc_host *);
 void mmc_free_host(struct mmc_host *);
 int mmc_of_parse(struct mmc_host *host);
-
-#ifdef CONFIG_MMC_EMBEDDED_SDIO
-extern void mmc_set_embedded_sdio_data(struct mmc_host *host,
-				       struct sdio_cis *cis,
-				       struct sdio_cccr *cccr,
-				       struct sdio_embedded_func *funcs,
-				       int num_funcs);
-#endif
 
 #ifdef CONFIG_MMC_EMBEDDED_SDIO
 extern void mmc_set_embedded_sdio_data(struct mmc_host *host,
@@ -669,25 +606,10 @@ static inline void *mmc_cmdq_private(struct mmc_host *host)
 #define mmc_dev(x)	((x)->parent)
 #define mmc_classdev(x)	(&(x)->class_dev)
 #define mmc_hostname(x)	(dev_name(&(x)->class_dev))
-<<<<<<< HEAD
 #define mmc_bus_needs_resume(host) ((host)->bus_resume_flags & \
 				    MMC_BUSRESUME_NEEDS_RESUME)
 #define mmc_bus_manual_resume(host) ((host)->bus_resume_flags & \
 				MMC_BUSRESUME_MANUAL_RESUME)
-=======
-#define mmc_bus_needs_resume(host) ((host)->bus_resume_flags & MMC_BUSRESUME_NEEDS_RESUME)
-#define mmc_bus_manual_resume(host) ((host)->bus_resume_flags & MMC_BUSRESUME_MANUAL_RESUME)
-
-static inline void mmc_set_bus_resume_policy(struct mmc_host *host, int manual)
-{
-	if (manual)
-		host->bus_resume_flags |= MMC_BUSRESUME_MANUAL_RESUME;
-	else
-		host->bus_resume_flags &= ~MMC_BUSRESUME_MANUAL_RESUME;
-}
-
-extern int mmc_resume_bus(struct mmc_host *host);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 static inline void mmc_set_bus_resume_policy(struct mmc_host *host, int manual)
 {

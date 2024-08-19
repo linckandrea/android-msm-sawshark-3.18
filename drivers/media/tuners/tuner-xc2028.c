@@ -1407,15 +1407,8 @@ static int xc2028_set_config(struct dvb_frontend *fe, void *priv_cfg)
 	memcpy(&priv->ctrl, p, sizeof(priv->ctrl));
 	if (p->fname) {
 		priv->ctrl.fname = kstrdup(p->fname, GFP_KERNEL);
-<<<<<<< HEAD
 		if (priv->ctrl.fname == NULL)
 			return -ENOMEM;
-=======
-		if (priv->ctrl.fname == NULL) {
-			rc = -ENOMEM;
-			goto unlock;
-		}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 
 	/*
@@ -1447,7 +1440,6 @@ static int xc2028_set_config(struct dvb_frontend *fe, void *priv_cfg)
 		} else
 			priv->state = XC2028_WAITING_FIRMWARE;
 	}
-unlock:
 	mutex_unlock(&priv->lock);
 
 	return rc;

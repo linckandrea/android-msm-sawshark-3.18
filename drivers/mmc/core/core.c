@@ -29,13 +29,9 @@
 #include <linux/fault-inject.h>
 #include <linux/random.h>
 #include <linux/slab.h>
-<<<<<<< HEAD
 #include <linux/of.h>
 #include <linux/pm.h>
 #include <linux/jiffies.h>
-=======
-#include <linux/wakelock.h>
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #include <trace/events/mmc.h>
 
@@ -44,8 +40,6 @@
 #include <linux/mmc/mmc.h>
 #include <linux/mmc/sd.h>
 #include <linux/mmc/slot-gpio.h>
-
-#include <linux/math64.h>
 
 #include "core.h"
 #include "bus.h"
@@ -75,33 +69,6 @@ static const unsigned freqs[] = { 400000, 300000, 200000, 100000 };
  */
 bool use_spi_crc = 1;
 module_param(use_spi_crc, bool, 0);
-
-static inline void
-mmc_update_latency_hist(struct mmc_host *host, int read, u_int64_t delta_us)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(latency_x_axis_us); i++) {
-		if (delta_us < (u_int64_t)latency_x_axis_us[i]) {
-			if (read)
-				host->latency_y_axis_read[i]++;
-			else
-				host->latency_y_axis_write[i]++;
-			break;
-		}
-	}
-	if (i == ARRAY_SIZE(latency_x_axis_us)) {
-		/* Overflowed the histogram */
-		if (read)
-			host->latency_y_axis_read[i]++;
-		else
-			host->latency_y_axis_write[i]++;
-	}
-	if (read)
-		host->latency_reads_elems++;
-	else
-		host->latency_writes_elems++;
-}
 
 /*
  * Internal function. Schedule delayed work in the MMC work queue.
@@ -960,20 +927,6 @@ void mmc_request_done(struct mmc_host *host, struct mmc_request *mrq)
 			pr_debug("%s:     %d bytes transferred: %d\n",
 				mmc_hostname(host),
 				mrq->data->bytes_xfered, mrq->data->error);
-<<<<<<< HEAD
-=======
-			if (mrq->lat_hist_enabled) {
-				ktime_t completion;
-				u_int64_t delta_us;
-
-				completion = ktime_get();
-				delta_us = ktime_us_delta(completion,
-							  mrq->io_start);
-				mmc_update_latency_hist(host,
-					(mrq->data->flags & MMC_DATA_READ),
-					delta_us);
-			}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			trace_mmc_blk_rw_end(cmd->opcode, cmd->arg, mrq->data);
 		}
 
@@ -1655,14 +1608,6 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 	}
 
 	if (!err && areq) {
-<<<<<<< HEAD
-=======
-		if (host->latency_hist_enabled) {
-			areq->mrq->io_start = ktime_get();
-			areq->mrq->lat_hist_enabled = 1;
-		} else
-			areq->mrq->lat_hist_enabled = 0;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		trace_mmc_blk_rw_start(areq->mrq->cmd->opcode,
 				       areq->mrq->cmd->arg,
 				       areq->mrq->data);
@@ -2832,15 +2777,11 @@ static inline void mmc_bus_put(struct mmc_host *host)
 int mmc_resume_bus(struct mmc_host *host)
 {
 	unsigned long flags;
-<<<<<<< HEAD
 	int err = 0;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (!mmc_bus_needs_resume(host))
 		return -EINVAL;
 
-<<<<<<< HEAD
 	pr_debug("%s: Starting deferred resume\n", mmc_hostname(host));
 	spin_lock_irqsave(&host->lock, flags);
 	host->bus_resume_flags &= ~MMC_BUSRESUME_NEEDS_RESUME;
@@ -2865,29 +2806,6 @@ int mmc_resume_bus(struct mmc_host *host)
 	pr_debug("%s: Deferred resume completed\n", mmc_hostname(host));
 	return 0;
 }
-=======
-	printk("%s: Starting deferred resume\n", mmc_hostname(host));
-	spin_lock_irqsave(&host->lock, flags);
-	host->bus_resume_flags &= ~MMC_BUSRESUME_NEEDS_RESUME;
-	host->rescan_disable = 0;
-	spin_unlock_irqrestore(&host->lock, flags);
-
-	mmc_bus_get(host);
-	if (host->bus_ops && !host->bus_dead) {
-		mmc_power_up(host);
-		BUG_ON(!host->bus_ops->resume);
-		host->bus_ops->resume(host);
-	}
-
-	if (host->bus_ops->detect && !host->bus_dead)
-		host->bus_ops->detect(host);
-
-	mmc_bus_put(host);
-	printk("%s: Deferred resume completed\n", mmc_hostname(host));
-	return 0;
-}
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 EXPORT_SYMBOL(mmc_resume_bus);
 
 /*
@@ -2970,20 +2888,7 @@ static void _mmc_detect_change(struct mmc_host *host, unsigned long delay,
  */
 void mmc_detect_change(struct mmc_host *host, unsigned long delay)
 {
-<<<<<<< HEAD
 	_mmc_detect_change(host, delay, true);
-=======
-#ifdef CONFIG_MMC_DEBUG
-	unsigned long flags;
-	spin_lock_irqsave(&host->lock, flags);
-	WARN_ON(host->removed);
-	spin_unlock_irqrestore(&host->lock, flags);
-#endif
-	host->detect_change = 1;
-
-	wake_lock(&host->detect_wake_lock);
-	mmc_schedule_delayed_work(&host->detect, delay);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 EXPORT_SYMBOL(mmc_detect_change);
 
@@ -3038,7 +2943,7 @@ void mmc_init_erase(struct mmc_card *card)
 }
 
 static unsigned int mmc_mmc_erase_timeout(struct mmc_card *card,
-					  unsigned int arg, unsigned int qty)
+				          unsigned int arg, unsigned int qty)
 {
 	unsigned int erase_timeout;
 
@@ -3138,20 +3043,7 @@ static unsigned int mmc_erase_timeout(struct mmc_card *card,
 
 static u32 mmc_get_erase_qty(struct mmc_card *card, u32 from, u32 to)
 {
-<<<<<<< HEAD
 	u32 qty = 0;
-=======
-	struct mmc_command cmd = {0};
-	unsigned int qty = 0;
-	unsigned long timeout;
-	unsigned int fr, nr;
-	int err;
-
-	fr = from;
-	nr = to - from + 1;
-	trace_mmc_blk_erase_start(arg, fr, nr);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/*
 	 * qty is used to calculate the erase timeout which depends on how many
 	 * erase groups (or allocation units in SD terminology) are affected.
@@ -3872,11 +3764,6 @@ void mmc_rescan(struct work_struct *work)
 	unsigned long flags;
 	struct mmc_host *host =
 		container_of(work, struct mmc_host, detect.work);
-<<<<<<< HEAD
-=======
-	int i;
-	bool extend_wakelock = false;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	if (host->trigger_card_event && host->ops->card_event) {
 		host->ops->card_event(host);
@@ -3907,12 +3794,6 @@ void mmc_rescan(struct work_struct *work)
 
 	host->detect_change = 0;
 
-	/* If the card was removed the bus will be marked
-	 * as dead - extend the wakelock so userspace
-	 * can respond */
-	if (host->bus_dead)
-		extend_wakelock = 1;
-
 	/*
 	 * Let mmc_bus_put() free the bus/bus_ops if we've found that
 	 * the card is no longer present.
@@ -3941,30 +3822,13 @@ void mmc_rescan(struct work_struct *work)
 	}
 
 	mmc_claim_host(host);
-<<<<<<< HEAD
 	if (mmc_rescan_try_freq(host, host->f_min))
 		host->rescan_entered = 0;
-=======
-	for (i = 0; i < ARRAY_SIZE(freqs); i++) {
-		if (!mmc_rescan_try_freq(host, max(freqs[i], host->f_min))) {
-			extend_wakelock = true;
-			break;
-		}
-		if (freqs[i] <= host->f_min)
-			break;
-	}
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	mmc_release_host(host);
 
  out:
-	if (extend_wakelock)
-		wake_lock_timeout(&host->detect_wake_lock, HZ / 2);
-	else
-		wake_unlock(&host->detect_wake_lock);
-	if (host->caps & MMC_CAP_NEEDS_POLL) {
-		wake_lock(&host->detect_wake_lock);
+	if (host->caps & MMC_CAP_NEEDS_POLL)
 		mmc_schedule_delayed_work(&host->detect, HZ);
-	}
 }
 
 void mmc_start_host(struct mmc_host *host)
@@ -3994,8 +3858,7 @@ void mmc_stop_host(struct mmc_host *host)
 		disable_irq(host->slot.cd_irq);
 
 	host->rescan_disable = 1;
-	if (cancel_delayed_work_sync(&host->detect))
-		wake_unlock(&host->detect_wake_lock);
+	cancel_delayed_work_sync(&host->detect);
 	mmc_flush_scheduled_work();
 
 	/* clear pm flags now and let card drivers set them as needed */
@@ -4137,7 +4000,6 @@ int mmc_flush_cache(struct mmc_card *card)
 }
 EXPORT_SYMBOL(mmc_flush_cache);
 
-<<<<<<< HEAD
 /*
 * Turn the cache ON/OFF.
 * Turning the cache OFF shall trigger flushing of the data
@@ -4174,112 +4036,6 @@ EXPORT_SYMBOL(mmc_cache_ctrl);
 
 #ifdef CONFIG_PM
 
-=======
-#ifdef CONFIG_PM
-
-/**
- *	mmc_suspend_host - suspend a host
- *	@host: mmc host
- */
-int mmc_suspend_host(struct mmc_host *host)
-{
-	int err = 0;
-
-	if (mmc_bus_needs_resume(host))
-		return 0;
-
-	if (cancel_delayed_work(&host->detect))
-		wake_unlock(&host->detect_wake_lock);
-	mmc_flush_scheduled_work();
-
-	mmc_bus_get(host);
-	if (host->bus_ops && !host->bus_dead) {
-		if (host->bus_ops->suspend) {
-			if (mmc_card_doing_bkops(host->card)) {
-				err = mmc_stop_bkops(host->card);
-				if (err)
-					goto out;
-			}
-			err = host->bus_ops->suspend(host);
-		}
-
-		if (err == -ENOSYS || !host->bus_ops->resume) {
-			/*
-			 * We simply "remove" the card in this case.
-			 * It will be redetected on resume.  (Calling
-			 * bus_ops->remove() with a claimed host can
-			 * deadlock.)
-			 */
-			if (host->bus_ops->remove)
-				host->bus_ops->remove(host);
-			mmc_claim_host(host);
-			mmc_detach_bus(host);
-			mmc_power_off(host);
-			mmc_release_host(host);
-			host->pm_flags = 0;
-			err = 0;
-		}
-	}
-	mmc_bus_put(host);
-
-	if (!err && !mmc_card_keep_power(host))
-		mmc_power_off(host);
-
-out:
-	return err;
-}
-
-EXPORT_SYMBOL(mmc_suspend_host);
-
-/**
- *	mmc_resume_host - resume a previously suspended host
- *	@host: mmc host
- */
-int mmc_resume_host(struct mmc_host *host)
-{
-	int err = 0;
-
-	mmc_bus_get(host);
-	if (mmc_bus_manual_resume(host)) {
-		host->bus_resume_flags |= MMC_BUSRESUME_NEEDS_RESUME;
-		mmc_bus_put(host);
-		return 0;
-	}
-
-	if (host->bus_ops && !host->bus_dead) {
-		if (!mmc_card_keep_power(host)) {
-			mmc_power_up(host);
-			mmc_select_voltage(host, host->ocr);
-			/*
-			 * Tell runtime PM core we just powered up the card,
-			 * since it still believes the card is powered off.
-			 * Note that currently runtime PM is only enabled
-			 * for SDIO cards that are MMC_CAP_POWER_OFF_CARD
-			 */
-			if (mmc_card_sdio(host->card) &&
-			    (host->caps & MMC_CAP_POWER_OFF_CARD)) {
-				pm_runtime_disable(&host->card->dev);
-				pm_runtime_set_active(&host->card->dev);
-				pm_runtime_enable(&host->card->dev);
-			}
-		}
-		BUG_ON(!host->bus_ops->resume);
-		err = host->bus_ops->resume(host);
-		if (err) {
-			pr_warning("%s: error %d during resume "
-					    "(card was removed?)\n",
-					    mmc_hostname(host), err);
-			err = 0;
-		}
-	}
-	host->pm_flags &= ~MMC_PM_KEEP_POWER;
-	mmc_bus_put(host);
-
-	return err;
-}
-EXPORT_SYMBOL(mmc_resume_host);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 /* Do the card removal on suspend if card is assumed removeable
  * Do that in pm notifier while userspace isn't yet frozen, so we will be able
    to sync the card.
@@ -4297,14 +4053,9 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 	case PM_SUSPEND_PREPARE:
 	case PM_RESTORE_PREPARE:
 		spin_lock_irqsave(&host->lock, flags);
-		if (mmc_bus_needs_resume(host)) {
-			spin_unlock_irqrestore(&host->lock, flags);
-			break;
-		}
 		host->rescan_disable = 1;
 		spin_unlock_irqrestore(&host->lock, flags);
-		if (cancel_delayed_work_sync(&host->detect))
-			wake_unlock(&host->detect_wake_lock);
+		cancel_delayed_work_sync(&host->detect);
 
 		if (!host->bus_ops)
 			break;
@@ -4329,10 +4080,6 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 	case PM_POST_RESTORE:
 
 		spin_lock_irqsave(&host->lock, flags);
-		if (mmc_bus_manual_resume(host)) {
-			spin_unlock_irqrestore(&host->lock, flags);
-			break;
-		}
 		host->rescan_disable = 0;
 		if (mmc_bus_manual_resume(host)) {
 			spin_unlock_irqrestore(&host->lock, flags);
@@ -4418,124 +4165,6 @@ static void __exit mmc_exit(void)
 	mmc_unregister_host_class();
 	mmc_unregister_bus();
 	destroy_workqueue(workqueue);
-}
-
-/*
- * MMC IO latency support. We want this to be as cheap as possible, so doing
- * this lockless (and avoiding atomics), a few off by a few errors in this
- * code is not harmful, and we don't want to do anything that is
- * perf-impactful.
- * TODO : If necessary, we can make the histograms per-cpu and aggregate
- * them when printing them out.
- */
-static void
-mmc_zero_latency_hist(struct mmc_host *host)
-{
-	memset(host->latency_y_axis_read, 0,
-	       sizeof(host->latency_y_axis_read));
-	memset(host->latency_y_axis_write, 0,
-	       sizeof(host->latency_y_axis_write));
-	host->latency_reads_elems = 0;
-	host->latency_writes_elems = 0;
-}
-
-static ssize_t
-latency_hist_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	int i;
-	struct mmc_host *host = cls_dev_to_mmc_host(dev);
-	int bytes_written = 0;
-	u_int64_t num_elem, elem;
-	int pct;
-
-	num_elem = host->latency_reads_elems;
-	if (num_elem > 0) {
-		bytes_written += scnprintf(buf + bytes_written,
-			   PAGE_SIZE - bytes_written,
-			   "IO svc_time Read Latency Histogram :\n");
-		for (i = 0;
-		     i < ARRAY_SIZE(latency_x_axis_us);
-		     i++) {
-			elem = host->latency_y_axis_read[i];
-			pct = div64_u64(elem * 100, num_elem);
-			bytes_written += scnprintf(buf + bytes_written,
-						   PAGE_SIZE - bytes_written,
-						   "\t< %5lluus%15llu%15d%%\n",
-						   latency_x_axis_us[i],
-						   elem, pct);
-		}
-		/* Last element in y-axis table is overflow */
-		elem = host->latency_y_axis_read[i];
-		pct = div64_u64(elem * 100, num_elem);
-		bytes_written += scnprintf(buf + bytes_written,
-					   PAGE_SIZE - bytes_written,
-					   "\t> %5dms%15llu%15d%%\n", 10,
-					   elem, pct);
-	}
-	num_elem = host->latency_writes_elems;
-	if (num_elem > 0) {
-		bytes_written += scnprintf(buf + bytes_written,
-				   PAGE_SIZE - bytes_written,
-				   "IO svc_time Write Latency Histogram :\n");
-		for (i = 0;
-		     i < ARRAY_SIZE(latency_x_axis_us);
-		     i++) {
-			elem = host->latency_y_axis_write[i];
-			pct = div64_u64(elem * 100, num_elem);
-			bytes_written += scnprintf(buf + bytes_written,
-						   PAGE_SIZE - bytes_written,
-						   "\t< %5lluus%15llu%15d%%\n",
-						   latency_x_axis_us[i],
-						   elem, pct);
-		}
-		/* Last element in y-axis table is overflow */
-		elem = host->latency_y_axis_write[i];
-		pct = div64_u64(elem * 100, num_elem);
-		bytes_written += scnprintf(buf + bytes_written,
-					   PAGE_SIZE - bytes_written,
-					   "\t> %5dms%15llu%15d%%\n", 10,
-					   elem, pct);
-	}
-	return bytes_written;
-}
-/*
- * Values permitted 0, 1, 2.
- * 0 -> Disable IO latency histograms (default)
- * 1 -> Enable IO latency histograms
- * 2 -> Zero out IO latency histograms
- */
-static ssize_t
-latency_hist_store(struct device *dev, struct device_attribute *attr,
-		   const char *buf, size_t count)
-{
-	struct mmc_host *host = cls_dev_to_mmc_host(dev);
-	long value;
-
-	if (kstrtol(buf, 0, &value))
-		return -EINVAL;
-	if (value == MMC_IO_LAT_HIST_ZERO)
-		mmc_zero_latency_hist(host);
-	else if (value == MMC_IO_LAT_HIST_ENABLE ||
-		 value == MMC_IO_LAT_HIST_DISABLE)
-		host->latency_hist_enabled = value;
-	return count;
-}
-
-static DEVICE_ATTR(latency_hist, S_IRUGO | S_IWUSR,
-		   latency_hist_show, latency_hist_store);
-
-void
-mmc_latency_hist_sysfs_init(struct mmc_host *host)
-{
-	if (device_create_file(&host->class_dev, &dev_attr_latency_hist))
-		dev_err(&host->class_dev,
-			"Failed to create latency_hist sysfs entry\n");
-}
-
-void
-mmc_latency_hist_sysfs_exit(struct mmc_host *host)
-{
-	device_remove_file(&host->class_dev, &dev_attr_latency_hist);
 }
 
 subsys_initcall(mmc_init);

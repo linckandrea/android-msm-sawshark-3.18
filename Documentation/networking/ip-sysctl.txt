@@ -43,7 +43,6 @@ ip_no_pmtu_disc - INTEGER
 min_pmtu - INTEGER
 	default 552 - minimum discovered Path MTU
 
-<<<<<<< HEAD
 ip_forward_use_pmtu - BOOLEAN
 	By default we don't trust protocol path MTUs while forwarding
 	because they could be easily forged and can lead to unwanted
@@ -57,8 +56,6 @@ ip_forward_use_pmtu - BOOLEAN
 	0 - disabled
 	1 - enabled
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 fwmark_reflect - BOOLEAN
 	Controls the fwmark of kernel-generated IPv4 reply packets that are not
 	associated with a socket for example, TCP RSTs or ICMP echo replies).
@@ -1488,7 +1485,6 @@ ndisc_notify - BOOLEAN
 	1 - Generate unsolicited neighbour advertisements when device is brought
 	    up or hardware address changes.
 
-<<<<<<< HEAD
 mldv1_unsolicited_report_interval - INTEGER
 	The interval in milliseconds in which the next unsolicited
 	MLDv1 report retransmit will take place.
@@ -1510,8 +1506,6 @@ suppress_frag_ndisc - INTEGER
 	1 - (default) discard fragmented neighbor discovery packets
 	0 - allow fragmented neighbor discovery packets
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 optimistic_dad - BOOLEAN
 	Whether to perform Optimistic Duplicate Address Detection (RFC 4429).
 		0: disabled (default)

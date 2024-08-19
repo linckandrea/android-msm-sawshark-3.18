@@ -1860,21 +1860,13 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 		if (err)
 			goto out;
 		err = propagate_mnt(dest_mnt, dest_mp, source_mnt, &tree_list);
-<<<<<<< HEAD
 		lock_mount_hash();
-=======
-		br_write_lock(&vfsmount_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		if (err)
 			goto out_cleanup_ids;
 		for (p = source_mnt; p; p = next_mnt(p, source_mnt))
 			set_mnt_shared(p);
 	} else {
-<<<<<<< HEAD
 		lock_mount_hash();
-=======
-		br_write_lock(&vfsmount_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	}
 	if (parent_path) {
 		detach_mnt(source_mnt, parent_path);
@@ -1897,19 +1889,11 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 	return 0;
 
  out_cleanup_ids:
-<<<<<<< HEAD
 	while (!hlist_empty(&tree_list)) {
 		child = hlist_entry(tree_list.first, struct mount, mnt_hash);
 		umount_tree(child, UMOUNT_SYNC);
 	}
 	unlock_mount_hash();
-=======
-	while (!list_empty(&tree_list)) {
-		child = list_first_entry(&tree_list, struct mount, mnt_hash);
-		umount_tree(child, 0);
-	}
-	br_write_unlock(&vfsmount_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	cleanup_group_ids(source_mnt, NULL);
  out:
 	return err;
@@ -2174,15 +2158,9 @@ static int do_remount(struct path *path, int flags, int mnt_flags,
 	else {
 		err = do_remount_sb2(path->mnt, sb, flags, data, 0);
 		namespace_lock();
-<<<<<<< HEAD
 		lock_mount_hash();
 		propagate_remount(mnt);
 		unlock_mount_hash();
-=======
-		br_write_lock(&vfsmount_lock);
-		propagate_remount(mnt);
-		br_write_unlock(&vfsmount_lock);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		namespace_unlock();
 	}
 	if (!err) {

@@ -150,7 +150,6 @@ ramoops_get_next_prz(struct persistent_ram_zone *przs[], uint *c, uint max,
 	return prz;
 }
 
-<<<<<<< HEAD
 static void ramoops_read_kmsg_hdr(char *buffer, struct timespec *time,
 				  bool *compressed)
 {
@@ -172,8 +171,6 @@ static void ramoops_read_kmsg_hdr(char *buffer, struct timespec *time,
 	}
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static bool prz_ok(struct persistent_ram_zone *prz)
 {
 	return !!prz && !!(persistent_ram_old_size(prz) +
@@ -313,11 +310,7 @@ static int notrace ramoops_pstore_write_buf_user(enum pstore_type_id type,
 						 enum kmsg_dump_reason reason,
 						 u64 *id, unsigned int part,
 						 const char __user *buf,
-<<<<<<< HEAD
 						 bool compressed, size_t size,
-=======
-						 size_t size,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 						 struct pstore_info *psi)
 {
 	if (type == PSTORE_TYPE_PMSG) {
@@ -469,7 +462,6 @@ void notrace ramoops_console_write_buf(const char *buf, size_t size)
 	persistent_ram_write(cxt->cprz, buf, size);
 }
 
-<<<<<<< HEAD
 #ifdef CONFIG_OF
 static struct of_device_id ramoops_of_match[] = {
 	{ .compatible = "ramoops", },
@@ -550,8 +542,6 @@ static inline void ramoops_of_init(struct platform_device *pdev)
 }
 #endif
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static int ramoops_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -595,12 +585,9 @@ static int ramoops_probe(struct platform_device *pdev)
 		pdata->ftrace_size = rounddown_pow_of_two(pdata->ftrace_size);
 	if (pdata->pmsg_size && !is_power_of_2(pdata->pmsg_size))
 		pdata->pmsg_size = rounddown_pow_of_two(pdata->pmsg_size);
-<<<<<<< HEAD
 	/* If ecc is not defined in pdata, check module param */
 	if (!pdata->ecc_info.ecc_size)
 		pdata->ecc_info.ecc_size = ramoops_ecc == 1 ? 16 : ramoops_ecc;
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	cxt->size = pdata->mem_size;
 	cxt->phys_addr = pdata->mem_address;
@@ -616,17 +603,11 @@ static int ramoops_probe(struct platform_device *pdev)
 
 	dump_mem_sz = cxt->size - cxt->console_size - cxt->ftrace_size
 			- cxt->pmsg_size;
-<<<<<<< HEAD
 	if (dump_mem_sz) {
 		err = ramoops_init_przs(dev, cxt, &paddr, dump_mem_sz);
 		if (err)
 			goto fail_out;
 	}
-=======
-	err = ramoops_init_przs(dev, cxt, &paddr, dump_mem_sz);
-	if (err)
-		goto fail_out;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	err = ramoops_init_prz(dev, cxt, &cxt->cprz, &paddr,
 			       cxt->console_size, 0);

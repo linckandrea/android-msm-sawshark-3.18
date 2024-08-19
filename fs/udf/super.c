@@ -648,7 +648,6 @@ static int udf_remount_fs(struct super_block *sb, int *flags, char *options)
 	struct udf_options uopt;
 	struct udf_sb_info *sbi = UDF_SB(sb);
 	int error = 0;
-<<<<<<< HEAD
 	struct logicalVolIntegrityDescImpUse *lvidiu = udf_sb_lvidiu(sb);
 
 	sync_filesystem(sb);
@@ -657,9 +656,6 @@ static int udf_remount_fs(struct super_block *sb, int *flags, char *options)
 		if (write_rev > UDF_MAX_WRITE_VERSION && !(*flags & MS_RDONLY))
 			return -EACCES;
 	}
-=======
-	sync_filesystem(sb);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	uopt.flags = sbi->s_flags;
 	uopt.uid   = sbi->s_uid;

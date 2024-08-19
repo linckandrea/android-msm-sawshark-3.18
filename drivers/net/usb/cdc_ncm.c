@@ -952,16 +952,11 @@ static int cdc_ncm_bind(struct usbnet *dev, struct usb_interface *intf)
 	if (cdc_ncm_select_altsetting(intf) != CDC_NCM_COMM_ALTSETTING_NCM)
 		return -ENODEV;
 
-<<<<<<< HEAD
 	/* The NCM data altsetting is fixed, so we hard-coded it.
 	 * Additionally, generic NCM devices are assumed to accept arbitrarily
 	 * placed NDP.
 	 */
 	return cdc_ncm_bind_common(dev, intf, CDC_NCM_DATA_ALTSETTING_NCM);
-=======
-	/* NCM data altsetting is always 1 */
-	return cdc_ncm_bind_common(dev, intf, 1);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 static void cdc_ncm_align_tail(struct sk_buff *skb, size_t modulus, size_t remainder, size_t max)

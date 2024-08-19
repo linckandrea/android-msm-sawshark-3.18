@@ -17,7 +17,6 @@
 #include <linux/key.h>
 
 extern struct key *system_trusted_keyring;
-<<<<<<< HEAD
 static inline struct key *get_system_trusted_keyring(void)
 {
 	return system_trusted_keyring;
@@ -27,9 +26,6 @@ static inline struct key *get_system_trusted_keyring(void)
 {
 	return NULL;
 }
-=======
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #endif
 
 #endif /* _KEYS_SYSTEM_KEYRING_H */

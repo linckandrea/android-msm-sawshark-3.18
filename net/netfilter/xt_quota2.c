@@ -52,18 +52,9 @@ static DEFINE_SPINLOCK(counter_list_lock);
 
 static struct proc_dir_entry *proc_xt_quota;
 static unsigned int quota_list_perms = S_IRUGO | S_IWUSR;
-<<<<<<< HEAD
 static kuid_t quota_list_uid = KUIDT_INIT(0);
 static kgid_t quota_list_gid = KGIDT_INIT(0);
 module_param_named(perms, quota_list_perms, uint, S_IRUGO | S_IWUSR);
-=======
-static unsigned int quota_list_uid   = 0;
-static unsigned int quota_list_gid   = 0;
-module_param_named(perms, quota_list_perms, uint, S_IRUGO | S_IWUSR);
-module_param_named(uid, quota_list_uid, uint, S_IRUGO | S_IWUSR);
-module_param_named(gid, quota_list_gid, uint, S_IRUGO | S_IWUSR);
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 #ifdef CONFIG_NETFILTER_XT_MATCH_QUOTA2_LOG
 static void quota2_log(unsigned int hooknum,

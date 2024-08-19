@@ -176,15 +176,6 @@ static void shm_rcu_free(struct rcu_head *head)
 	ipc_rcu_free(head);
 }
 
-static void shm_rcu_free(struct rcu_head *head)
-{
-	struct ipc_rcu *p = container_of(head, struct ipc_rcu, rcu);
-	struct shmid_kernel *shp = ipc_rcu_to_struct(p);
-
-	security_shm_free(shp);
-	ipc_rcu_free(head);
-}
-
 static inline void shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *s)
 {
 	list_del(&s->shm_clist);
@@ -228,14 +219,8 @@ static void shm_destroy(struct ipc_namespace *ns, struct shmid_kernel *shp)
 	if (!is_file_hugepages(shm_file))
 		shmem_lock(shm_file, 0, shp->mlock_user);
 	else if (shp->mlock_user)
-<<<<<<< HEAD
 		user_shm_unlock(file_inode(shm_file)->i_size, shp->mlock_user);
 	fput(shm_file);
-=======
-		user_shm_unlock(file_inode(shp->shm_file)->i_size,
-						shp->mlock_user);
-	fput (shp->shm_file);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	ipc_rcu_putref(shp, shm_rcu_free);
 }
 
@@ -579,11 +564,8 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
 		goto no_id;
 	}
 
-<<<<<<< HEAD
 	list_add(&shp->shm_clist, &current->sysvshm.shm_clist);
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	/*
 	 * shmid gets reported as "inode#" in /proc/pid/maps.
 	 * proc-ps tools use this. Changing this will break them.

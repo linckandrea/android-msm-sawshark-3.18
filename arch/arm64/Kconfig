@@ -15,13 +15,10 @@ config ARM64
 	select ARM_ARCH_TIMER
 	select ARM_GIC
 	select AUDIT_ARCH_COMPAT_GENERIC
-<<<<<<< HEAD
 	select ARM_GIC_V2M if PCI_MSI
 	select ARM_GIC_V3
 	select ARM_GIC_V3_ITS if PCI_MSI
 	select BUILDTIME_EXTABLE_SORT
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	select CLONE_BACKWARDS
 	select COMMON_CLK if !ARCH_MSM
 	select CPU_PM if (SUSPEND || CPU_IDLE)
@@ -31,10 +28,7 @@ config ARM64
 	select GENERIC_CLOCKEVENTS
 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
 	select GENERIC_CPU_AUTOPROBE
-<<<<<<< HEAD
 	select GENERIC_EARLY_IOREMAP
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	select GENERIC_IOMAP
 	select GENERIC_IRQ_PROBE
 	select GENERIC_IRQ_SHOW
@@ -45,17 +39,11 @@ config ARM64
 	select GENERIC_TIME_VSYSCALL
 	select HANDLE_DOMAIN_IRQ
 	select HARDIRQS_SW_RESEND
-<<<<<<< HEAD
 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
 	select HAVE_ARCH_AUDITSYSCALL
 	select HAVE_ARCH_JUMP_LABEL
 	select HAVE_ARCH_KASAN if SPARSEMEM_VMEMMAP
 	select HAVE_ARCH_KGDB
-=======
-	select HAVE_ARCH_AUDITSYSCALL
-	select HAVE_ARCH_MMAP_RND_BITS
-	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	select HAVE_ARCH_SECCOMP_FILTER
 	select HAVE_ARCH_TRACEHOOK
 	select HAVE_BPF_JIT
@@ -109,27 +97,6 @@ config MMU
 
 config NO_IOPORT_MAP
 	def_bool y if !PCI
-
-config ILLEGAL_POINTER_VALUE
-	hex
-	default 0xdead000000000000
-
-config ARCH_MMAP_RND_BITS_MIN
-       default 14 if ARM64_64K_PAGES
-       default 18
-
-# max bits determined by the following formula:
-#  VA_BITS - PAGE_SHIFT - 3
-#  VA_BITS is always 39
-config ARCH_MMAP_RND_BITS_MAX
-       default 20 if ARM64_64K_PAGES
-       default 24
-
-config ARCH_MMAP_RND_COMPAT_BITS_MIN
-       default 11
-
-config ARCH_MMAP_RND_COMPAT_BITS_MAX
-       default 16
 
 config ILLEGAL_POINTER_VALUE
 	hex
@@ -654,31 +621,6 @@ config ARCH_NR_GPIO
           If unsure, leave the default value.
 
 
-config SWP_EMULATE
-	bool "Emulate SWP/SWPB instructions"
-	help
-	  ARMv6 architecture deprecates use of the SWP/SWPB instructions. ARMv8
-	  oblosetes the use of SWP/SWPB instructions. ARMv7 multiprocessing
-	  extensions introduce the ability to disable these instructions,
-	  triggering an undefined instruction exception when executed. Say Y
-	  here to enable software emulation of these instructions for userspace
-	  (not kernel) using LDREX/STREX. Also creates /proc/cpu/swp_emulation
-	  for statistics.
-
-	  In some older versions of glibc [<=2.8] SWP is used during futex
-	  trylock() operations with the assumption that the code will not
-	  be preempted. This invalid assumption may be more likely to fail
-	  with SWP emulation enabled, leading to deadlock of the user
-	  application.
-
-	  NOTE: when accessing uncached shared regions, LDREX/STREX rely
-	  on an external transaction monitoring block called a global
-	  monitor to maintain update atomicity. If your system does not
-	  implement a global monitor, this option can cause programs that
-	  perform SWP operations to uncached memory to deadlock.
-
-	  If unsure, say Y.
-
 source kernel/Kconfig.preempt
 
 config HZ
@@ -709,7 +651,6 @@ config HW_PERF_EVENTS
 	  Enable hardware performance counter support for perf events. If
 	  disabled, perf events will use software events only.
 
-<<<<<<< HEAD
 config PERF_EVENTS_USERMODE
 	bool "Enable usermode access for perf events"
 	depends on PERF_EVENTS
@@ -751,28 +692,6 @@ config HAVE_ARCH_TRANSPARENT_HUGEPAGE
 
 config ARCH_HAS_CACHE_LINE_SIZE
 	def_bool y
-=======
-config ARMV7_COMPAT
-	bool "Kernel support for ARMv7 applications"
-	depends on COMPAT
-	select SWP_EMULATE
-	help
-	 This option enables features that allow that ran on an ARMv7 or older
-	 processor to continue functioning.
-
-	 If you want to execute ARMv7 applications, say Y
-
-config ARMV7_COMPAT_CPUINFO
-	bool "Report backwards compatible cpu features in /proc/cpuinfo"
-	depends on ARMV7_COMPAT
-	default y
-	help
-	 This option makes /proc/cpuinfo list CPU features that an ARMv7 or
-	 earlier kernel would report, but are not optional on an ARMv8 or later
-	 processor.
-
-	 If you want to execute ARMv7 applications, say Y
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 source "mm/Kconfig"
 
@@ -789,7 +708,6 @@ config SECCOMP
 	  and the task is only allowed to execute a few safe syscalls
 	  defined by each seccomp mode.
 
-<<<<<<< HEAD
 config XEN_DOM0
 	def_bool y
 	depends on XEN
@@ -887,8 +805,6 @@ config SETEND_EMULATION
 	  If unsure, say Y
 
 endif
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 endmenu
 
@@ -928,7 +844,6 @@ config CMDLINE_FORCE
 	  command-line options your boot loader passes to the kernel.
 endchoice
 
-<<<<<<< HEAD
 config EFI_STUB
 	bool
 
@@ -949,8 +864,6 @@ config EFI
 	  allow the kernel to be booted as an EFI application. This
 	  is only useful on systems that have UEFI firmware.
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 config BUILD_ARM64_APPENDED_DTB_IMAGE
 	bool "Build a concatenated Image.gz/dtb by default"
 	depends on OF
@@ -965,7 +878,6 @@ config BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES
 	help
 	  Space separated list of names of dtbs to append when
 	  building a concatenated Image.gz-dtb.
-<<<<<<< HEAD
 
 config DMI
 	bool "Enable support for SMBIOS (DMI) tables"
@@ -977,8 +889,6 @@ config DMI
 	  This option is only useful on systems that have UEFI firmware.
 	  However, even with this option, the resultant kernel should
 	  continue to boot on existing non-UEFI platforms.
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 endmenu
 

@@ -22,10 +22,7 @@
 #include <linux/frontswap.h>
 #include <linux/aio.h>
 #include <linux/blkdev.h>
-<<<<<<< HEAD
 #include <linux/ratelimit.h>
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 #include <asm/pgtable.h>
 
 #define ERROR_LOG_RATE_MS 1000
@@ -89,11 +86,7 @@ void end_swap_bio_read(struct bio *bio, int err)
 			pr_info("Read-error on swap-device (%u:%u:%llu)\n",
 				imajor(bio->bi_bdev->bd_inode),
 				iminor(bio->bi_bdev->bd_inode),
-<<<<<<< HEAD
 				(unsigned long long)bio->bi_iter.bi_sector);
-=======
-				(unsigned long long)bio->bi_sector);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		goto out;
 	}
 

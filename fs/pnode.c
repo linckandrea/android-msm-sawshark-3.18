@@ -200,11 +200,7 @@ static struct mount *next_group(struct mount *m, struct mount *origin)
 static struct user_namespace *user_ns;
 static struct mount *last_dest, *last_source, *dest_master;
 static struct mountpoint *mp;
-<<<<<<< HEAD
 static struct hlist_head *list;
-=======
-static struct list_head *list;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 static int propagate_one(struct mount *m)
 {
@@ -250,19 +246,11 @@ static int propagate_one(struct mount *m)
 	last_dest = m;
 	last_source = child;
 	if (m->mnt_master != dest_master) {
-<<<<<<< HEAD
 		read_seqlock_excl(&mount_lock);
 		SET_MNT_MARK(m->mnt_master);
 		read_sequnlock_excl(&mount_lock);
 	}
 	hlist_add_head(&child->mnt_hash, list);
-=======
-		br_write_lock(&vfsmount_lock);
-		SET_MNT_MARK(m->mnt_master);
-		br_write_unlock(&vfsmount_lock);
-	}
-	list_add_tail(&child->mnt_hash, list);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	return 0;
 }
 
@@ -317,13 +305,8 @@ int propagate_mnt(struct mount *dest_mnt, struct mountpoint *dest_mp,
 		} while (n != m);
 	}
 out:
-<<<<<<< HEAD
 	read_seqlock_excl(&mount_lock);
 	hlist_for_each_entry(n, tree_list, mnt_hash) {
-=======
-	br_write_lock(&vfsmount_lock);
-	list_for_each_entry(n, tree_list, mnt_hash) {
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		m = n->mnt_parent;
 		if (m->mnt_master != dest_mnt->mnt_master)
 			CLEAR_MNT_MARK(m->mnt_master);
@@ -429,20 +412,9 @@ static struct mount *next_descendent(struct mount *root, struct mount *cur)
 	if (!IS_MNT_NEW(cur) && !list_empty(&cur->mnt_slave_list))
 		return first_slave(cur);
 	do {
-<<<<<<< HEAD
 		if (cur->mnt_slave.next != &cur->mnt_master->mnt_slave_list)
 			return next_slave(cur);
 		cur = cur->mnt_master;
-=======
-		struct mount *master = cur->mnt_master;
-
-		if (!master || cur->mnt_slave.next != &master->mnt_slave_list) {
-			struct mount *next = next_slave(cur);
-
-			return (next == root) ? NULL : next;
-		}
-		cur = master;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	} while (cur != root);
 	return NULL;
 }

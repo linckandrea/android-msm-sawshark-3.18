@@ -70,11 +70,8 @@ enum ipi_msg_type {
 	IPI_CALL_FUNC,
 	IPI_CALL_FUNC_SINGLE,
 	IPI_CPU_STOP,
-<<<<<<< HEAD
 	IPI_IRQ_WORK,
 	IPI_COMPLETION,
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	IPI_CPU_BACKTRACE,
 };
 
@@ -485,11 +482,8 @@ static const char *ipi_types[NR_IPI] __tracepoint_string = {
 	S(IPI_CALL_FUNC, "Function call interrupts"),
 	S(IPI_CALL_FUNC_SINGLE, "Single function call interrupts"),
 	S(IPI_CPU_STOP, "CPU stop interrupts"),
-<<<<<<< HEAD
 	S(IPI_IRQ_WORK, "IRQ work interrupts"),
 	S(IPI_COMPLETION, "completion interrupts"),
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	S(IPI_CPU_BACKTRACE, "CPU backtrace"),
 };
 
@@ -564,7 +558,6 @@ static void ipi_cpu_stop(unsigned int cpu)
 		cpu_relax();
 }
 
-<<<<<<< HEAD
 static DEFINE_PER_CPU(struct completion *, cpu_completion);
 
 int register_ipi_completion(struct completion *completion, int cpu)
@@ -578,8 +571,6 @@ static void ipi_complete(unsigned int cpu)
 	complete(per_cpu(cpu_completion, cpu));
 }
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 static cpumask_t backtrace_mask;
 static DEFINE_RAW_SPINLOCK(backtrace_lock);
 
@@ -605,12 +596,8 @@ void smp_send_all_cpu_backtrace(void)
 	dump_stack();
 
 	pr_info("\nsending IPI to all other CPUs:\n");
-<<<<<<< HEAD
 	if (!cpus_empty(backtrace_mask))
 		smp_cross_call_common(&backtrace_mask, IPI_CPU_BACKTRACE);
-=======
-	smp_cross_call(&backtrace_mask, IPI_CPU_BACKTRACE);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* Wait for up to 10 seconds for all other CPUs to do the backtrace */
 	for (i = 0; i < 10 * 1000; i++) {
@@ -620,11 +607,7 @@ void smp_send_all_cpu_backtrace(void)
 	}
 
 	clear_bit(0, &backtrace_flag);
-<<<<<<< HEAD
 	smp_mb__after_atomic();
-=======
-	smp_mb__after_clear_bit();
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 }
 
 /*
@@ -693,7 +676,6 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 		irq_exit();
 		break;
 
-<<<<<<< HEAD
 #ifdef CONFIG_IRQ_WORK
 	case IPI_IRQ_WORK:
 		irq_enter();
@@ -708,8 +690,6 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 		irq_exit();
 		break;
 
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	case IPI_CPU_BACKTRACE:
 		ipi_cpu_backtrace(cpu, regs);
 		break;

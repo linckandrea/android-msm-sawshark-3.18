@@ -1,7 +1,6 @@
 #include <linux/export.h>
 #include <linux/init.h>
 
-<<<<<<< HEAD
 	__INITRODATA
 
 	.align 8
@@ -19,14 +18,3 @@ VMLINUX_SYMBOL(system_certificate_list_size):
 #else
 	.long __cert_list_end - __cert_list_start
 #endif
-=======
-#define GLOBAL(name)	\
-	.globl VMLINUX_SYMBOL(name);	\
-	VMLINUX_SYMBOL(name):
-
-	__INITRODATA
-
-GLOBAL(system_certificate_list)
-	.incbin "kernel/x509_certificate_list"
-GLOBAL(system_certificate_list_end)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f

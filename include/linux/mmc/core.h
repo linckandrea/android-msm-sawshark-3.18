@@ -107,7 +107,6 @@ struct mmc_request {
 	struct completion	completion;
 	void			(*done)(struct mmc_request *);/* completion function */
 	struct mmc_host		*host;
-<<<<<<< HEAD
 	struct mmc_cmdq_req	*cmdq_req;
 	struct request *req;
 };
@@ -126,10 +125,6 @@ struct mmc_bus_ops {
 	int (*alive)(struct mmc_host *);
 	int (*shutdown)(struct mmc_host *);
 	int (*change_bus_speed)(struct mmc_host *, unsigned long *);
-=======
-	ktime_t			io_start;
-	int			lat_hist_enabled;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 };
 
 struct mmc_card;

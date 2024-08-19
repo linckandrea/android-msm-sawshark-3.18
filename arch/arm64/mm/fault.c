@@ -292,13 +292,8 @@ retry:
 			 * Clear FAULT_FLAG_ALLOW_RETRY to avoid any risk of
 			 * starvation.
 			 */
-<<<<<<< HEAD
 			mm_flags &= ~FAULT_FLAG_ALLOW_RETRY;
 			mm_flags |= FAULT_FLAG_TRIED;
-=======
-			flags &= ~FAULT_FLAG_ALLOW_RETRY;
-			flags |= FAULT_FLAG_TRIED;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			goto retry;
 		}
 	}

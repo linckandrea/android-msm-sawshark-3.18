@@ -222,7 +222,6 @@ static int snd_usb_create_streams(struct snd_usb_audio *chip, int ctrlif)
 	void *control_header;
 	int i, protocol;
 	int rest_bytes;
-<<<<<<< HEAD
 
 	usb_iface = usb_ifnum_to_if(dev, ctrlif);
 	if (!usb_iface) {
@@ -230,8 +229,6 @@ static int snd_usb_create_streams(struct snd_usb_audio *chip, int ctrlif)
 					dev->devnum, ctrlif);
 		return -EINVAL;
 	}
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 	/* find audiocontrol interface */
 	host_iface = &usb_iface->altsetting[0];
@@ -248,15 +245,6 @@ static int snd_usb_create_streams(struct snd_usb_audio *chip, int ctrlif)
 
 	if (!control_header) {
 		dev_err(&dev->dev, "cannot find UAC_HEADER\n");
-		return -EINVAL;
-	}
-
-	rest_bytes = (void *)(host_iface->extra + host_iface->extralen) -
-		control_header;
-
-	/* just to be sure -- this shouldn't hit at all */
-	if (rest_bytes <= 0) {
-		dev_err(&dev->dev, "invalid control header\n");
 		return -EINVAL;
 	}
 
@@ -286,11 +274,6 @@ static int snd_usb_create_streams(struct snd_usb_audio *chip, int ctrlif)
 
 		if (!h1->bInCollection) {
 			dev_info(&dev->dev, "skipping empty audio interface (v1)\n");
-			return -EINVAL;
-		}
-
-		if (rest_bytes < h1->bLength) {
-			dev_err(&dev->dev, "invalid buffer length (v1)\n");
 			return -EINVAL;
 		}
 

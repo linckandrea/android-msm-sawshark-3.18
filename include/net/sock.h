@@ -68,10 +68,7 @@
 #include <net/dst.h>
 #include <net/checksum.h>
 #include <net/tcp_states.h>
-<<<<<<< HEAD
 #include <linux/net_tstamp.h>
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 struct cgroup;
 struct cgroup_subsys;
@@ -1743,11 +1740,6 @@ static inline kuid_t sock_net_uid(const struct net *net, const struct sock *sk)
 	return sk ? sk->sk_uid : make_kuid(net->user_ns, 0);
 }
 
-static inline kuid_t sock_net_uid(const struct net *net, const struct sock *sk)
-{
-	return sk ? sk->sk_uid : make_kuid(net->user_ns, 0);
-}
-
 static inline struct dst_entry *
 __sk_dst_get(struct sock *sk)
 {
@@ -2286,7 +2278,6 @@ static inline struct sock *skb_steal_sock(struct sk_buff *skb)
 
 /* This helper checks if a socket is a full socket,
  * ie _not_ a timewait or request socket.
-<<<<<<< HEAD
  */
 static inline bool sk_fullsock(const struct sock *sk)
 {
@@ -2303,18 +2294,6 @@ bool sk_ns_capable(const struct sock *sk,
 		   struct user_namespace *user_ns, int cap);
 bool sk_capable(const struct sock *sk, int cap);
 bool sk_net_capable(const struct sock *sk, int cap);
-=======
- * TODO: Check for TCPF_NEW_SYN_RECV when that starts to exist.
- */
-static inline bool sk_fullsock(const struct sock *sk)
-{
-	return (1 << sk->sk_state) & ~(TCPF_TIME_WAIT);
-}
-
-extern void sock_enable_timestamp(struct sock *sk, int flag);
-extern int sock_get_timestamp(struct sock *, struct timeval __user *);
-extern int sock_get_timestampns(struct sock *, struct timespec __user *);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 /*
  *	Enable debug/info messages

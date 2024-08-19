@@ -10142,13 +10142,8 @@ void __might_sleep(const char *file, int line, int preempt_offset)
 	static unsigned long prev_jiffy;	/* ratelimiting */
 
 	rcu_sleep_check(); /* WARN_ON_ONCE() by default, no rate limit reqd. */
-<<<<<<< HEAD
 	if ((preempt_count_equals(preempt_offset) && !irqs_disabled() &&
 	     !is_idle_task(current)) || oops_in_progress)
-=======
-	if ((preempt_count_equals(preempt_offset) && !irqs_disabled()) ||
-	    oops_in_progress)
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 		return;
 	if (system_state != SYSTEM_RUNNING &&
 	    (!__might_sleep_init_called || system_state != SYSTEM_BOOTING))
@@ -11283,11 +11278,7 @@ struct cgroup_subsys cpu_cgrp_subsys = {
 	.fork		= cpu_cgroup_fork,
 	.can_attach	= cpu_cgroup_can_attach,
 	.attach		= cpu_cgroup_attach,
-<<<<<<< HEAD
 	.allow_attach   = subsys_cgroup_allow_attach,
-=======
-	.allow_attach	= subsys_cgroup_allow_attach,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 	.exit		= cpu_cgroup_exit,
 	.legacy_cftypes	= cpu_files,
 	.early_init	= 1,

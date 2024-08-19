@@ -690,12 +690,7 @@ retry:
 			goto locked;
 		}
 		ret = __blockdev_direct_IO(rw, iocb, inode,
-<<<<<<< HEAD
 				 inode->i_sb->s_bdev, iter, offset,
-=======
-				 inode->i_sb->s_bdev, iov,
-					   offset, nr_segs,
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 				 ext4_get_block, NULL, NULL, 0);
 		inode_dio_done(inode);
 	} else {
@@ -1398,14 +1393,7 @@ end_range:
 				 * to free. Everything was covered by the start
 				 * of the range.
 				 */
-<<<<<<< HEAD
 				goto do_indirects;
-=======
-				return 0;
-			} else {
-				/* Shared branch grows from an indirect block */
-				partial2--;
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			}
 		} else {
 			/*
@@ -1436,7 +1424,6 @@ end_range:
 	/* Punch happened within the same level (n == n2) */
 	partial = ext4_find_shared(inode, n, offsets, chain, &nr);
 	partial2 = ext4_find_shared(inode, n2, offsets2, chain2, &nr2);
-<<<<<<< HEAD
 
 	/* Free top, but only if partial2 isn't its subtree. */
 	if (nr) {
@@ -1528,59 +1515,6 @@ end_range:
 	}
 	return 0;
 
-=======
-	/*
-	 * ext4_find_shared returns Indirect structure which
-	 * points to the last element which should not be
-	 * removed by truncate. But this is end of the range
-	 * in punch_hole so we need to point to the next element
-	 */
-	partial2->p++;
-	while ((partial > chain) || (partial2 > chain2)) {
-		/* We're at the same block, so we're almost finished */
-		if ((partial->bh && partial2->bh) &&
-		    (partial->bh->b_blocknr == partial2->bh->b_blocknr)) {
-			if ((partial > chain) && (partial2 > chain2)) {
-				ext4_free_branches(handle, inode, partial->bh,
-						   partial->p + 1,
-						   partial2->p,
-						   (chain+n-1) - partial);
-				BUFFER_TRACE(partial->bh, "call brelse");
-				brelse(partial->bh);
-				BUFFER_TRACE(partial2->bh, "call brelse");
-				brelse(partial2->bh);
-			}
-			return 0;
-		}
-		/*
-		 * Clear the ends of indirect blocks on the shared branch
-		 * at the start of the range
-		 */
-		if (partial > chain) {
-			ext4_free_branches(handle, inode, partial->bh,
-				   partial->p + 1,
-				   (__le32 *)partial->bh->b_data+addr_per_block,
-				   (chain+n-1) - partial);
-			BUFFER_TRACE(partial->bh, "call brelse");
-			brelse(partial->bh);
-			partial--;
-		}
-		/*
-		 * Clear the ends of indirect blocks on the shared branch
-		 * at the end of the range
-		 */
-		if (partial2 > chain2) {
-			ext4_free_branches(handle, inode, partial2->bh,
-					   (__le32 *)partial2->bh->b_data,
-					   partial2->p,
-					   (chain2+n-1) - partial2);
-			BUFFER_TRACE(partial2->bh, "call brelse");
-			brelse(partial2->bh);
-			partial2--;
-		}
-	}
-
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 do_indirects:
 	/* Kill the remaining (whole) subtrees */
 	switch (offsets[0]) {

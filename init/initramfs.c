@@ -19,7 +19,6 @@
 #include <linux/syscalls.h>
 #include <linux/utime.h>
 #include <linux/initramfs.h>
-<<<<<<< HEAD
 
 static ssize_t __init xwrite(int fd, const char *p, size_t count)
 {
@@ -43,8 +42,6 @@ static ssize_t __init xwrite(int fd, const char *p, size_t count)
 
 	return out;
 }
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 
 static __initdata char *message;
 static void __init error(char *x)

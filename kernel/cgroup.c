@@ -2365,43 +2365,6 @@ static int cgroup_allow_attach(struct cgroup *cgrp, struct cgroup_taskset *tset)
 	return 0;
 }
 
-static int cgroup_allow_attach(struct cgroup *cgrp, struct cgroup_taskset *tset)
-{
-	struct cgroup_subsys *ss;
-	int ret;
-
-	for_each_subsys(cgrp->root, ss) {
-		if (ss->allow_attach) {
-			ret = ss->allow_attach(cgrp, tset);
-			if (ret)
-				return ret;
-		} else {
-			return -EACCES;
-		}
-	}
-
-	return 0;
-}
-
-int subsys_cgroup_allow_attach(struct cgroup *cgrp, struct cgroup_taskset *tset)
-{
-	const struct cred *cred = current_cred(), *tcred;
-	struct task_struct *task;
-
-	if (capable(CAP_SYS_NICE))
-		return 0;
-
-	cgroup_taskset_for_each(task, cgrp, tset) {
-		tcred = __task_cred(task);
-
-		if (current != task && cred->euid != tcred->uid &&
-		    cred->euid != tcred->suid)
-			return -EACCES;
-	}
-
-	return 0;
-}
-
 /*
  * Find the task_struct of the task to attach by vpid and pass it along to the
  * function to attach either it or all tasks in its threadgroup. Will lock
@@ -2444,7 +2407,6 @@ retry_find_task:
 			 * if the default permission check fails, give each
 			 * cgroup a chance to extend the permission check
 			 */
-<<<<<<< HEAD
 			struct cgroup_taskset tset = {
 				.src_csets = LIST_HEAD_INIT(tset.src_csets),
 				.dst_csets = LIST_HEAD_INIT(tset.dst_csets),
@@ -2455,12 +2417,6 @@ retry_find_task:
 			list_add(&cset->mg_node, &tset.src_csets);
 			ret = cgroup_allow_attach(cgrp, &tset);
 			list_del_init(&cset->mg_node);
-=======
-			struct cgroup_taskset tset = { };
-			tset.single.task = tsk;
-			tset.single.cgrp = cgrp;
-			ret = cgroup_allow_attach(cgrp, &tset);
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
 			if (ret) {
 				rcu_read_unlock();
 				goto out_unlock_cgroup;

@@ -703,7 +703,6 @@ TRACE_EVENT(sched_migrate_task,
 );
 
 /*
-<<<<<<< HEAD
  * Tracepoint for load balancing:
  */
 #if NR_CPUS > 32
@@ -754,8 +753,6 @@ TRACE_EVENT(sched_load_balance,
 );
 
 /*
-=======
->>>>>>> 0ca4bf51323a447f8301fcc1ad51ed1b3188ea3f
  * Tracepoint for a CPU going offline/online:
  */
 TRACE_EVENT(sched_cpu_hotplug,
