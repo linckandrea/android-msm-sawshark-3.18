@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2017,2021 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -321,6 +321,17 @@ static void kgsl_cmdbatch_sync_fence_func(void *priv)
 		event->handle ? event->handle->name : "unknown");
 
 	spin_lock_irqsave(&event->handle_lock, flags);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * Setting the event->handle to NULL here make sure that
+	 * other function does not dereference a invalid pointer.
+	 */
+	event->handle = NULL;
+
+	spin_unlock_irqrestore(&event->handle_lock, flags);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 
 	/*
 	 * Setting the event->handle to NULL here make sure that
@@ -344,8 +355,17 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 {
 	struct kgsl_cmd_syncpoint_fence *sync = priv;
 	struct kgsl_cmdbatch_sync_event *event;
+	struct sync_fence *fence = NULL;
 	unsigned int id;
 	unsigned long flags;
+<<<<<<< HEAD
+=======
+	int ret = 0;
+
+	fence = sync_fence_fdget(sync->fd);
+	if (fence == NULL)
+		return -EINVAL;
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 
 	kref_get(&cmdbatch->refcount);
 
@@ -362,21 +382,33 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 	spin_lock_init(&event->handle_lock);
 	set_bit(event->id, &cmdbatch->pending);
 
+<<<<<<< HEAD
+=======
+	trace_syncpoint_fence(cmdbatch, fence->name);
+
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	spin_lock_irqsave(&event->handle_lock, flags);
 
 	event->handle = kgsl_sync_fence_async_wait(sync->fd,
 		kgsl_cmdbatch_sync_fence_func, event);
 
 	if (IS_ERR_OR_NULL(event->handle)) {
-		int ret = PTR_ERR(event->handle);
+		ret = PTR_ERR(event->handle);
 
 		event->handle = NULL;
 		spin_unlock_irqrestore(&event->handle_lock, flags);
 
+<<<<<<< HEAD
+		event->handle = NULL;
+		spin_unlock_irqrestore(&event->handle_lock, flags);
+
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 		clear_bit(event->id, &cmdbatch->pending);
 		kgsl_cmdbatch_put(cmdbatch);
 
 		/*
+<<<<<<< HEAD
 		 * If ret == 0 the fence was already signaled - print a trace
 		 * message so we can track that
 		 */
@@ -384,13 +416,20 @@ static int kgsl_cmdbatch_add_sync_fence(struct kgsl_device *device,
 			trace_syncpoint_fence_expire(cmdbatch, "signaled");
 
 		return ret;
+=======
+		* Print a syncpoint_fence_expire trace if
+		* fence is already signaled or there is
+		* a failure in registering the fence waiter.
+		*/
+		trace_syncpoint_fence_expire(cmdbatch, (ret < 0) ?
+				"error" : fence->name);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	} else {
 		spin_unlock_irqrestore(&event->handle_lock, flags);
 	}
 
-	trace_syncpoint_fence(cmdbatch, event->handle->name);
-
-	return 0;
+	sync_fence_put(fence);
+	return ret;
 }
 
 /* kgsl_cmdbatch_add_sync_timestamp() - Add a new sync point for a cmdbatch
@@ -526,6 +565,7 @@ static void add_profiling_buffer(struct kgsl_device *device,
 		unsigned int id, uint64_t offset)
 {
 	struct kgsl_mem_entry *entry;
+	u64 start;
 
 	if (!(cmdbatch->flags & KGSL_CMDBATCH_PROFILING))
 		return;
@@ -542,7 +582,14 @@ static void add_profiling_buffer(struct kgsl_device *device,
 			gpuaddr);
 
 	if (entry != NULL) {
-		if (!kgsl_gpuaddr_in_memdesc(&entry->memdesc, gpuaddr, size)) {
+		start = id ? (entry->memdesc.gpuaddr + offset) : gpuaddr;
+		/*
+		 * Make sure there is enough room in the object to store the
+		 * entire profiling buffer object
+		 */
+		if (!kgsl_gpuaddr_in_memdesc(&entry->memdesc, gpuaddr, size) ||
+			!kgsl_gpuaddr_in_memdesc(&entry->memdesc, start,
+				sizeof(struct kgsl_cmdbatch_profiling_buffer))) {
 			kgsl_mem_entry_put(entry);
 			entry = NULL;
 		}
@@ -555,13 +602,8 @@ static void add_profiling_buffer(struct kgsl_device *device,
 		return;
 	}
 
+	cmdbatch->profiling_buffer_gpuaddr = start;
 	cmdbatch->profiling_buf_entry = entry;
-
-	if (id != 0)
-		cmdbatch->profiling_buffer_gpuaddr =
-			entry->memdesc.gpuaddr + offset;
-	else
-		cmdbatch->profiling_buffer_gpuaddr = gpuaddr;
 }
 
 /**

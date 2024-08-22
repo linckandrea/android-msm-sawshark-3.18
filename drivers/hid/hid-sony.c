@@ -1112,12 +1112,23 @@ static int sony_input_configured(struct hid_device *hdev,
 	 */
 	if (sc->quirks & DUALSHOCK4_CONTROLLER) {
 		ret = sony_register_touchpad(hidinput, 2, 1920, 942);
+<<<<<<< HEAD
 		if (ret != 0)
+=======
+		if (ret) {
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 			hid_err(sc->hdev,
-				"Unable to initialize multi-touch slots\n");
+				"Unable to initialize multi-touch slots: %d\n",
+				ret);
+			return ret;
+		}
 	}
 
+<<<<<<< HEAD
 	return ret;
+=======
+	return 0;
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 }
 
 /*

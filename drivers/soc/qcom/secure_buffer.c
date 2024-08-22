@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 Google, Inc
- * Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -155,7 +155,8 @@ static int secure_buffer_change_table(struct sg_table *table, int lock)
 		 * secure environment to ensure the data is actually present
 		 * in RAM
 		 */
-		dmac_flush_range(chunk_list, chunk_list + chunk_list_len);
+		dmac_flush_range(chunk_list,
+			(void *)chunk_list + chunk_list_len);
 
 		ret = secure_buffer_change_chunk(virt_to_phys(chunk_list),
 				nchunks, V2_CHUNK_SIZE, lock);
@@ -374,6 +375,10 @@ const char *msm_secure_vmid_to_string(int secure_vmid)
 		return "VMID_CP_SEC_DISPLAY";
 	case VMID_CP_APP:
 		return "VMID_CP_APP";
+	case VMID_WLAN:
+		return "VMID_WLAN";
+	case VMID_WLAN_CE:
+		return "VMID_WLAN_CE";
 	case VMID_INVAL:
 		return "VMID_INVAL";
 	default:
@@ -398,12 +403,13 @@ bool msm_secure_v2_is_supported(void)
 static int __init alloc_secure_shared_memory(void)
 {
 	int ret = 0;
+	dma_addr_t dma_handle;
 
 	qcom_secure_mem = kzalloc(QCOM_SECURE_MEM_SIZE, GFP_KERNEL);
 	if (!qcom_secure_mem) {
 		/* Fallback to CMA-DMA memory */
 		qcom_secure_mem = dma_alloc_coherent(NULL, QCOM_SECURE_MEM_SIZE,
-						NULL, GFP_KERNEL);
+						&dma_handle, GFP_KERNEL);
 		if (!qcom_secure_mem) {
 			pr_err("Couldn't allocate memory for secure use-cases. hyp_assign_table will not work\n");
 			return -ENOMEM;

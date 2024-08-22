@@ -41,6 +41,12 @@ static struct pm_qos_request msm_v4l2_pm_qos_request;
 
 static struct msm_queue_head *msm_session_q;
 
+/* This variable represent daemon status
+ * true = daemon present (default state)
+ * false = daemon is NOT present
+ */
+bool is_daemon_status = true;
+
 /* config node envent queue */
 static struct v4l2_fh  *msm_eventq;
 spinlock_t msm_eventq_lock;
@@ -718,6 +724,17 @@ static long msm_private_ioctl(struct file *file, void *fh,
 	unsigned long spin_flags = 0;
 	struct msm_sd_subdev *msm_sd;
 
+<<<<<<< HEAD
+=======
+	if (cmd == MSM_CAM_V4L2_IOCTL_DAEMON_DISABLED) {
+		is_daemon_status = false;
+		return 0;
+	}
+
+	if (!event_data)
+		return -EINVAL;
+
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	switch (cmd) {
 	case MSM_CAM_V4L2_IOCTL_NOTIFY:
 	case MSM_CAM_V4L2_IOCTL_CMD_ACK:
@@ -728,6 +745,10 @@ static long msm_private_ioctl(struct file *file, void *fh,
 		return -ENOTTY;
 	}
 
+<<<<<<< HEAD
+=======
+	memset(&event, 0, sizeof(struct v4l2_event));
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	session_id = event_data->session_id;
 	stream_id = event_data->stream_id;
 
@@ -1183,6 +1204,36 @@ struct msm_session *msm_get_session_from_vb2q(struct vb2_queue *q)
 }
 EXPORT_SYMBOL(msm_get_session_from_vb2q);
 
+<<<<<<< HEAD
+=======
+
+#ifdef CONFIG_COMPAT
+long msm_copy_camera_private_ioctl_args(unsigned long arg,
+	struct msm_camera_private_ioctl_arg *k_ioctl,
+	void __user **tmp_compat_ioctl_ptr)
+{
+	struct msm_camera_private_ioctl_arg up_ioctl;
+
+	if (WARN_ON(!arg || !k_ioctl || !tmp_compat_ioctl_ptr))
+		return -EIO;
+
+	if (copy_from_user(&up_ioctl,
+		(struct msm_camera_private_ioctl_arg *)arg,
+		sizeof(struct msm_camera_private_ioctl_arg)))
+		return -EFAULT;
+
+	k_ioctl->id = up_ioctl.id;
+	k_ioctl->size = up_ioctl.size;
+	k_ioctl->result = up_ioctl.result;
+	k_ioctl->reserved = up_ioctl.reserved;
+	*tmp_compat_ioctl_ptr = compat_ptr(up_ioctl.ioctl_ptr);
+
+	return 0;
+}
+EXPORT_SYMBOL(msm_copy_camera_private_ioctl_args);
+#endif
+
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 static void msm_sd_notify(struct v4l2_subdev *sd,
 	unsigned int notification, void *arg)
 {
@@ -1231,7 +1282,7 @@ static ssize_t write_logsync(struct file *file, const char __user *buf,
 	uint64_t seq_num = 0;
 	int ret;
 
-	if (copy_from_user(lbuf, buf, sizeof(lbuf)))
+	if (copy_from_user(lbuf, buf, sizeof(lbuf) - 1))
 		return -EFAULT;
 
 	ret = sscanf(lbuf, "%llu", &seq_num);

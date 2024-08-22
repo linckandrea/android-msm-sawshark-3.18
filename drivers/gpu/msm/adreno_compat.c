@@ -1,4 +1,5 @@
 /* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -83,6 +84,30 @@ int adreno_getproperty_compat(struct kgsl_device *device,
 			}
 			if (copy_to_user(value, &shadowprop,
 				sizeof(shadowprop))) {
+				status = -EFAULT;
+				break;
+			}
+			status = 0;
+		}
+		break;
+	case KGSL_PROP_DEVICE_QDSS_STM:
+		{
+			struct kgsl_qdss_stm_prop qdssprop = {0};
+			struct kgsl_memdesc *qdss_desc =
+				kgsl_mmu_get_qdss_global_entry(device);
+
+			if (sizebytes != sizeof(qdssprop)) {
+				status = -EINVAL;
+				break;
+			}
+
+			if (qdss_desc) {
+				qdssprop.gpuaddr = qdss_desc->gpuaddr;
+				qdssprop.size = qdss_desc->size;
+			}
+
+			if (copy_to_user(value, &qdssprop,
+						sizeof(qdssprop))) {
 				status = -EFAULT;
 				break;
 			}
@@ -180,6 +205,14 @@ static long adreno_ioctl_perfcounter_read_compat(
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(dev_priv->device);
 	struct kgsl_perfcounter_read_compat *read32 = data;
 	struct kgsl_perfcounter_read read;
+
+	/*
+	 * When performance counter zapping is enabled, the counters are cleared
+	 * across context switches. Reading the counters when they are zapped is
+	 * not permitted.
+	 */
+	if (!adreno_dev->perfcounter)
+		return -EPERM;
 
 	read.reads = (struct kgsl_perfcounter_read_group __user *)
 		(uintptr_t)read32->reads;

@@ -15,14 +15,24 @@ SUBSYS(cpu)
 SUBSYS(cpuacct)
 #endif
 
+<<<<<<< HEAD
+=======
+#if IS_ENABLED(CONFIG_CGROUP_SCHEDTUNE)
+SUBSYS(schedtune)
+#endif
+
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 #if IS_ENABLED(CONFIG_BLK_CGROUP)
 SUBSYS(blkio)
 #endif
 
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_CGROUP_BFQIO)
 SUBSYS(bfqio)
 #endif
 
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 #if IS_ENABLED(CONFIG_MEMCG)
 SUBSYS(memory)
 #endif

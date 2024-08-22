@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016,2020-2021, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -344,9 +344,9 @@ TRACE_EVENT(kgsl_gpubusy,
 
 TRACE_EVENT(kgsl_pwrstats,
 	TP_PROTO(struct kgsl_device *device, s64 time,
-		struct kgsl_power_stats *pstats),
+		struct kgsl_power_stats *pstats, u32 ctxt_count),
 
-	TP_ARGS(device, time, pstats),
+	TP_ARGS(device, time, pstats, ctxt_count),
 
 	TP_STRUCT__entry(
 		__string(device_name, device->name)
@@ -354,6 +354,7 @@ TRACE_EVENT(kgsl_pwrstats,
 		__field(u64, busy_time)
 		__field(u64, ram_time)
 		__field(u64, ram_wait)
+		__field(u32, context_count)
 	),
 
 	TP_fast_assign(
@@ -362,12 +363,13 @@ TRACE_EVENT(kgsl_pwrstats,
 		__entry->busy_time = pstats->busy_time;
 		__entry->ram_time = pstats->ram_time;
 		__entry->ram_wait = pstats->ram_wait;
+		__entry->context_count = ctxt_count;
 	),
 
 	TP_printk(
-		"d_name=%s total=%lld busy=%lld ram_time=%lld ram_wait=%lld",
+		"d_name=%s total=%lld busy=%lld ram_time=%lld ram_wait=%lld context_count=%u",
 		__get_str(device_name), __entry->total_time, __entry->busy_time,
-		__entry->ram_time, __entry->ram_wait
+		__entry->ram_time, __entry->ram_wait, __entry->context_count
 	)
 );
 
@@ -421,7 +423,7 @@ TRACE_EVENT(kgsl_mem_alloc,
 	TP_fast_assign(
 		__entry->gpuaddr = mem_entry->memdesc.gpuaddr;
 		__entry->size = mem_entry->memdesc.size;
-		__entry->tgid = mem_entry->priv->pid;
+		__entry->tgid = pid_nr(mem_entry->priv->pid);
 		kgsl_get_memory_usage(__entry->usage, sizeof(__entry->usage),
 				     mem_entry->memdesc.flags);
 		__entry->id = mem_entry->id;
@@ -437,9 +439,9 @@ TRACE_EVENT(kgsl_mem_alloc,
 
 TRACE_EVENT(kgsl_mem_mmap,
 
-	TP_PROTO(struct kgsl_mem_entry *mem_entry),
+	TP_PROTO(struct kgsl_mem_entry *mem_entry, unsigned long useraddr),
 
-	TP_ARGS(mem_entry),
+	TP_ARGS(mem_entry, useraddr),
 
 	TP_STRUCT__entry(
 		__field(unsigned long, useraddr)
@@ -451,7 +453,7 @@ TRACE_EVENT(kgsl_mem_mmap,
 	),
 
 	TP_fast_assign(
-		__entry->useraddr = mem_entry->memdesc.useraddr;
+		__entry->useraddr = useraddr;
 		__entry->gpuaddr = mem_entry->memdesc.gpuaddr;
 		__entry->size = mem_entry->memdesc.size;
 		kgsl_get_memory_usage(__entry->usage, sizeof(__entry->usage),
@@ -514,7 +516,7 @@ TRACE_EVENT(kgsl_mem_map,
 		__entry->size = mem_entry->memdesc.size;
 		__entry->fd = fd;
 		__entry->type = kgsl_memdesc_usermem_type(&mem_entry->memdesc);
-		__entry->tgid = mem_entry->priv->pid;
+		__entry->tgid = pid_nr(mem_entry->priv->pid);
 		kgsl_get_memory_usage(__entry->usage, sizeof(__entry->usage),
 				     mem_entry->memdesc.flags);
 		__entry->id = mem_entry->id;
@@ -549,7 +551,7 @@ TRACE_EVENT(kgsl_mem_free,
 		__entry->gpuaddr = mem_entry->memdesc.gpuaddr;
 		__entry->size = mem_entry->memdesc.size;
 		__entry->type = kgsl_memdesc_usermem_type(&mem_entry->memdesc);
-		__entry->tgid = mem_entry->priv->pid;
+		__entry->tgid = pid_nr(mem_entry->priv->pid);
 		kgsl_get_memory_usage(__entry->usage, sizeof(__entry->usage),
 				     mem_entry->memdesc.flags);
 		__entry->id = mem_entry->id;
@@ -584,7 +586,7 @@ TRACE_EVENT(kgsl_mem_sync_cache,
 		__entry->gpuaddr = mem_entry->memdesc.gpuaddr;
 		kgsl_get_memory_usage(__entry->usage, sizeof(__entry->usage),
 				     mem_entry->memdesc.flags);
-		__entry->tgid = mem_entry->priv->pid;
+		__entry->tgid = pid_nr(mem_entry->priv->pid);
 		__entry->id = mem_entry->id;
 		__entry->op = op;
 		__entry->offset = offset;

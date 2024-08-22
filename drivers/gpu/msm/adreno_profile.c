@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2016,2020, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -180,7 +180,7 @@ static int _build_pre_ib_cmds(struct adreno_device *adreno_dev,
 	ibcmds += _ib_cmd_mem_write(adreno_dev, ibcmds, gpuaddr + data_offset,
 			drawctxt->base.id, &data_offset);
 	ibcmds += _ib_cmd_mem_write(adreno_dev, ibcmds, gpuaddr + data_offset,
-			drawctxt->base.proc_priv->pid, &data_offset);
+			pid_nr(drawctxt->base.proc_priv->pid), &data_offset);
 	ibcmds += _ib_cmd_mem_write(adreno_dev, ibcmds, gpuaddr + data_offset,
 			drawctxt->base.tid, &data_offset);
 	ibcmds += _ib_cmd_mem_write(adreno_dev, ibcmds, gpuaddr + data_offset,
@@ -1071,7 +1071,8 @@ void adreno_profile_init(struct adreno_device *adreno_dev)
 	/* allocate shared_buffer, which includes pre_ib and post_ib */
 	profile->shared_size = ADRENO_PROFILE_SHARED_BUF_SIZE_DWORDS;
 	ret = kgsl_allocate_global(device, &profile->shared_buffer,
-			profile->shared_size * sizeof(unsigned int), 0, 0);
+			profile->shared_size * sizeof(unsigned int),
+			0, 0, "profile");
 
 	if (ret) {
 		profile->shared_size = 0;

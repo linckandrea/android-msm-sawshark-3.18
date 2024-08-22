@@ -51,7 +51,10 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	 * whether the base obbpath has been changed or not
 	 */
 	if (is_obbpath_invalid(dentry)) {
+<<<<<<< HEAD
 		d_drop(dentry);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 		return 0;
 	}
 
@@ -65,7 +68,10 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	if ((lower_dentry->d_flags & DCACHE_OP_REVALIDATE)) {
 		err = lower_dentry->d_op->d_revalidate(lower_dentry, flags);
 		if (err == 0) {
+<<<<<<< HEAD
 			d_drop(dentry);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 			goto out;
 		}
 	}
@@ -73,14 +79,20 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	spin_lock(&lower_dentry->d_lock);
 	if (d_unhashed(lower_dentry)) {
 		spin_unlock(&lower_dentry->d_lock);
+<<<<<<< HEAD
 		d_drop(dentry);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 		err = 0;
 		goto out;
 	}
 	spin_unlock(&lower_dentry->d_lock);
 
 	if (parent_lower_dentry != lower_cur_parent_dentry) {
+<<<<<<< HEAD
 		d_drop(dentry);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 		err = 0;
 		goto out;
 	}
@@ -94,7 +106,10 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	}
 
 	if (!qstr_case_eq(&dentry->d_name, &lower_dentry->d_name)) {
+<<<<<<< HEAD
 		__d_drop(dentry);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 		err = 0;
 	}
 
@@ -113,7 +128,10 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	if (inode) {
 		data = top_data_get(SDCARDFS_I(inode));
 		if (!data || data->abandoned) {
+<<<<<<< HEAD
 			d_drop(dentry);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 			err = 0;
 		}
 		if (data)
@@ -131,6 +149,11 @@ out:
 
 static void sdcardfs_d_release(struct dentry *dentry)
 {
+<<<<<<< HEAD
+=======
+	if (!dentry || !dentry->d_fsdata)
+		return;
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	/* release and reset the lower paths */
 	if (has_graft_path(dentry))
 		sdcardfs_put_reset_orig_path(dentry);

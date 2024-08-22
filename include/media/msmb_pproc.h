@@ -1,16 +1,11 @@
 #ifndef __MSMB_PPROC_H
 #define __MSMB_PPROC_H
 
-#ifdef MSM_CAMERA_BIONIC
-#include <sys/types.h>
-#endif
-#ifdef CONFIG_COMPAT
-#include <linux/compat.h>
-#endif
-#include <linux/videodev2.h>
-#include <linux/types.h>
-#include <media/msmb_generic_buf_mgr.h>
+#include <uapi/media/msmb_pproc.h>
 
+#include <linux/compat.h>
+
+<<<<<<< HEAD
 /* Should be same as VIDEO_MAX_PLANES in videodev2.h */
 #define MAX_PLANES VIDEO_MAX_PLANES
 /* PARTIAL_FRAME_STRIPE_COUNT must be even */
@@ -256,6 +251,9 @@ struct msm_camera_v4l2_ioctl_t {
 	int32_t trans_code;
 	void __user *ioctl_ptr;
 };
+=======
+#define MSM_OUTPUT_BUF_CNT 8
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 
 #ifdef CONFIG_COMPAT
 struct msm_cpp_frame_info32_t {
@@ -401,4 +399,5 @@ struct msm_camera_v4l2_ioctl32_t {
 };
 #endif
 
-#endif /* __MSMB_PPROC_H */
+#endif
+

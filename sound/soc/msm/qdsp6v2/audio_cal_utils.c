@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2014-2017, 2018-2019 The Linux Foundation. All rights reserved.
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -18,6 +22,10 @@
 #include <linux/mutex.h>
 #include <sound/audio_cal_utils.h>
 
+static DEFINE_MUTEX(destroy_cal_lock);
+
+static int unmap_memory(struct cal_type_data *cal_type,
+			struct cal_block_data *cal_block);
 
 size_t get_cal_info_size(int32_t cal_type)
 {
@@ -433,26 +441,24 @@ static void destroy_all_cal_blocks(struct cal_type_data *cal_type)
 	struct list_head		*ptr, *next;
 	struct cal_block_data		*cal_block;
 
+	mutex_lock(&destroy_cal_lock);
 	list_for_each_safe(ptr, next,
 		&cal_type->cal_blocks) {
 
 		cal_block = list_entry(ptr,
 			struct cal_block_data, list);
 
-		if (cal_type->info.cal_util_callbacks.unmap_cal != NULL) {
-			ret = cal_type->info.cal_util_callbacks.
-				unmap_cal(cal_type->info.reg.cal_type,
-					cal_block);
-			if (ret < 0) {
-				pr_err("%s: unmap_cal failed, cal type %d, ret = %d!\n",
-					__func__,
-				       cal_type->info.reg.cal_type,
-					ret);
-			}
+		ret = unmap_memory(cal_type, cal_block);
+		if (ret < 0) {
+			pr_err("%s: unmap_memory failed, cal type %d, ret = %d!\n",
+				__func__,
+			       cal_type->info.reg.cal_type,
+				ret);
 		}
 		delete_cal_block(cal_block);
 		cal_block = NULL;
 	}
+	mutex_unlock(&destroy_cal_lock);
 
 	return;
 }
@@ -485,11 +491,13 @@ void cal_utils_destroy_cal_types(int num_cal_types,
 		goto done;
 	}
 
+	mutex_lock(&destroy_cal_lock);
 	for (i = 0; i < num_cal_types; i++) {
 		audio_cal_deregister(1, &cal_type[i]->info.reg);
 		destroy_cal_type_data(cal_type[i]);
 		cal_type[i] = NULL;
 	}
+	mutex_unlock(&destroy_cal_lock);
 done:
 	return;
 }
@@ -589,14 +597,13 @@ static struct cal_block_data *create_cal_block(struct cal_type_data *cal_type,
 		goto done;
 	}
 
-	cal_block = kmalloc(sizeof(*cal_type),
+	cal_block = kzalloc(sizeof(*cal_block),
 		GFP_KERNEL);
 	if (cal_block == NULL) {
 		pr_err("%s: could not allocate cal_block!\n", __func__);
 		goto done;
 	}
 
-	memset(cal_block, 0, sizeof(*cal_block));
 	INIT_LIST_HEAD(&cal_block->list);
 
 	cal_block->map_data.ion_map_handle = basic_cal->cal_data.mem_handle;
@@ -620,7 +627,7 @@ static struct cal_block_data *create_cal_block(struct cal_type_data *cal_type,
 				client_info_size);
 	}
 
-	cal_block->cal_info = kmalloc(
+	cal_block->cal_info = kzalloc(
 		get_cal_info_size(cal_type->info.reg.cal_type),
 		GFP_KERNEL);
 	if (cal_block->cal_info == NULL) {
@@ -666,21 +673,22 @@ void cal_utils_clear_cal_block_q6maps(int num_cal_types,
 		goto done;
 	}
 
+	mutex_lock(&destroy_cal_lock);
 	for (; i < num_cal_types; i++) {
 		if (cal_type[i] == NULL)
 			continue;
 
-		mutex_lock(&cal_type[i]->lock);
 		list_for_each_safe(ptr, next,
 			&cal_type[i]->cal_blocks) {
 
 			cal_block = list_entry(ptr,
 				struct cal_block_data, list);
 
-			cal_block->map_data.q6map_handle = 0;
+			if (cal_block != NULL)
+				cal_block->map_data.q6map_handle = 0;
 		}
-		mutex_unlock(&cal_type[i]->lock);
 	}
+	mutex_unlock(&destroy_cal_lock);
 done:
 	return;
 }

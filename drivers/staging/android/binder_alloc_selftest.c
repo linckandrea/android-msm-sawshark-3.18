@@ -47,9 +47,18 @@ enum buf_end_align_type {
 	 */
 	SAME_PAGE_UNALIGNED = 0,
 	/**
+<<<<<<< HEAD
 	 * @SAME_PAGE_ALIGNED: The end of this buffer is on
 	 * the same page as the end of the previous buffer and
 	 * is page aligned. Examples:
+=======
+	 * @SAME_PAGE_ALIGNED: When the end of the previous buffer
+	 * is not page aligned, the end of this buffer is on the
+	 * same page as the end of the previous buffer and is page
+	 * aligned. When the previous buffer is page aligned, the
+	 * end of this buffer is aligned to the next page boundary.
+	 * Examples:
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	 * buf1 ][ buf2 ]| ...
 	 * buf1 ]|[ buf2 ]| ...
 	 */
@@ -106,9 +115,17 @@ static bool check_buffer_pages_allocated(struct binder_alloc *alloc,
 	page_addr = buffer->data;
 	for (; page_addr < end; page_addr += PAGE_SIZE) {
 		page_index = (page_addr - alloc->buffer) / PAGE_SIZE;
+<<<<<<< HEAD
 		if (!alloc->pages[page_index]) {
 			pr_err("incorrect alloc state at page index %d\n",
 			       page_index);
+=======
+		if (!alloc->pages[page_index].page_ptr ||
+		    !list_empty(&alloc->pages[page_index].lru)) {
+			pr_err("expect alloc but is %s at page index %d\n",
+			       alloc->pages[page_index].page_ptr ?
+			       "lru" : "free", page_index);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 			return false;
 		}
 	}
@@ -134,28 +151,81 @@ static void binder_selftest_alloc_buf(struct binder_alloc *alloc,
 
 static void binder_selftest_free_buf(struct binder_alloc *alloc,
 				     struct binder_buffer *buffers[],
+<<<<<<< HEAD
 				     size_t *sizes, int *seq)
+=======
+				     size_t *sizes, int *seq, size_t end)
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 {
 	int i;
 
 	for (i = 0; i < BUFFER_NUM; i++)
 		binder_alloc_free_buf(alloc, buffers[seq[i]]);
 
+<<<<<<< HEAD
 	for (i = 0; i < (alloc->buffer_size / PAGE_SIZE); i++) {
 		if ((!alloc->pages[i]) == (i * PAGE_SIZE < BINDER_MIN_ALLOC)) {
 			pr_err("incorrect free state at page index %d\n", i);
+=======
+	for (i = 0; i < end / PAGE_SIZE; i++) {
+		/**
+		 * Error message on a free page can be false positive
+		 * if binder shrinker ran during binder_alloc_free_buf
+		 * calls above.
+		 */
+		if (list_empty(&alloc->pages[i].lru)) {
+			pr_err_size_seq(sizes, seq);
+			pr_err("expect lru but is %s at page index %d\n",
+			       alloc->pages[i].page_ptr ? "alloc" : "free", i);
+			binder_selftest_failures++;
+		}
+	}
+}
+
+static void binder_selftest_free_page(struct binder_alloc *alloc)
+{
+	int i;
+	unsigned long count;
+
+	while ((count = list_lru_count(&binder_alloc_lru))) {
+		list_lru_walk(&binder_alloc_lru, binder_alloc_free_page,
+			      NULL, count);
+	}
+
+	for (i = 0; i < (alloc->buffer_size / PAGE_SIZE); i++) {
+		if (alloc->pages[i].page_ptr) {
+			pr_err("expect free but is %s at page index %d\n",
+			       list_empty(&alloc->pages[i].lru) ?
+			       "alloc" : "lru", i);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 			binder_selftest_failures++;
 		}
 	}
 }
 
 static void binder_selftest_alloc_free(struct binder_alloc *alloc,
+<<<<<<< HEAD
 				       size_t *sizes, int *seq)
+=======
+				       size_t *sizes, int *seq, size_t end)
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 {
 	struct binder_buffer *buffers[BUFFER_NUM];
 
 	binder_selftest_alloc_buf(alloc, buffers, sizes, seq);
+<<<<<<< HEAD
 	binder_selftest_free_buf(alloc, buffers, sizes, seq);
+=======
+	binder_selftest_free_buf(alloc, buffers, sizes, seq, end);
+
+	/* Allocate from lru. */
+	binder_selftest_alloc_buf(alloc, buffers, sizes, seq);
+	if (list_lru_count(&binder_alloc_lru))
+		pr_err("lru list should be empty but is not\n");
+
+	binder_selftest_free_buf(alloc, buffers, sizes, seq, end);
+	binder_selftest_free_page(alloc);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 }
 
 static bool is_dup(int *seq, int index, int val)
@@ -171,19 +241,32 @@ static bool is_dup(int *seq, int index, int val)
 
 /* Generate BUFFER_NUM factorial free orders. */
 static void binder_selftest_free_seq(struct binder_alloc *alloc,
+<<<<<<< HEAD
 				     size_t *sizes, int *seq, int index)
+=======
+				     size_t *sizes, int *seq,
+				     int index, size_t end)
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 {
 	int i;
 
 	if (index == BUFFER_NUM) {
+<<<<<<< HEAD
 		binder_selftest_alloc_free(alloc, sizes, seq);
+=======
+		binder_selftest_alloc_free(alloc, sizes, seq, end);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 		return;
 	}
 	for (i = 0; i < BUFFER_NUM; i++) {
 		if (is_dup(seq, index, i))
 			continue;
 		seq[index] = i;
+<<<<<<< HEAD
 		binder_selftest_free_seq(alloc, sizes, seq, index + 1);
+=======
+		binder_selftest_free_seq(alloc, sizes, seq, index + 1, end);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	}
 }
 
@@ -207,11 +290,18 @@ static void binder_selftest_alloc_size(struct binder_alloc *alloc,
 	 * Only BUFFER_NUM - 1 buffer sizes are adjustable since
 	 * we need one giant buffer before getting to the last page.
 	 */
+<<<<<<< HEAD
 	if (BINDER_MIN_ALLOC)
 		front_sizes[0] += BINDER_MIN_ALLOC - PAGE_SIZE;
 	back_sizes[0] += alloc->buffer_size - end_offset[BUFFER_NUM - 1];
 	binder_selftest_free_seq(alloc, front_sizes, seq, 0);
 	binder_selftest_free_seq(alloc, back_sizes, seq, 0);
+=======
+	back_sizes[0] += alloc->buffer_size - end_offset[BUFFER_NUM - 1];
+	binder_selftest_free_seq(alloc, front_sizes, seq, 0,
+				 end_offset[BUFFER_NUM - 1]);
+	binder_selftest_free_seq(alloc, back_sizes, seq, 0, alloc->buffer_size);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 }
 
 static void binder_selftest_alloc_offset(struct binder_alloc *alloc,
@@ -245,7 +335,12 @@ static void binder_selftest_alloc_offset(struct binder_alloc *alloc,
  *
  * Allocate BUFFER_NUM buffers to cover all page alignment cases,
  * then free them in all orders possible. Check that pages are
+<<<<<<< HEAD
  * allocated after buffer alloc and freed after freeing buffer.
+=======
+ * correctly allocated, put onto lru when buffers are freed, and
+ * are freed when binder_alloc_free_page is called.
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
  */
 void binder_selftest_alloc(struct binder_alloc *alloc)
 {

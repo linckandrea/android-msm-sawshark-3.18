@@ -403,7 +403,11 @@ static void bt_for_each(struct blk_mq_hw_ctx *hctx,
 		for (bit = find_first_bit(&bm->word, bm->depth);
 		     bit < bm->depth;
 		     bit = find_next_bit(&bm->word, bm->depth, bit + 1)) {
+<<<<<<< HEAD
 		     rq = hctx->tags->rqs[off + bit];
+=======
+			rq = hctx->tags->rqs[off + bit];
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 			if (rq->q == hctx->queue)
 				fn(hctx, rq, data, reserved);
 		}

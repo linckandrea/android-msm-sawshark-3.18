@@ -230,12 +230,19 @@ static inline void fsnotify_modify(struct file *file)
 static inline void fsnotify_open(struct file *file)
 {
 	struct path *path = &file->f_path;
+	struct path lower_path;
 	struct inode *inode = file_inode(file);
 	__u32 mask = FS_OPEN;
 
 	if (S_ISDIR(inode->i_mode))
 		mask |= FS_ISDIR;
 
+	if (path->dentry->d_op && path->dentry->d_op->d_canonical_path) {
+		path->dentry->d_op->d_canonical_path(path, &lower_path);
+		fsnotify_parent(&lower_path, NULL, mask);
+		fsnotify(lower_path.dentry->d_inode, mask, &lower_path, FSNOTIFY_EVENT_PATH, NULL, 0);
+		path_put(&lower_path);
+	}
 	fsnotify_parent(path, NULL, mask);
 	fsnotify(inode, mask, path, FSNOTIFY_EVENT_PATH, NULL, 0);
 }
@@ -310,6 +317,7 @@ static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
 	}
 }
 
+<<<<<<< HEAD
 
 /*
  * fsnotify_oldname_init - save off the old filename before we change it
@@ -338,4 +346,6 @@ static inline void fsnotify_oldname_free(const unsigned char *old_name)
 {
 }
 
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 #endif	/* _LINUX_FS_NOTIFY_H */

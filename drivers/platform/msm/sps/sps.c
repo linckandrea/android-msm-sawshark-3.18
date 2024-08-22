@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -303,7 +307,8 @@ static ssize_t sps_set_bam_addr(struct file *file, const char __user *buf,
 	} else {
 		vir_addr = &bam->base;
 		num_pipes = bam->props.num_pipes;
-		bam->ipc_loglevel = log_level_sel;
+		if (log_level_sel <= SPS_IPC_MAX_LOGLEVEL)
+			bam->ipc_loglevel = log_level_sel;
 	}
 
 	switch (reg_dump_option) {
@@ -514,7 +519,7 @@ static void sps_debugfs_init(void)
 	debugfs_buf_size = 0;
 	debugfs_buf_used = 0;
 	wraparound = false;
-	log_level_sel = 0;
+	log_level_sel = SPS_IPC_MAX_LOGLEVEL + 1;
 
 	dent = debugfs_create_dir("sps", 0);
 	if (IS_ERR(dent)) {
@@ -676,7 +681,8 @@ int sps_get_bam_debug_info(unsigned long dev, u32 option, u32 para,
 	/* Search for the target BAM device */
 	bam = sps_h2bam(dev);
 	if (bam == NULL) {
-		pr_err("sps:Can't find any BAM with handle 0x%lx.", dev);
+		pr_err("sps:Can't find any BAM with handle 0x%pK.",
+					(void *)dev);
 		mutex_unlock(&sps->lock);
 		return SPS_ERROR;
 	}
@@ -930,7 +936,7 @@ static int sps_device_init(void)
 		goto exit_err;
 	}
 
-	SPS_DBG3(sps, "sps:bamdma_bam.phys=%pa.virt=0x%p.",
+	SPS_DBG3(sps, "sps:bamdma_bam.phys=%pa.virt=0x%pK.",
 		&bamdma_props.phys_addr,
 		bamdma_props.virt_addr);
 
@@ -945,7 +951,7 @@ static int sps_device_init(void)
 		goto exit_err;
 	}
 
-	SPS_DBG3(sps, "sps:bamdma_dma.phys=%pa.virt=0x%p.",
+	SPS_DBG3(sps, "sps:bamdma_dma.phys=%pa.virt=0x%pK.",
 		&bamdma_props.periph_phys_addr,
 		bamdma_props.periph_virt_addr);
 
@@ -1005,8 +1011,6 @@ static void sps_device_de_init(void)
 				"sps:%s:BAMs are still registered", __func__);
 
 		sps_map_de_init();
-
-		kfree(sps);
 	}
 
 	sps_mem_de_init();
@@ -1213,7 +1217,7 @@ struct sps_bam *sps_h2bam(unsigned long h)
 {
 	struct sps_bam *bam;
 
-	SPS_DBG1(sps, "sps:%s: BAM handle:0x%lx.", __func__, h);
+	SPS_DBG1(sps, "sps:%s: BAM handle:0x%pK.", __func__, (void *)h);
 
 	if (h == SPS_DEV_HANDLE_MEM || h == SPS_DEV_HANDLE_INVALID)
 		return NULL;
@@ -1223,7 +1227,7 @@ struct sps_bam *sps_h2bam(unsigned long h)
 			return bam;
 	}
 
-	SPS_ERR(sps, "sps:Can't find BAM device for handle 0x%lx.", h);
+	SPS_ERR(sps, "sps:Can't find BAM device for handle 0x%pK.", (void *)h);
 
 	return NULL;
 }
@@ -1328,16 +1332,17 @@ int sps_connect(struct sps_pipe *h, struct sps_connect *connect)
 
 	bam = sps_h2bam(dev);
 	if (bam == NULL) {
-		SPS_ERR(sps, "sps:Invalid BAM device handle: 0x%lx", dev);
+		SPS_ERR(sps, "sps:Invalid BAM device handle: 0x%pK",
+					(void *)dev);
 		result = SPS_ERROR;
 		goto exit_err;
 	}
 
 	mutex_lock(&bam->lock);
-	SPS_DBG2(bam, "sps:sps_connect: bam %pa src 0x%lx dest 0x%lx mode %s",
+	SPS_DBG2(bam, "sps:sps_connect: bam %pa src 0x%pK dest 0x%pK mode %s",
 			BAM_ID(bam),
-			connect->source,
-			connect->destination,
+			(void *)connect->source,
+			(void *)connect->destination,
 			connect->mode == SPS_MODE_SRC ? "SRC" : "DEST");
 
 	/* Allocate resources for the specified connection */
@@ -1401,10 +1406,10 @@ int sps_disconnect(struct sps_pipe *h)
 	}
 
 	SPS_DBG2(bam,
-		"sps:sps_disconnect: bam %pa src 0x%lx dest 0x%lx mode %s",
+		"sps:sps_disconnect: bam %pa src 0x%pK dest 0x%pK mode %s",
 		BAM_ID(bam),
-		pipe->connect.source,
-		pipe->connect.destination,
+		(void *)pipe->connect.source,
+		(void *)pipe->connect.destination,
 		pipe->connect.mode == SPS_MODE_SRC ? "SRC" : "DEST");
 
 	result = SPS_ERROR;
@@ -1611,10 +1616,6 @@ int sps_transfer(struct sps_pipe *h, struct sps_transfer *transfer)
 	} else if (transfer->iovec_count == 0) {
 		SPS_ERR(sps, "sps:%s:iovec list is empty.\n", __func__);
 		return SPS_ERROR;
-	} else if (transfer->iovec_phys == 0) {
-		SPS_ERR(sps,
-			"sps:%s:iovec list address is invalid.\n", __func__);
-		return SPS_ERROR;
 	}
 
 	/* Verify content of IOVECs */
@@ -1800,7 +1801,8 @@ int sps_device_reset(unsigned long dev)
 	/* Search for the target BAM device */
 	bam = sps_h2bam(dev);
 	if (bam == NULL) {
-		SPS_ERR(sps, "sps:Invalid BAM device handle: 0x%lx", dev);
+		SPS_ERR(sps, "sps:Invalid BAM device handle: 0x%pK",
+					(void *)dev);
 		result = SPS_ERROR;
 		goto exit_err;
 	}
@@ -1811,7 +1813,8 @@ int sps_device_reset(unsigned long dev)
 	result = sps_bam_reset(bam);
 	mutex_unlock(&bam->lock);
 	if (result) {
-		SPS_ERR(sps, "sps:Fail to reset BAM device: 0x%lx", dev);
+		SPS_ERR(sps, "sps:Fail to reset BAM device: 0x%pK",
+					(void *)dev);
 		goto exit_err;
 	}
 
@@ -2223,6 +2226,8 @@ int sps_register_bam_device(const struct sps_bam_props *bam_props,
 
 	if (bam_props->ipc_loglevel)
 		bam->ipc_loglevel = bam_props->ipc_loglevel;
+	else
+		bam->ipc_loglevel = SPS_IPC_DEFAULT_LOGLEVEL;
 
 	ok = sps_bam_device_init(bam);
 	mutex_unlock(&bam->lock);
@@ -2319,8 +2324,11 @@ int sps_deregister_bam_device(unsigned long dev_handle)
 	mutex_lock(&bam->lock);
 	sps_bam_device_de_init(bam);
 	mutex_unlock(&bam->lock);
+	ipc_log_context_destroy(bam->ipc_log0);
 	ipc_log_context_destroy(bam->ipc_log1);
 	ipc_log_context_destroy(bam->ipc_log2);
+	ipc_log_context_destroy(bam->ipc_log3);
+	ipc_log_context_destroy(bam->ipc_log4);
 	if (bam->props.virt_size)
 		(void)iounmap(bam->props.virt_addr);
 
@@ -2987,6 +2995,7 @@ static struct platform_driver msm_sps_driver = {
 		.name	= SPS_DRV_NAME,
 		.owner	= THIS_MODULE,
 		.of_match_table = msm_sps_match,
+		.suppress_bind_attrs = true,
 	},
 	.remove		= msm_sps_remove,
 };

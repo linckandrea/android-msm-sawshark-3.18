@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2008-2015, 2017 The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -31,7 +35,6 @@
  * @fault_policy: Internal policy describing how to handle this command in case
  * of a fault
  * @fault_recovery: recovery actions actually tried for this batch
- * @expires: Point in time when the cmdbatch is considered to be hung
  * @refcount: kref structure to maintain the reference count
  * @cmdlist: List of IBs to issue
  * @memlist: List of all memory used in this command batch
@@ -61,7 +64,6 @@ struct kgsl_cmdbatch {
 	unsigned long priv;
 	unsigned long fault_policy;
 	unsigned long fault_recovery;
-	unsigned long expires;
 	struct kref refcount;
 	struct list_head cmdlist;
 	struct list_head memlist;

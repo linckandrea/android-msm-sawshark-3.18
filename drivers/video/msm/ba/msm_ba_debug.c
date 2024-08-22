@@ -65,18 +65,25 @@ static ssize_t dev_info_read(struct file *file, char __user *buf,
 	}
 
 	dbg_buf = kmalloc(sizeof(struct debug_buffer), GFP_KERNEL);
+<<<<<<< HEAD
 	if (NULL == dbg_buf) {
 		dprintk(BA_ERR, "%s: Memory allocation failed for dbg_buf", __func__);
 		return 0;
 	}
 
 	dbg_buf = kmalloc(sizeof(struct debug_buffer), GFP_KERNEL);
+=======
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	if (NULL == dbg_buf)
 		return 0;
 
 	INIT_DBG_BUF(dbg_buf);
 	write_str(dbg_buf, "===============================");
+<<<<<<< HEAD
 	write_str(dbg_buf, "DEV: 0x%p", dev_ctxt);
+=======
+	write_str(dbg_buf, "DEV: 0x%pK", dev_ctxt);
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 	write_str(dbg_buf, "===============================");
 	write_str(dbg_buf, "state: %d", dev_ctxt->state);
 
@@ -179,10 +186,15 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 	}
 
 	dbg_buf = kmalloc(sizeof(struct debug_buffer), GFP_KERNEL);
+<<<<<<< HEAD
 	if (NULL == dbg_buf) {
 		dprintk(BA_ERR, "%s: Memory allocation failed for dbg_buf", __func__);
 		return 0;
 	}
+=======
+	if (NULL == dbg_buf)
+		return 0;
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 
 	INIT_DBG_BUF(dbg_buf);
 	write_str(dbg_buf, "===============================");

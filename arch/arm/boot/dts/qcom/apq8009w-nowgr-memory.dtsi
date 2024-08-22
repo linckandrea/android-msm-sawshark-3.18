@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2016, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2016,2019 The Linux Foundation. All rights reserved.
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -12,7 +16,11 @@
  */
 
 &external_image_mem {
+<<<<<<< HEAD
 	reg = <0x0 0x87b00000 0x0 0x0500000>;
+=======
+	reg = <0x0 0x87a00000 0x0 0x0600000>;
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 };
 
 &modem_adsp_mem {

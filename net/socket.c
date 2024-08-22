@@ -536,7 +536,11 @@ static ssize_t sockfs_listxattr(struct dentry *dentry, char *buffer,
 	return used;
 }
 
+<<<<<<< HEAD
 int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
+=======
+static int sockfs_setattr(struct dentry *dentry, struct iattr *iattr)
+>>>>>>> 4dc57c12e7e598c824a00f25f1cfe1b5226221ed
 {
 	int err = simple_setattr(dentry, iattr);
 
@@ -2408,8 +2412,10 @@ int __sys_recvmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
 		return err;
 
 	err = sock_error(sock->sk);
-	if (err)
+	if (err) {
+		datagrams = err;
 		goto out_put;
+	}
 
 	entry = mmsg;
 	compat_entry = (struct compat_mmsghdr __user *)mmsg;
