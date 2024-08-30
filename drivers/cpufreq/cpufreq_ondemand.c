@@ -16,6 +16,7 @@
 #include <linux/percpu-defs.h>
 #include <linux/slab.h>
 #include <linux/tick.h>
+#include <linux/state_notifier.h>
 #include "cpufreq_governor.h"
 
 /* On-demand governor macros */
@@ -26,6 +27,8 @@
 #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
 #define MIN_FREQUENCY_UP_THRESHOLD		(11)
 #define MAX_FREQUENCY_UP_THRESHOLD		(100)
+#define DEFAULT_SCREEN_OFF_MAX (1248000)
+static unsigned long screen_off_max = DEFAULT_SCREEN_OFF_MAX;
 
 static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
 
@@ -141,7 +144,11 @@ static void dbs_freq_increase(struct cpufreq_policy *policy, unsigned int freq)
 		freq = od_ops.powersave_bias_target(policy, freq,
 				CPUFREQ_RELATION_H);
 	else if (policy->cur == policy->max)
-		return;
+		if (likely(!state_suspended))
+			return;
+
+	if (unlikely(state_suspended))
+		if (freq > screen_off_max) freq = screen_off_max;
 
 	__cpufreq_driver_target(policy, freq, od_tuners->powersave_bias ?
 			CPUFREQ_RELATION_L : CPUFREQ_RELATION_H);
@@ -235,6 +242,30 @@ max_delay:
 
 /************************** sysfs interface ************************/
 static struct common_dbs_data od_dbs_cdata;
+
+static ssize_t show_screen_off_maxfreq(struct kobject *kobj,
+                                         struct attribute *attr, char *buf)
+{
+        return sprintf(buf, "%lu\n", screen_off_max);
+}
+
+static ssize_t store_screen_off_maxfreq(struct kobject *kobj,
+                                          struct attribute *attr,
+                                          const char *buf, size_t count)
+{
+         int ret;
+         unsigned long val;
+
+         ret = strict_strtoul(buf, 0, &val);
+         if (ret < 0) return ret;
+         if (val < 300000) screen_off_max = 2265600;
+         else screen_off_max = val;
+         return count;
+}
+
+static struct global_attr screen_off_maxfreq =
+        __ATTR(screen_off_maxfreq, 0666, show_screen_off_maxfreq,
+                store_screen_off_maxfreq);
 
 /**
  * update_sampling_rate - update sampling rate effective immediately if needed.
@@ -449,6 +480,7 @@ static struct attribute *dbs_attributes_gov_sys[] = {
 	&ignore_nice_load_gov_sys.attr,
 	&powersave_bias_gov_sys.attr,
 	&io_is_busy_gov_sys.attr,
+	&screen_off_maxfreq.attr,
 	NULL
 };
 
