@@ -27,7 +27,7 @@
 #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
 #define MIN_FREQUENCY_UP_THRESHOLD		(11)
 #define MAX_FREQUENCY_UP_THRESHOLD		(100)
-#define DEFAULT_SCREEN_OFF_MAX (1248000)
+#define DEFAULT_SCREEN_OFF_MAX (1094400)
 static unsigned long screen_off_max = DEFAULT_SCREEN_OFF_MAX;
 
 static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
