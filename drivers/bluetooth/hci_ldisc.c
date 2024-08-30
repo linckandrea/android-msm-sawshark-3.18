@@ -2,9 +2,9 @@
  *
  *  Bluetooth HCI UART driver
  *
+ *  Copyright (C) 2000-2001  Qualcomm Incorporated
  *  Copyright (C) 2002-2003  Maxim Krasnyansky <maxk@qualcomm.com>
  *  Copyright (C) 2004-2005  Marcel Holtmann <marcel@holtmann.org>
- *  Copyright (c) 2000-2001, 2010, Code Aurora Forum. All rights reserved.
  *
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -44,23 +44,15 @@
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 
+#include "btintel.h"
+#include "btbcm.h"
 #include "hci_uart.h"
 
-#define VERSION "2.2"
+#define VERSION "2.3"
 
-static inline void hci_uart_proto_lock(struct hci_uart *hu)
-{
-	mutex_lock(&hu->proto_lock);
-}
+static const struct hci_uart_proto *hup[HCI_UART_MAX_PROTO];
 
-static inline void hci_uart_proto_unlock(struct hci_uart *hu)
-{
-	mutex_unlock(&hu->proto_lock);
-}
-
-static struct hci_uart_proto *hup[HCI_UART_MAX_PROTO];
-
-int hci_uart_register_proto(struct hci_uart_proto *p)
+int hci_uart_register_proto(const struct hci_uart_proto *p)
 {
 	if (p->id >= HCI_UART_MAX_PROTO)
 		return -EINVAL;
@@ -70,10 +62,12 @@ int hci_uart_register_proto(struct hci_uart_proto *p)
 
 	hup[p->id] = p;
 
+	BT_INFO("HCI UART protocol %s registered", p->name);
+
 	return 0;
 }
 
-int hci_uart_unregister_proto(struct hci_uart_proto *p)
+int hci_uart_unregister_proto(const struct hci_uart_proto *p)
 {
 	if (p->id >= HCI_UART_MAX_PROTO)
 		return -EINVAL;
@@ -86,7 +80,7 @@ int hci_uart_unregister_proto(struct hci_uart_proto *p)
 	return 0;
 }
 
-static struct hci_uart_proto *hci_uart_get_proto(unsigned int id)
+static const struct hci_uart_proto *hci_uart_get_proto(unsigned int id)
 {
 	if (id >= HCI_UART_MAX_PROTO)
 		return NULL;
@@ -118,15 +112,8 @@ static inline struct sk_buff *hci_uart_dequeue(struct hci_uart *hu)
 {
 	struct sk_buff *skb = hu->tx_skb;
 
-	if (!skb) {
-		hci_uart_proto_lock(hu);
-		if (!hu->proto) {
-			hci_uart_proto_unlock(hu);
-			return NULL;
-		}
+	if (!skb)
 		skb = hu->proto->dequeue(hu);
-		hci_uart_proto_unlock(hu);
-	}
 	else
 		hu->tx_skb = NULL;
 
@@ -153,8 +140,6 @@ static void hci_uart_write_work(struct work_struct *work)
 	struct tty_struct *tty = hu->tty;
 	struct hci_dev *hdev = hu->hdev;
 	struct sk_buff *skb;
-
-	BT_DBG("hu %pK hdev %pK tty %pK", hu, hdev, tty);
 
 	/* REVISIT: should we cope with bad skbs or ->write() returning
 	 * and error value ?
@@ -219,7 +204,7 @@ int hci_uart_init_ready(struct hci_uart *hu)
 /* Initialize device */
 static int hci_uart_open(struct hci_dev *hdev)
 {
-	BT_DBG("%s %pK", hdev->name, hdev);
+	BT_DBG("%s %p", hdev->name, hdev);
 
 	/* Nothing to do for UART driver */
 
@@ -234,7 +219,7 @@ static int hci_uart_flush(struct hci_dev *hdev)
 	struct hci_uart *hu  = hci_get_drvdata(hdev);
 	struct tty_struct *tty = hu->tty;
 
-	BT_DBG("hdev %pK tty %pK", hdev, tty);
+	BT_DBG("hdev %p tty %p", hdev, tty);
 
 	if (hu->tx_skb) {
 		kfree_skb(hu->tx_skb); hu->tx_skb = NULL;
@@ -253,7 +238,7 @@ static int hci_uart_flush(struct hci_dev *hdev)
 /* Close device */
 static int hci_uart_close(struct hci_dev *hdev)
 {
-	BT_DBG("hdev %pK", hdev);
+	BT_DBG("hdev %p", hdev);
 
 	if (!test_and_clear_bit(HCI_RUNNING, &hdev->flags))
 		return 0;
@@ -262,6 +247,8 @@ static int hci_uart_close(struct hci_dev *hdev)
 	hdev->flush = NULL;
 	return 0;
 }
+
+void bluesleep_hci_event(unsigned long event);
 
 /* Send frames from HCI layer */
 static int hci_uart_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
@@ -273,10 +260,60 @@ static int hci_uart_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
 
 	BT_DBG("%s: type %d len %d", hdev->name, bt_cb(skb)->pkt_type, skb->len);
 
+	bluesleep_hci_event(HCI_DEV_WRITE);
+
 	hu->proto->enqueue(hu, skb);
 
 	hci_uart_tx_wakeup(hu);
 
+	return 0;
+}
+
+static int hci_uart_setup(struct hci_dev *hdev)
+{
+	struct hci_uart *hu = hci_get_drvdata(hdev);
+	struct hci_rp_read_local_version *ver;
+	struct sk_buff *skb;
+
+	if (hu->proto->setup)
+		return hu->proto->setup(hu);
+
+	if (!test_bit(HCI_UART_VND_DETECT, &hu->hdev_flags))
+		return 0;
+
+	skb = __hci_cmd_sync(hdev, HCI_OP_READ_LOCAL_VERSION, 0, NULL,
+			     HCI_INIT_TIMEOUT);
+	if (IS_ERR(skb)) {
+		BT_ERR("%s: Reading local version information failed (%ld)",
+		       hdev->name, PTR_ERR(skb));
+		return 0;
+	}
+
+	if (skb->len != sizeof(*ver)) {
+		BT_ERR("%s: Event length mismatch for version information",
+		       hdev->name);
+		goto done;
+	}
+
+	ver = (struct hci_rp_read_local_version *)skb->data;
+
+	switch (le16_to_cpu(ver->manufacturer)) {
+#ifdef CONFIG_BT_HCIUART_INTEL
+	case 2:
+		hdev->set_bdaddr = btintel_set_bdaddr;
+		btintel_check_bdaddr(hdev);
+		break;
+#endif
+#ifdef CONFIG_BT_HCIUART_BCM
+	case 15:
+		hdev->set_bdaddr = btbcm_set_bdaddr;
+		btbcm_check_bdaddr(hdev);
+		break;
+#endif
+	}
+
+done:
+	kfree_skb(skb);
 	return 0;
 }
 
@@ -294,7 +331,7 @@ static int hci_uart_tty_open(struct tty_struct *tty)
 {
 	struct hci_uart *hu;
 
-	BT_DBG("tty %pK", tty);
+	BT_DBG("tty %p", tty);
 
 	/* Error if the tty has no write op instead of leaving an exploitable
 	   hole */
@@ -315,7 +352,6 @@ static int hci_uart_tty_open(struct tty_struct *tty)
 	INIT_WORK(&hu->write_work, hci_uart_write_work);
 
 	spin_lock_init(&hu->rx_lock);
-	mutex_init(&hu->proto_lock);
 
 	/* Flush any pending characters in the driver and line discipline. */
 
@@ -336,10 +372,10 @@ static int hci_uart_tty_open(struct tty_struct *tty)
  */
 static void hci_uart_tty_close(struct tty_struct *tty)
 {
-	struct hci_uart *hu = (void *)tty->disc_data;
+	struct hci_uart *hu = tty->disc_data;
 	struct hci_dev *hdev;
 
-	BT_DBG("tty %pK", tty);
+	BT_DBG("tty %p", tty);
 
 	/* Detach from the tty */
 	tty->disc_data = NULL;
@@ -348,24 +384,20 @@ static void hci_uart_tty_close(struct tty_struct *tty)
 		return;
 
 	hdev = hu->hdev;
-	if (hdev) {
+	if (hdev)
 		hci_uart_close(hdev);
-		if (test_bit(HCI_UART_REGISTERED, &hu->flags))
-			hci_unregister_dev(hdev);
-	}
-
-	if (test_and_clear_bit(HCI_UART_PROTO_SET, &hu->flags)) {
-		hci_uart_proto_lock(hu);
-		hu->proto->close(hu);
-		hu->proto = NULL;
-		hci_uart_proto_unlock(hu);
-	}
 
 	cancel_work_sync(&hu->write_work);
 
-	if (hdev)
-		hci_free_dev(hdev);
-	mutex_destroy(&hu->proto_lock);
+	if (test_and_clear_bit(HCI_UART_PROTO_SET, &hu->flags)) {
+		if (hdev) {
+			if (test_bit(HCI_UART_REGISTERED, &hu->flags))
+				hci_unregister_dev(hdev);
+			hci_free_dev(hdev);
+		}
+		hu->proto->close(hu);
+	}
+
 	kfree(hu);
 }
 
@@ -379,7 +411,7 @@ static void hci_uart_tty_close(struct tty_struct *tty)
  */
 static void hci_uart_tty_wakeup(struct tty_struct *tty)
 {
-	struct hci_uart *hu = (void *)tty->disc_data;
+	struct hci_uart *hu = tty->disc_data;
 
 	BT_DBG("");
 
@@ -407,21 +439,19 @@ static void hci_uart_tty_wakeup(struct tty_struct *tty)
  *
  * Return Value:    None
  */
-static void hci_uart_tty_receive(struct tty_struct *tty, const u8 *data, char *flags, int count)
+static void hci_uart_tty_receive(struct tty_struct *tty, const u8 *data,
+				 char *flags, int count)
 {
-	struct hci_uart *hu = (void *)tty->disc_data;
+	struct hci_uart *hu = tty->disc_data;
 
-	if (!hu || tty != hu->tty || !data)
+	if (!hu || tty != hu->tty)
 		return;
 
 	if (!test_bit(HCI_UART_PROTO_SET, &hu->flags))
 		return;
 
-	if (!hu->proto)
-		return;
-
 	spin_lock(&hu->rx_lock);
-	hu->proto->recv(hu, (void *) data, count);
+	hu->proto->recv(hu, data, count);
 
 	if (hu->hdev)
 		hu->hdev->stat.byte_rx += count;
@@ -453,6 +483,7 @@ static int hci_uart_register_dev(struct hci_uart *hu)
 	hdev->close = hci_uart_close;
 	hdev->flush = hci_uart_flush;
 	hdev->send  = hci_uart_send_frame;
+	hdev->setup = hci_uart_setup;
 	SET_HCIDEV_DEV(hdev, hu->tty->dev);
 
 	if (test_bit(HCI_UART_RAW_DEVICE, &hu->hdev_flags))
@@ -485,7 +516,7 @@ static int hci_uart_register_dev(struct hci_uart *hu)
 
 static int hci_uart_set_proto(struct hci_uart *hu, int id)
 {
-	struct hci_uart_proto *p;
+	const struct hci_uart_proto *p;
 	int err;
 
 	p = hci_uart_get_proto(id);
@@ -513,9 +544,10 @@ static int hci_uart_set_flags(struct hci_uart *hu, unsigned long flags)
 				    BIT(HCI_UART_RESET_ON_INIT) |
 				    BIT(HCI_UART_CREATE_AMP) |
 				    BIT(HCI_UART_INIT_PENDING) |
-				    BIT(HCI_UART_EXT_CONFIG);
+				    BIT(HCI_UART_EXT_CONFIG) |
+				    BIT(HCI_UART_VND_DETECT);
 
-	if ((flags & ~valid_flags))
+	if (flags & ~valid_flags)
 		return -EINVAL;
 
 	hu->hdev_flags = flags;
@@ -536,10 +568,10 @@ static int hci_uart_set_flags(struct hci_uart *hu, unsigned long flags)
  *
  * Return Value:    Command dependent
  */
-static int hci_uart_tty_ioctl(struct tty_struct *tty, struct file * file,
-					unsigned int cmd, unsigned long arg)
+static int hci_uart_tty_ioctl(struct tty_struct *tty, struct file *file,
+			      unsigned int cmd, unsigned long arg)
 {
-	struct hci_uart *hu = (void *)tty->disc_data;
+	struct hci_uart *hu = tty->disc_data;
 	int err = 0;
 
 	BT_DBG("");
@@ -593,19 +625,19 @@ static int hci_uart_tty_ioctl(struct tty_struct *tty, struct file * file,
  * We don't provide read/write/poll interface for user space.
  */
 static ssize_t hci_uart_tty_read(struct tty_struct *tty, struct file *file,
-					unsigned char __user *buf, size_t nr)
+				 unsigned char __user *buf, size_t nr)
 {
 	return 0;
 }
 
 static ssize_t hci_uart_tty_write(struct tty_struct *tty, struct file *file,
-					const unsigned char *data, size_t count)
+				  const unsigned char *data, size_t count)
 {
 	return 0;
 }
 
 static unsigned int hci_uart_tty_poll(struct tty_struct *tty,
-					struct file *filp, poll_table *wait)
+				      struct file *filp, poll_table *wait)
 {
 	return 0;
 }
@@ -653,8 +685,8 @@ static int __init hci_uart_init(void)
 #ifdef CONFIG_BT_HCIUART_3WIRE
 	h5_init();
 #endif
-#ifdef CONFIG_BT_HCIUART_IBS
-	ibs_init();
+#ifdef CONFIG_BT_HCIUART_BCM
+	bcm_init();
 #endif
 
 	return 0;
@@ -679,8 +711,8 @@ static void __exit hci_uart_exit(void)
 #ifdef CONFIG_BT_HCIUART_3WIRE
 	h5_deinit();
 #endif
-#ifdef CONFIG_BT_HCIUART_IBS
-	ibs_deinit();
+#ifdef CONFIG_BT_HCIUART_BCM
+	bcm_deinit();
 #endif
 
 	/* Release tty registration of line discipline */

@@ -270,7 +270,7 @@ int mdp3_dma_sync_config(struct mdp3_dma *dma,
 
 	vsync_clk_speed_hz = MDP_VSYNC_CLK_RATE;
 
-	cfg = te->sync_cfg_height << VSYNC_TOTAL_LINES_SHIFT;
+	cfg = total_lines << VSYNC_TOTAL_LINES_SHIFT;
 	total_lines *= te->frame_rate;
 
 	vclks_line = (total_lines) ? vsync_clk_speed_hz / total_lines : 0;
@@ -647,8 +647,7 @@ int dma_bpp(int format)
 }
 
 static int mdp3_dmap_update(struct mdp3_dma *dma, void *buf,
-				struct mdp3_intf *intf, int first_commit,
-				void *data)
+				struct mdp3_intf *intf, void *data)
 {
 	unsigned long flag;
 	int cb_type = MDP3_DMA_CALLBACK_TYPE_VSYNC;
@@ -661,7 +660,7 @@ static int mdp3_dmap_update(struct mdp3_dma *dma, void *buf,
 
 	if (dma->output_config.out_sel == MDP3_DMA_OUTPUT_SEL_DSI_CMD) {
 		cb_type = MDP3_DMA_CALLBACK_TYPE_DMA_DONE;
-		if ((intf->active) && !(first_commit)) {
+		if (intf->active) {
 			ATRACE_BEGIN("mdp3_wait_for_dma_comp");
 retry_dma_done:
 			rc = wait_for_completion_timeout(&dma->dma_comp,
@@ -747,8 +746,7 @@ retry_vsync:
 }
 
 static int mdp3_dmas_update(struct mdp3_dma *dma, void *buf,
-				struct mdp3_intf *intf, int first_commit,
-				void *data)
+				struct mdp3_intf *intf, void *data)
 {
 	unsigned long flag;
 	int cb_type = MDP3_DMA_CALLBACK_TYPE_VSYNC;

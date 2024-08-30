@@ -394,6 +394,22 @@ __wait_on_bit(wait_queue_head_t *wq, struct wait_bit_queue *q,
 }
 EXPORT_SYMBOL(__wait_on_bit);
 
+static int __wait_on_bit_with_action_f(wait_queue_head_t *wq,
+						struct wait_bit_queue *q,
+						wait_bit_action_f *action,
+						unsigned mode)
+{
+	int ret = 0;
+
+	do {
+		prepare_to_wait(wq, &q->wait, mode);
+		if (test_bit(q->key.bit_nr, q->key.flags))
+			ret = (*action)(&q->key);
+	} while (test_bit(q->key.bit_nr, q->key.flags) && !ret);
+	finish_wait(wq, &q->wait);
+	return ret;
+}
+
 int __sched out_of_line_wait_on_bit(void *word, int bit,
 				    wait_bit_action_f *action, unsigned mode)
 {

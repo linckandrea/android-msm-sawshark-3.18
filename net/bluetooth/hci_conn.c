@@ -1,7 +1,6 @@
 /*
    BlueZ - Bluetooth protocol stack for Linux
-   Copyright (c) 2000-2001, 2010, 2014, Code Aurora Forum. All rights
-   reserved.
+   Copyright (c) 2000-2001, 2010, Code Aurora Forum. All rights reserved.
 
    Written 2000,2001 by Maxim Krasnyansky <maxk@qualcomm.com>
 
@@ -26,11 +25,13 @@
 /* Bluetooth HCI connection handling. */
 
 #include <linux/export.h>
+#include <linux/debugfs.h>
 
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 #include <net/bluetooth/l2cap.h>
 
+#include "hci_request.h"
 #include "smp.h"
 #include "a2mp.h"
 
@@ -63,13 +64,100 @@ static void hci_le_create_connection_cancel(struct hci_conn *conn)
 	hci_send_cmd(conn->hdev, HCI_OP_LE_CREATE_CONN_CANCEL, 0, NULL);
 }
 
+/* This function requires the caller holds hdev->lock */
+static void hci_connect_le_scan_cleanup(struct hci_conn *conn)
+{
+	struct hci_conn_params *params;
+	struct smp_irk *irk;
+	bdaddr_t *bdaddr;
+	u8 bdaddr_type;
+
+	bdaddr = &conn->dst;
+	bdaddr_type = conn->dst_type;
+
+	/* Check if we need to convert to identity address */
+	irk = hci_get_irk(conn->hdev, bdaddr, bdaddr_type);
+	if (irk) {
+		bdaddr = &irk->bdaddr;
+		bdaddr_type = irk->addr_type;
+	}
+
+	params = hci_explicit_connect_lookup(conn->hdev, bdaddr, bdaddr_type);
+	if (!params)
+		return;
+
+	/* The connection attempt was doing scan for new RPA, and is
+	 * in scan phase. If params are not associated with any other
+	 * autoconnect action, remove them completely. If they are, just unmark
+	 * them as waiting for connection, by clearing explicit_connect field.
+	 */
+	params->explicit_connect = false;
+
+	list_del_init(&params->action);
+
+	switch (params->auto_connect) {
+	case HCI_AUTO_CONN_EXPLICIT:
+		hci_conn_params_del(conn->hdev, bdaddr, bdaddr_type);
+		/* return instead of break to avoid duplicate scan update */
+		return;
+	case HCI_AUTO_CONN_DIRECT:
+	case HCI_AUTO_CONN_ALWAYS:
+		list_add(&params->action, &conn->hdev->pend_le_conns);
+		break;
+	case HCI_AUTO_CONN_REPORT:
+		list_add(&params->action, &conn->hdev->pend_le_reports);
+		break;
+	default:
+		break;
+	}
+
+	hci_update_background_scan(conn->hdev);
+}
+
+static void hci_conn_cleanup(struct hci_conn *conn)
+{
+	struct hci_dev *hdev = conn->hdev;
+
+	if (test_bit(HCI_CONN_PARAM_REMOVAL_PEND, &conn->flags))
+		hci_conn_params_del(conn->hdev, &conn->dst, conn->dst_type);
+
+	hci_chan_list_flush(conn);
+
+	hci_conn_hash_del(hdev, conn);
+
+	if (hdev->notify)
+		hdev->notify(hdev, HCI_NOTIFY_CONN_DEL);
+
+	hci_conn_del_sysfs(conn);
+
+	debugfs_remove_recursive(conn->debugfs);
+
+	hci_dev_put(hdev);
+
+	hci_conn_put(conn);
+}
+
+/* This function requires the caller holds hdev->lock */
+static void hci_connect_le_scan_remove(struct hci_conn *conn)
+{
+	hci_connect_le_scan_cleanup(conn);
+
+	/* We can't call hci_conn_del here since that would deadlock
+	 * with trying to call cancel_delayed_work_sync(&conn->disc_work).
+	 * Instead, call just hci_conn_cleanup() which contains the bare
+	 * minimum cleanup operations needed for a connection in this
+	 * state.
+	 */
+	hci_conn_cleanup(conn);
+}
+
 static void hci_acl_create_connection(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
 	struct inquiry_entry *ie;
 	struct hci_cp_create_conn cp;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	conn->state = BT_CONNECT;
 	conn->out = true;
@@ -98,8 +186,6 @@ static void hci_acl_create_connection(struct hci_conn *conn)
 	}
 
 	cp.pkt_type = cpu_to_le16(conn->pkt_type);
-	/* Allow DUT to be MASTER for allow outgoing connection requests */
-	hdev->link_mode |= HCI_LM_MASTER;
 	if (lmp_rswitch_capable(hdev) && !(hdev->link_mode & HCI_LM_MASTER))
 		cp.role_switch = 0x01;
 	else
@@ -112,7 +198,7 @@ static void hci_acl_create_connection_cancel(struct hci_conn *conn)
 {
 	struct hci_cp_create_conn_cancel cp;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	if (conn->hdev->hci_ver < BLUETOOTH_VER_1_2)
 		return;
@@ -135,7 +221,7 @@ int hci_disconnect(struct hci_conn *conn, __u8 reason)
 {
 	struct hci_cp_disconnect cp;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	/* When we are master of an established connection and it enters
 	 * the disconnect timeout, then go ahead and try to read the
@@ -144,10 +230,11 @@ int hci_disconnect(struct hci_conn *conn, __u8 reason)
 	 */
 	if (conn->type == ACL_LINK && conn->role == HCI_ROLE_MASTER) {
 		struct hci_dev *hdev = conn->hdev;
-		struct hci_cp_read_clock_offset cp;
+		struct hci_cp_read_clock_offset clkoff_cp;
 
-		cp.handle = cpu_to_le16(conn->handle);
-		hci_send_cmd(hdev, HCI_OP_READ_CLOCK_OFFSET, sizeof(cp), &cp);
+		clkoff_cp.handle = cpu_to_le16(conn->handle);
+		hci_send_cmd(hdev, HCI_OP_READ_CLOCK_OFFSET, sizeof(clkoff_cp),
+			     &clkoff_cp);
 	}
 
 	conn->state = BT_DISCONN;
@@ -161,7 +248,7 @@ static void hci_amp_disconn(struct hci_conn *conn)
 {
 	struct hci_cp_disconn_phy_link cp;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	conn->state = BT_DISCONN;
 
@@ -176,7 +263,7 @@ static void hci_add_sco(struct hci_conn *conn, __u16 handle)
 	struct hci_dev *hdev = conn->hdev;
 	struct hci_cp_add_sco cp;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	conn->state = BT_CONNECT;
 	conn->out = true;
@@ -195,7 +282,7 @@ bool hci_setup_sync(struct hci_conn *conn, __u16 handle)
 	struct hci_cp_setup_sync_conn cp;
 	const struct sco_param *param;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	conn->state = BT_CONNECT;
 	conn->out = true;
@@ -281,7 +368,7 @@ void hci_le_start_enc(struct hci_conn *conn, __le16 ediv, __le64 rand,
 	struct hci_dev *hdev = conn->hdev;
 	struct hci_cp_le_start_enc cp;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	memset(&cp, 0, sizeof(cp));
 
@@ -301,7 +388,7 @@ void hci_sco_setup(struct hci_conn *conn, __u8 status)
 	if (!sco)
 		return;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	if (!status) {
 		if (lmp_esco_capable(conn->hdev))
@@ -309,7 +396,7 @@ void hci_sco_setup(struct hci_conn *conn, __u8 status)
 		else
 			hci_add_sco(sco, conn->handle);
 	} else {
-		hci_proto_connect_cfm(sco, status);
+		hci_connect_cfm(sco, status);
 		hci_conn_del(sco);
 	}
 }
@@ -320,7 +407,7 @@ static void hci_conn_timeout(struct work_struct *work)
 					     disc_work.work);
 	int refcnt = atomic_read(&conn->refcnt);
 
-	BT_DBG("hcon %pK state %s", conn, state_to_string(conn->state));
+	BT_DBG("hcon %p state %s", conn, state_to_string(conn->state));
 
 	WARN_ON(refcnt < 0);
 
@@ -340,8 +427,12 @@ static void hci_conn_timeout(struct work_struct *work)
 		if (conn->out) {
 			if (conn->type == ACL_LINK)
 				hci_acl_create_connection_cancel(conn);
-			else if (conn->type == LE_LINK)
-				hci_le_create_connection_cancel(conn);
+			else if (conn->type == LE_LINK) {
+				if (test_bit(HCI_CONN_SCANNING, &conn->flags))
+					hci_connect_le_scan_remove(conn);
+				else
+					hci_le_create_connection_cancel(conn);
+			}
 		} else if (conn->type == SCO_LINK || conn->type == ESCO_LINK) {
 			hci_reject_sco(conn);
 		}
@@ -368,7 +459,7 @@ static void hci_conn_idle(struct work_struct *work)
 					     idle_work.work);
 	struct hci_dev *hdev = conn->hdev;
 
-	BT_DBG("hcon %pK mode %d", conn, conn->mode);
+	BT_DBG("hcon %p mode %d", conn, conn->mode);
 
 	if (!lmp_sniff_capable(hdev) || !lmp_sniff_capable(conn))
 		return;
@@ -451,6 +542,7 @@ struct hci_conn *hci_conn_add(struct hci_dev *hdev, int type, bdaddr_t *dst,
 	conn->io_capability = hdev->io_capability;
 	conn->remote_auth = 0xff;
 	conn->key_type = 0xff;
+	conn->rssi = HCI_RSSI_INVALID;
 	conn->tx_power = HCI_TX_POWER_INVALID;
 	conn->max_tx_power = HCI_TX_POWER_INVALID;
 
@@ -505,9 +597,8 @@ struct hci_conn *hci_conn_add(struct hci_dev *hdev, int type, bdaddr_t *dst,
 int hci_conn_del(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
-	__u8 type;
 
-	BT_DBG("%s hcon %pK handle %d", hdev->name, conn, conn->handle);
+	BT_DBG("%s hcon %p handle %d", hdev->name, conn, conn->handle);
 
 	cancel_delayed_work_sync(&conn->disc_work);
 	cancel_delayed_work_sync(&conn->auto_accept_work);
@@ -535,24 +626,17 @@ int hci_conn_del(struct hci_conn *conn)
 		}
 	}
 
-	hci_chan_list_flush(conn);
-
 	if (conn->amp_mgr)
 		amp_mgr_put(conn->amp_mgr);
 
-	hci_conn_hash_del(hdev, conn);
-
-	type = conn->type;
-	if (hdev->notify && (type == SCO_LINK || type == ESCO_LINK))
-		hdev->notify(hdev, HCI_NOTIFY_CONN_DEL);
-
 	skb_queue_purge(&conn->data_q);
 
-	hci_conn_del_sysfs(conn);
-
-	hci_dev_put(hdev);
-
-	hci_conn_put(conn);
+	/* Remove the connection from the list and cleanup its remaining
+	 * state. This is a separate function since for some cases like
+	 * BT_CONNECT_SCAN we *only* want the cleanup part without the
+	 * rest of hci_conn_del.
+	 */
+	hci_conn_cleanup(conn);
 
 	return 0;
 }
@@ -568,7 +652,7 @@ struct hci_dev *hci_get_route(bdaddr_t *dst, bdaddr_t *src)
 
 	list_for_each_entry(d, &hci_dev_list, list) {
 		if (!test_bit(HCI_UP, &d->flags) ||
-		    test_bit(HCI_USER_CHANNEL, &d->dev_flags) ||
+		    hci_dev_test_flag(d, HCI_USER_CHANNEL) ||
 		    d->dev_type != HCI_BREDR)
 			continue;
 
@@ -615,7 +699,7 @@ void hci_le_conn_failed(struct hci_conn *conn, u8 status)
 	mgmt_connect_failed(hdev, &conn->dst, conn->type, conn->dst_type,
 			    status);
 
-	hci_proto_connect_cfm(conn, status);
+	hci_connect_cfm(conn, status);
 
 	hci_conn_del(conn);
 
@@ -630,19 +714,22 @@ void hci_le_conn_failed(struct hci_conn *conn, u8 status)
 	mgmt_reenable_advertising(hdev);
 }
 
-static void create_le_conn_complete(struct hci_dev *hdev, u8 status)
+static void create_le_conn_complete(struct hci_dev *hdev, u8 status, u16 opcode)
 {
 	struct hci_conn *conn;
 
-	if (status == 0)
-		return;
+	hci_dev_lock(hdev);
+
+	conn = hci_lookup_le_connect(hdev);
+
+	if (!status) {
+		hci_connect_le_scan_cleanup(conn);
+		goto done;
+	}
 
 	BT_ERR("HCI request failed to create LE connection: status 0x%2.2x",
 	       status);
 
-	hci_dev_lock(hdev);
-
-	conn = hci_conn_hash_lookup_state(hdev, LE_LINK, BT_CONNECT);
 	if (!conn)
 		goto done;
 
@@ -662,7 +749,7 @@ static void hci_req_add_le_create_conn(struct hci_request *req,
 	memset(&cp, 0, sizeof(cp));
 
 	/* Update random address, but set require_privacy to false so
-	 * that we never connect with an unresolvable address.
+	 * that we never connect with an non-resolvable address.
 	 */
 	if (hci_update_random_address(req, false, &own_addr_type))
 		return;
@@ -682,6 +769,7 @@ static void hci_req_add_le_create_conn(struct hci_request *req,
 	hci_req_add(req, HCI_OP_LE_CREATE_CONN, sizeof(cp), &cp);
 
 	conn->state = BT_CONNECT;
+	clear_bit(HCI_CONN_SCANNING, &conn->flags);
 }
 
 static void hci_req_directed_advertising(struct hci_request *req,
@@ -697,7 +785,7 @@ static void hci_req_directed_advertising(struct hci_request *req,
 	 * and write a new random address. The flag will be set back on
 	 * as soon as the SET_ADV_ENABLE HCI command completes.
 	 */
-	clear_bit(HCI_LE_ADV, &hdev->dev_flags);
+	hci_dev_clear_flag(hdev, HCI_LE_ADV);
 
 	/* Set require_privacy to false so that the remote device has a
 	 * chance of identifying us.
@@ -725,10 +813,18 @@ struct hci_conn *hci_connect_le(struct hci_dev *hdev, bdaddr_t *dst,
 				u8 role)
 {
 	struct hci_conn_params *params;
-	struct hci_conn *conn;
+	struct hci_conn *conn, *conn_unfinished;
 	struct smp_irk *irk;
 	struct hci_request req;
 	int err;
+
+	/* Let's make sure that le is enabled.*/
+	if (!hci_dev_test_flag(hdev, HCI_LE_ENABLED)) {
+		if (lmp_le_capable(hdev))
+			return ERR_PTR(-ECONNREFUSED);
+
+		return ERR_PTR(-EOPNOTSUPP);
+	}
 
 	/* Some devices send ATT messages as soon as the physical link is
 	 * established. To be able to handle these ATT messages, the user-
@@ -740,25 +836,28 @@ struct hci_conn *hci_connect_le(struct hci_dev *hdev, bdaddr_t *dst,
 	 * and return the object found.
 	 */
 	conn = hci_conn_hash_lookup_ba(hdev, LE_LINK, dst);
+	conn_unfinished = NULL;
 	if (conn) {
-		conn->pending_sec_level = sec_level;
-		goto done;
+		if (conn->state == BT_CONNECT &&
+		    test_bit(HCI_CONN_SCANNING, &conn->flags)) {
+			BT_DBG("will continue unfinished conn %pMR", dst);
+			conn_unfinished = conn;
+		} else {
+			if (conn->pending_sec_level < sec_level)
+				conn->pending_sec_level = sec_level;
+			goto done;
+		}
 	}
 
 	/* Since the controller supports only one LE connection attempt at a
 	 * time, we return -EBUSY if there is any connection attempt running.
 	 */
-	conn = hci_conn_hash_lookup_state(hdev, LE_LINK, BT_CONNECT);
-	if (conn)
+	if (hci_lookup_le_connect(hdev))
 		return ERR_PTR(-EBUSY);
 
 	/* When given an identity address with existing identity
 	 * resolving key, the connection needs to be established
 	 * to a resolvable random address.
-	 *
-	 * This uses the cached random resolvable address from
-	 * a previous scan. When no cached address is available,
-	 * try connecting to the identity address instead.
 	 *
 	 * Storing the resolvable random address is required here
 	 * to handle connection failures. The address will later
@@ -771,14 +870,22 @@ struct hci_conn *hci_connect_le(struct hci_dev *hdev, bdaddr_t *dst,
 		dst_type = ADDR_LE_DEV_RANDOM;
 	}
 
-	conn = hci_conn_add(hdev, LE_LINK, dst, role);
+	if (conn_unfinished) {
+		conn = conn_unfinished;
+		bacpy(&conn->dst, dst);
+	} else {
+		conn = hci_conn_add(hdev, LE_LINK, dst, role);
+	}
+
 	if (!conn)
 		return ERR_PTR(-ENOMEM);
 
 	conn->dst_type = dst_type;
 	conn->sec_level = BT_SECURITY_LOW;
-	conn->pending_sec_level = sec_level;
 	conn->conn_timeout = conn_timeout;
+
+	if (!conn_unfinished)
+		conn->pending_sec_level = sec_level;
 
 	hci_req_init(&req, hdev);
 
@@ -788,7 +895,7 @@ struct hci_conn *hci_connect_le(struct hci_dev *hdev, bdaddr_t *dst,
 	 * anyway have to disable it in order to start directed
 	 * advertising.
 	 */
-	if (test_bit(HCI_LE_ADV, &hdev->dev_flags)) {
+	if (hci_dev_test_flag(hdev, HCI_LE_ADV)) {
 		u8 enable = 0x00;
 		hci_req_add(&req, HCI_OP_LE_SET_ADV_ENABLE, sizeof(enable),
 			    &enable);
@@ -799,7 +906,7 @@ struct hci_conn *hci_connect_le(struct hci_dev *hdev, bdaddr_t *dst,
 		/* If we're active scanning most controllers are unable
 		 * to initiate advertising. Simply reject the attempt.
 		 */
-		if (test_bit(HCI_LE_SCAN, &hdev->dev_flags) &&
+		if (hci_dev_test_flag(hdev, HCI_LE_SCAN) &&
 		    hdev->le_scan_type == LE_SCAN_ACTIVE) {
 			skb_queue_purge(&req.cmd_q);
 			hci_conn_del(conn);
@@ -829,9 +936,9 @@ struct hci_conn *hci_connect_le(struct hci_dev *hdev, bdaddr_t *dst,
 	 * handler for scan disabling knows to set the correct discovery
 	 * state.
 	 */
-	if (test_bit(HCI_LE_SCAN, &hdev->dev_flags)) {
+	if (hci_dev_test_flag(hdev, HCI_LE_SCAN)) {
 		hci_req_add_le_scan_disable(&req);
-		set_bit(HCI_LE_SCAN_INTERRUPTED, &hdev->dev_flags);
+		hci_dev_set_flag(hdev, HCI_LE_SCAN_INTERRUPTED);
 	}
 
 	hci_req_add_le_create_conn(&req, conn);
@@ -844,6 +951,152 @@ create_conn:
 	}
 
 done:
+	/* If this is continuation of connect started by hci_connect_le_scan,
+	 * it already called hci_conn_hold and calling it again would mess the
+	 * counter.
+	 */
+	if (!conn_unfinished)
+		hci_conn_hold(conn);
+
+	return conn;
+}
+
+static void hci_connect_le_scan_complete(struct hci_dev *hdev, u8 status,
+					 u16 opcode)
+{
+	struct hci_conn *conn;
+
+	if (!status)
+		return;
+
+	BT_ERR("Failed to add device to auto conn whitelist: status 0x%2.2x",
+	       status);
+
+	hci_dev_lock(hdev);
+
+	conn = hci_conn_hash_lookup_state(hdev, LE_LINK, BT_CONNECT);
+	if (conn)
+		hci_le_conn_failed(conn, status);
+
+	hci_dev_unlock(hdev);
+}
+
+static bool is_connected(struct hci_dev *hdev, bdaddr_t *addr, u8 type)
+{
+	struct hci_conn *conn;
+
+	conn = hci_conn_hash_lookup_ba(hdev, LE_LINK, addr);
+	if (!conn)
+		return false;
+
+	if (conn->dst_type != type)
+		return false;
+
+	if (conn->state != BT_CONNECTED)
+		return false;
+
+	return true;
+}
+
+/* This function requires the caller holds hdev->lock */
+static int hci_explicit_conn_params_set(struct hci_request *req,
+					bdaddr_t *addr, u8 addr_type)
+{
+	struct hci_dev *hdev = req->hdev;
+	struct hci_conn_params *params;
+
+	if (is_connected(hdev, addr, addr_type))
+		return -EISCONN;
+
+	params = hci_conn_params_lookup(hdev, addr, addr_type);
+	if (!params) {
+		params = hci_conn_params_add(hdev, addr, addr_type);
+		if (!params)
+			return -ENOMEM;
+
+		/* If we created new params, mark them to be deleted in
+		 * hci_connect_le_scan_cleanup. It's different case than
+		 * existing disabled params, those will stay after cleanup.
+		 */
+		params->auto_connect = HCI_AUTO_CONN_EXPLICIT;
+	}
+
+	/* We're trying to connect, so make sure params are at pend_le_conns */
+	if (params->auto_connect == HCI_AUTO_CONN_DISABLED ||
+	    params->auto_connect == HCI_AUTO_CONN_REPORT ||
+	    params->auto_connect == HCI_AUTO_CONN_EXPLICIT) {
+		list_del_init(&params->action);
+		list_add(&params->action, &hdev->pend_le_conns);
+	}
+
+	params->explicit_connect = true;
+	__hci_update_background_scan(req);
+
+	BT_DBG("addr %pMR (type %u) auto_connect %u", addr, addr_type,
+	       params->auto_connect);
+
+	return 0;
+}
+
+/* This function requires the caller holds hdev->lock */
+struct hci_conn *hci_connect_le_scan(struct hci_dev *hdev, bdaddr_t *dst,
+				     u8 dst_type, u8 sec_level,
+				     u16 conn_timeout, u8 role)
+{
+	struct hci_conn *conn;
+	struct hci_request req;
+	int err;
+
+	/* Let's make sure that le is enabled.*/
+	if (!hci_dev_test_flag(hdev, HCI_LE_ENABLED)) {
+		if (lmp_le_capable(hdev))
+			return ERR_PTR(-ECONNREFUSED);
+
+		return ERR_PTR(-EOPNOTSUPP);
+	}
+
+	/* Some devices send ATT messages as soon as the physical link is
+	 * established. To be able to handle these ATT messages, the user-
+	 * space first establishes the connection and then starts the pairing
+	 * process.
+	 *
+	 * So if a hci_conn object already exists for the following connection
+	 * attempt, we simply update pending_sec_level and auth_type fields
+	 * and return the object found.
+	 */
+	conn = hci_conn_hash_lookup_ba(hdev, LE_LINK, dst);
+	if (conn) {
+		if (conn->pending_sec_level < sec_level)
+			conn->pending_sec_level = sec_level;
+		goto done;
+	}
+
+	BT_DBG("requesting refresh of dst_addr");
+
+	conn = hci_conn_add(hdev, LE_LINK, dst, role);
+	if (!conn)
+		return ERR_PTR(-ENOMEM);
+
+	hci_req_init(&req, hdev);
+
+	if (hci_explicit_conn_params_set(&req, dst, dst_type) < 0)
+		return ERR_PTR(-EBUSY);
+
+	conn->state = BT_CONNECT;
+	set_bit(HCI_CONN_SCANNING, &conn->flags);
+
+	err = hci_req_run(&req, hci_connect_le_scan_complete);
+	if (err && err != -ENODATA) {
+		hci_conn_del(conn);
+		return ERR_PTR(err);
+	}
+
+	conn->dst_type = dst_type;
+	conn->sec_level = BT_SECURITY_LOW;
+	conn->pending_sec_level = sec_level;
+	conn->conn_timeout = conn_timeout;
+
+done:
 	hci_conn_hold(conn);
 	return conn;
 }
@@ -853,8 +1106,12 @@ struct hci_conn *hci_connect_acl(struct hci_dev *hdev, bdaddr_t *dst,
 {
 	struct hci_conn *acl;
 
-	if (!test_bit(HCI_BREDR_ENABLED, &hdev->dev_flags))
+	if (!hci_dev_test_flag(hdev, HCI_BREDR_ENABLED)) {
+		if (lmp_bredr_capable(hdev))
+			return ERR_PTR(-ECONNREFUSED);
+
 		return ERR_PTR(-EOPNOTSUPP);
+	}
 
 	acl = hci_conn_hash_lookup_ba(hdev, ACL_LINK, dst);
 	if (!acl) {
@@ -921,13 +1178,13 @@ struct hci_conn *hci_connect_sco(struct hci_dev *hdev, int type, bdaddr_t *dst,
 /* Check link security requirement */
 int hci_conn_check_link_mode(struct hci_conn *conn)
 {
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	/* In Secure Connections Only mode, it is required that Secure
 	 * Connections is used and the link is encrypted with AES-CCM
 	 * using a P-256 authenticated combination key.
 	 */
-	if (test_bit(HCI_SC_ONLY, &conn->hdev->flags)) {
+	if (hci_dev_test_flag(conn->hdev, HCI_SC_ONLY)) {
 		if (!hci_conn_sc_enabled(conn) ||
 		    !test_bit(HCI_CONN_AES_CCM, &conn->flags) ||
 		    conn->key_type != HCI_LK_AUTH_COMBINATION_P256)
@@ -944,7 +1201,7 @@ int hci_conn_check_link_mode(struct hci_conn *conn)
 /* Authenticate remote device */
 static int hci_conn_auth(struct hci_conn *conn, __u8 sec_level, __u8 auth_type)
 {
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	if (conn->pending_sec_level > sec_level)
 		sec_level = conn->pending_sec_level;
@@ -981,7 +1238,7 @@ static int hci_conn_auth(struct hci_conn *conn, __u8 sec_level, __u8 auth_type)
 /* Encrypt the the link */
 static void hci_conn_encrypt(struct hci_conn *conn)
 {
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	if (!test_and_set_bit(HCI_CONN_ENCRYPT_PEND, &conn->flags)) {
 		struct hci_cp_set_conn_encrypt cp;
@@ -996,7 +1253,7 @@ static void hci_conn_encrypt(struct hci_conn *conn)
 int hci_conn_security(struct hci_conn *conn, __u8 sec_level, __u8 auth_type,
 		      bool initiator)
 {
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	if (conn->type == LE_LINK)
 		return smp_conn_security(conn, sec_level);
@@ -1065,7 +1322,7 @@ EXPORT_SYMBOL(hci_conn_security);
 /* Check secure link requirement */
 int hci_conn_check_secure(struct hci_conn *conn, __u8 sec_level)
 {
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	/* Accept if non-secure or higher security level is required */
 	if (sec_level != BT_SECURITY_HIGH && sec_level != BT_SECURITY_FIPS)
@@ -1081,25 +1338,10 @@ int hci_conn_check_secure(struct hci_conn *conn, __u8 sec_level)
 }
 EXPORT_SYMBOL(hci_conn_check_secure);
 
-/* Change link key */
-int hci_conn_change_link_key(struct hci_conn *conn)
-{
-	BT_DBG("hcon %pK", conn);
-
-	if (!test_and_set_bit(HCI_CONN_AUTH_PEND, &conn->flags)) {
-		struct hci_cp_change_conn_link_key cp;
-		cp.handle = cpu_to_le16(conn->handle);
-		hci_send_cmd(conn->hdev, HCI_OP_CHANGE_CONN_LINK_KEY,
-			     sizeof(cp), &cp);
-	}
-
-	return 0;
-}
-
 /* Switch role */
 int hci_conn_switch_role(struct hci_conn *conn, __u8 role)
 {
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	if (role == conn->role)
 		return 1;
@@ -1115,30 +1357,12 @@ int hci_conn_switch_role(struct hci_conn *conn, __u8 role)
 }
 EXPORT_SYMBOL(hci_conn_switch_role);
 
-/* Change ACL link policy */
-int hci_cfg_link_policy(struct hci_conn *conn)
-{
-	struct hci_cp_write_link_policy lp;
-
-	if (conn == NULL) {
-		BT_ERR("%s: NO HCI Connection handle available!", __func__);
-		return -ENODEV;
-	}
-	BT_INFO("%s: Disabling role switch on the ACL handle %d",
-		__func__, conn->handle);
-	lp.handle = conn->handle;
-	lp.policy = HCI_LP_HOLD|HCI_LP_SNIFF|HCI_LP_PARK;
-	hci_send_cmd(conn->hdev, HCI_OP_WRITE_LINK_POLICY, sizeof(lp), &lp);
-	return 0;
-}
-EXPORT_SYMBOL(hci_cfg_link_policy);
-
 /* Enter active mode */
 void hci_conn_enter_active_mode(struct hci_conn *conn, __u8 force_active)
 {
 	struct hci_dev *hdev = conn->hdev;
 
-	BT_DBG("hcon %pK mode %d", conn, conn->mode);
+	BT_DBG("hcon %p mode %d", conn, conn->mode);
 
 	if (conn->mode != HCI_CM_SNIFF)
 		goto timer;
@@ -1169,7 +1393,7 @@ void hci_conn_hash_flush(struct hci_dev *hdev)
 	list_for_each_entry_safe(c, n, &h->list, list) {
 		c->state = BT_CLOSED;
 
-		hci_proto_disconn_cfm(c, HCI_ERROR_LOCAL_HOST_TERM);
+		hci_disconn_cfm(c, HCI_ERROR_LOCAL_HOST_TERM);
 		hci_conn_del(c);
 	}
 }
@@ -1318,7 +1542,7 @@ struct hci_chan *hci_chan_create(struct hci_conn *conn)
 	struct hci_dev *hdev = conn->hdev;
 	struct hci_chan *chan;
 
-	BT_DBG("%s hcon %pK", hdev->name, conn);
+	BT_DBG("%s hcon %p", hdev->name, conn);
 
 	if (test_bit(HCI_CONN_DROP, &conn->flags)) {
 		BT_DBG("Refusing to create new hci_chan");
@@ -1343,7 +1567,7 @@ void hci_chan_del(struct hci_chan *chan)
 	struct hci_conn *conn = chan->conn;
 	struct hci_dev *hdev = conn->hdev;
 
-	BT_DBG("%s hcon %pK chan %pK", hdev->name, conn, chan);
+	BT_DBG("%s hcon %p chan %p", hdev->name, conn, chan);
 
 	list_del_rcu(&chan->list);
 
@@ -1362,7 +1586,7 @@ void hci_chan_list_flush(struct hci_conn *conn)
 {
 	struct hci_chan *chan, *n;
 
-	BT_DBG("hcon %pK", conn);
+	BT_DBG("hcon %p", conn);
 
 	list_for_each_entry_safe(chan, n, &conn->chan_list, list)
 		hci_chan_del(chan);

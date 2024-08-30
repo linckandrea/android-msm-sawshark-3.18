@@ -5,6 +5,7 @@
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 
+static int acl_conn_index;
 static struct class *bt_class;
 
 static inline char *link_typetostr(int type)
@@ -49,7 +50,14 @@ static struct attribute *bt_link_attrs[] = {
 	NULL
 };
 
-ATTRIBUTE_GROUPS(bt_link);
+static struct attribute_group bt_link_group = {
+	.attrs = bt_link_attrs,
+};
+
+static const struct attribute_group *bt_link_groups[] = {
+	&bt_link_group,
+	NULL
+};
 
 static void bt_link_release(struct device *dev)
 {
@@ -77,7 +85,7 @@ void hci_conn_init_sysfs(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
 
-	BT_DBG("conn %pK", conn);
+	BT_DBG("conn %p", conn);
 
 	conn->dev.type = &bt_link;
 	conn->dev.class = bt_class;
@@ -90,9 +98,11 @@ void hci_conn_add_sysfs(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
 
-	BT_DBG("conn %pK", conn);
+	BT_DBG("conn %p", conn);
 
-	dev_set_name(&conn->dev, "%s:%d", hdev->name, conn->handle);
+	acl_conn_index++;
+	dev_set_name(&conn->dev, "%s:%d:%d", hdev->name, conn->handle,
+		     acl_conn_index);
 
 	if (device_add(&conn->dev) < 0) {
 		BT_ERR("Failed to register connection device");
@@ -175,7 +185,14 @@ static struct attribute *bt_host_attrs[] = {
 	NULL
 };
 
-ATTRIBUTE_GROUPS(bt_host);
+static struct attribute_group bt_host_group = {
+	.attrs = bt_host_attrs,
+};
+
+static const struct attribute_group *bt_host_groups[] = {
+	&bt_host_group,
+	NULL
+};
 
 static void bt_host_release(struct device *dev)
 {
@@ -205,7 +222,7 @@ int __init bt_sysfs_init(void)
 {
 	bt_class = class_create(THIS_MODULE, "bluetooth");
 
-	return PTR_ERR_OR_ZERO(bt_class);
+	return PTR_RET(bt_class);
 }
 
 void bt_sysfs_cleanup(void)

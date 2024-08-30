@@ -13,10 +13,12 @@
 &soc {
 	qcom,bluesleep {
 		compatible = "qcom,bluesleep";
-		host-wake-gpio = <&msm_gpio 38 0>;
-		ext-wake-gpio = <&msm_gpio 47 0>;
+		host-wake-gpio = <&msm_gpio 47 0>;
+		ext-wake-gpio = <&msm_gpio 38 0>;
 		interrupt-parent = <&msm_gpio>;
 		interrupts = <47 0>;
+		interrupt-names = "host_wake";
+		tx-timer-interval = <1>;
 		pinctrl-names = "default","sleep";
 		pinctrl-0 = <&bt_wakeup_ap_active>;
 		pinctrl-1 = <&bt_wakeup_ap_suspend>;

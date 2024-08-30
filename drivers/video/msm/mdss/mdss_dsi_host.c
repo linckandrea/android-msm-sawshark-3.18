@@ -102,7 +102,7 @@ void mdss_dsi_ctrl_init(struct device *ctrl_dev,
 	if (ctrl->mdss_util->register_irq(ctrl->dsi_hw))
 		pr_err("%s: mdss_register_irq failed.\n", __func__);
 
-	pr_debug("%s: ndx=%d base=%pK\n", __func__, ctrl->ndx, ctrl->ctrl_base);
+	pr_debug("%s: ndx=%d base=%p\n", __func__, ctrl->ndx, ctrl->ctrl_base);
 
 	init_completion(&ctrl->dma_comp);
 	init_completion(&ctrl->mdp_comp);
@@ -113,6 +113,8 @@ void mdss_dsi_ctrl_init(struct device *ctrl_dev,
 	spin_lock_init(&ctrl->mdp_lock);
 	mutex_init(&ctrl->mutex);
 	mutex_init(&ctrl->cmd_mutex);
+	mutex_init(&ctrl->blcmd_mutex);
+	mutex_init(&ctrl->ambientcmd_mutex);
 	mutex_init(&ctrl->clk_lane_mutex);
 	mutex_init(&ctrl->cmdlist_mutex);
 	mdss_dsi_buf_alloc(ctrl_dev, &ctrl->tx_buf, SZ_4K);
@@ -1633,13 +1635,6 @@ static int mdss_dsi_cmds2buf_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 			}
 			pr_debug("%s: cmd_dma_tx for cmd = 0x%x, len = %d\n",
 					__func__,  cm->payload[0], len);
-			/*check if 0x22 cmd is set to change panel to all pixel off*/
-			if (0x22 == cm->payload[0])
-			{
-				pr_err("%s: cmd_dma_tx for cmd = 0x%x, len = %d\n",
-					__func__,  cm->payload[0], len);
-				WARN_ON(1);
-			}
 
 			if (!wait || dchdr->wait > VSYNC_PERIOD)
 				usleep_range(dchdr->wait * 1000, dchdr->wait * 1000);

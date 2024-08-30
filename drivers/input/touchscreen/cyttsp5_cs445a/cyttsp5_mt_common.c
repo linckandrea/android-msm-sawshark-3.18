@@ -23,7 +23,7 @@
 
 #include "cyttsp5_regs.h"
 #include <linux/input/mt.h>
-
+#include <linux/wakelock.h>
 
 #define MT_PARAM_SIGNAL(md, sig_ost) PARAM_SIGNAL(md->pdata->frmwrk, sig_ost)
 #define MT_PARAM_MIN(md, sig_ost) PARAM_MIN(md->pdata->frmwrk, sig_ost)
@@ -33,6 +33,7 @@
 
 extern int gesture_id;
 extern u32 cyttsp_gesture_count[GESTURE_MAX];
+static struct wake_lock touch_lock;
 
 static void cyttsp5_mt_lift_all(struct cyttsp5_mt_data *md)
 {
@@ -271,12 +272,15 @@ static void cyttsp5_mt_gesture_report(struct cyttsp5_core_data *cd)
 	if (KEY_WAKEUP == reprot_gesture_key_value) {
 		tp_log_warning("%s:reprot_gesture_key_value = %d\n", __func__, reprot_gesture_key_value);
 
+		wake_lock(&touch_lock);
 		input_mt_slot(cd->md.input, 0);
 		input_mt_report_slot_state(cd->md.input, MT_TOOL_FINGER, 1);
 		input_sync(cd->md.input);
+		msleep(300);
 		input_mt_slot(cd->md.input, 0);
 		input_mt_report_slot_state(cd->md.input, MT_TOOL_FINGER, 0);
 		input_sync(cd->md.input);
+		wake_unlock(&touch_lock);
 	}
 
 	return;
@@ -768,6 +772,8 @@ int cyttsp5_mt_probe(struct device *dev)
 
 	cyttsp5_init_function_ptrs(md);
 
+	wake_lock_init(&touch_lock, WAKE_LOCK_SUSPEND, "touch-lock");
+
 	mutex_init(&md->mt_lock);
 	md->dev = dev;
 	md->pdata = mt_pdata;
@@ -840,6 +846,8 @@ int cyttsp5_mt_release(struct device *dev)
 {
 	struct cyttsp5_core_data *cd = dev_get_drvdata(dev);
 	struct cyttsp5_mt_data *md = &cd->md;
+
+	wake_lock_destroy(&touch_lock);
 
 	if (md->input_device_registered) {
 		input_unregister_device(md->input);

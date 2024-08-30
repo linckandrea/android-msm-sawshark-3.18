@@ -2206,6 +2206,7 @@ static inline struct page *__skb_alloc_pages(gfp_t gfp_mask,
 	return page;
 }
 
+
 /**
  *	__skb_alloc_page - allocate a page for ps-rx for a given skb and preserve pfmemalloc data
  *	@gfp_mask: alloc_pages_node mask. Set __GFP_NOMEMALLOC if not for network packet RX
@@ -2663,6 +2664,11 @@ void skb_scrub_packet(struct sk_buff *skb, bool xnet);
 unsigned int skb_gso_transport_seglen(const struct sk_buff *skb);
 struct sk_buff *skb_segment(struct sk_buff *skb, netdev_features_t features);
 struct sk_buff *skb_vlan_untag(struct sk_buff *skb);
+
+static inline int memcpy_from_msg(void *data, struct msghdr *msg, int len)
+{
+    return memcpy_fromiovec(data, msg->msg_iov, len);
+}
 
 struct skb_checksum_ops {
 	__wsum (*update)(const void *mem, int len, __wsum wsum);

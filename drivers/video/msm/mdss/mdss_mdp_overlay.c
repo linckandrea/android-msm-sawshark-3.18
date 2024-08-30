@@ -1080,7 +1080,7 @@ struct mdss_mdp_data *mdss_mdp_overlay_buf_alloc(struct msm_fb_data_type *mfd,
 	list_move_tail(&buf->buf_list, &mdp5_data->bufs_used);
 	list_add_tail(&buf->pipe_list, &pipe->buf_queue);
 
-	pr_debug("buffer alloc: %pK\n", buf);
+	pr_debug("buffer alloc: %p\n", buf);
 
 	return buf;
 }
@@ -1134,7 +1134,7 @@ void mdss_mdp_overlay_buf_free(struct msm_fb_data_type *mfd,
 	buf->last_freed = local_clock();
 	buf->state = MDP_BUF_STATE_UNUSED;
 
-	pr_debug("buffer freed: %pK\n", buf);
+	pr_debug("buffer freed: %p\n", buf);
 
 	list_move_tail(&buf->buf_list, &mdp5_data->bufs_pool);
 }
@@ -1474,7 +1474,7 @@ static int __overlay_queue_pipes(struct msm_fb_data_type *mfd)
 		if (buf) {
 			switch (buf->state) {
 			case MDP_BUF_STATE_READY:
-				pr_debug("pnum=%d buf=%pK first buffer ready\n",
+				pr_debug("pnum=%d buf=%p first buffer ready\n",
 						pipe->num, buf);
 				break;
 			case MDP_BUF_STATE_ACTIVE:
@@ -1494,7 +1494,7 @@ static int __overlay_queue_pipes(struct msm_fb_data_type *mfd)
 				}
 				break;
 			default:
-				pr_err("invalid state of buf %pK=%d\n",
+				pr_err("invalid state of buf %p=%d\n",
 						buf, buf->state);
 				BUG();
 				break;
@@ -2160,7 +2160,7 @@ static int __mdss_mdp_overlay_release_all(struct msm_fb_data_type *mfd,
 	u32 unset_ndx = 0;
 	int cnt = 0;
 
-	pr_debug("releasing all resources for fb%d file:%pK\n",
+	pr_debug("releasing all resources for fb%d file:%p\n",
 		mfd->index, file);
 
 	mutex_lock(&mdp5_data->ov_lock);
@@ -3440,21 +3440,12 @@ static int mdss_mdp_hw_cursor_pipe_update(struct msm_fb_data_type *mfd,
 		start_y = 0;
 	}
 
-	if ((img->width > mdata->max_cursor_size) ||
-		(img->height > mdata->max_cursor_size) ||
-		(img->depth != 32) || (start_x >= xres) ||
-		(start_y >= yres)) {
-		pr_err("Invalid cursor image coordinates\n");
-		ret = -EINVAL;
-		goto done;
-	}
-
 	roi.w = min(xres - start_x, img->width - roi.x);
 	roi.h = min(yres - start_y, img->height - roi.y);
 
 	if ((roi.w > mdata->max_cursor_size) ||
-		(roi.h > mdata->max_cursor_size)) {
-		pr_err("Invalid cursor ROI size\n");
+		(roi.h > mdata->max_cursor_size) ||
+		(img->depth != 32) || (start_x >= xres) || (start_y >= yres)) {
 		ret = -EINVAL;
 		goto done;
 	}
@@ -3952,14 +3943,11 @@ static int mdss_fb_get_metadata(struct msm_fb_data_type *mfd,
 		break;
 	case metadata_op_get_ion_fd:
 		if (mfd->fb_ion_handle) {
-			get_dma_buf(mfd->fbmem_buf);
 			metadata->data.fbmem_ionfd =
 				dma_buf_fd(mfd->fbmem_buf, 0);
-			if (metadata->data.fbmem_ionfd < 0) {
-				dma_buf_put(mfd->fbmem_buf);
+			if (metadata->data.fbmem_ionfd < 0)
 				pr_err("fd allocation failed. fd = %d\n",
 						metadata->data.fbmem_ionfd);
-			}
 		}
 		break;
 	case metadata_op_crc:

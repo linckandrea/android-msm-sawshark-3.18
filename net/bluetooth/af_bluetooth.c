@@ -31,7 +31,9 @@
 #include <net/bluetooth/bluetooth.h>
 #include <linux/proc_fs.h>
 
-#define VERSION "2.19"
+#include "selftest.h"
+
+#define VERSION "2.20"
 
 /* Bluetooth sockets */
 #define BT_MAX_PROTO	8
@@ -104,39 +106,10 @@ void bt_sock_unregister(int proto)
 }
 EXPORT_SYMBOL(bt_sock_unregister);
 
-#ifdef CONFIG_PARANOID_NETWORK
-static inline int current_has_bt_admin(void)
-{
-	return !current_euid();
-}
-
-static inline int current_has_bt(void)
-{
-	return current_has_bt_admin();
-}
-# else
-static inline int current_has_bt_admin(void)
-{
-	return 1;
-}
-
-static inline int current_has_bt(void)
-{
-	return 1;
-}
-#endif
-
 static int bt_sock_create(struct net *net, struct socket *sock, int proto,
 			  int kern)
 {
 	int err;
-
-	if (proto == BTPROTO_RFCOMM || proto == BTPROTO_SCO ||
-			proto == BTPROTO_L2CAP) {
-		if (!current_has_bt())
-			return -EPERM;
-	} else if (!current_has_bt_admin())
-		return -EPERM;
 
 	if (net != &init_net)
 		return -EAFNOSUPPORT;
@@ -179,25 +152,20 @@ void bt_sock_unlink(struct bt_sock_list *l, struct sock *sk)
 }
 EXPORT_SYMBOL(bt_sock_unlink);
 
-/* bt_accept_enqueue is used to hold sockets between L2CAP new connection and
- * connect confirmation calls only .
- */
 void bt_accept_enqueue(struct sock *parent, struct sock *sk)
 {
-	BT_DBG("parent %pK, sk %pK", parent, sk);
+	BT_DBG("parent %p, sk %p", parent, sk);
 
 	sock_hold(sk);
+	list_add_tail(&bt_sk(sk)->accept_q, &bt_sk(parent)->accept_q);
 	bt_sk(sk)->parent = parent;
 	parent->sk_ack_backlog++;
-	list_add_tail(&bt_sk(sk)->accept_q, &bt_sk(parent)->accept_q);
 }
 EXPORT_SYMBOL(bt_accept_enqueue);
 
 void bt_accept_unlink(struct sock *sk)
 {
-	BT_DBG("sk %pK state %d", sk, sk->sk_state);
-	if (!bt_sk(sk)->parent)
-		return;
+	BT_DBG("sk %p state %d", sk, sk->sk_state);
 
 	list_del_init(&bt_sk(sk)->accept_q);
 	bt_sk(sk)->parent->sk_ack_backlog--;
@@ -206,20 +174,24 @@ void bt_accept_unlink(struct sock *sk)
 }
 EXPORT_SYMBOL(bt_accept_unlink);
 
-/* bt_accept_dequeue is called to only on accept ioctl and it returns
- * sockets in BT_CONNECTED state
- */
 struct sock *bt_accept_dequeue(struct sock *parent, struct socket *newsock)
 {
 	struct list_head *p, *n;
 	struct sock *sk;
 
-	BT_DBG("parent %pK", parent);
+	BT_DBG("parent %p", parent);
 
 	list_for_each_safe(p, n, &bt_sk(parent)->accept_q) {
 		sk = (struct sock *) list_entry(p, struct bt_sock, accept_q);
 
 		lock_sock(sk);
+
+		/* FIXME: Is this check still needed */
+		if (sk->sk_state == BT_CLOSED) {
+			release_sock(sk);
+			bt_accept_unlink(sk);
+			continue;
+		}
 
 		if (sk->sk_state == BT_CONNECTED || !newsock ||
 		    test_bit(BT_SK_DEFER_SETUP, &bt_sk(parent)->flags)) {
@@ -247,16 +219,17 @@ int bt_sock_recvmsg(struct kiocb *iocb, struct socket *sock,
 	size_t copied;
 	int err;
 
-	BT_DBG("sock %pK sk %pK len %zu", sock, sk, len);
+	BT_DBG("sock %p sk %p len %zu", sock, sk, len);
 
 	if (flags & (MSG_OOB))
 		return -EOPNOTSUPP;
 
 	skb = skb_recv_datagram(sk, flags, noblock, &err);
 	if (!skb) {
-		if (sk->sk_shutdown & RCV_SHUTDOWN)
+		if (sk->sk_shutdown & RCV_SHUTDOWN) {
+			msg->msg_namelen = 0;
 			return 0;
-
+		}
 		return err;
 	}
 
@@ -274,6 +247,8 @@ int bt_sock_recvmsg(struct kiocb *iocb, struct socket *sock,
 		if (bt_sk(sk)->skb_msg_name)
 			bt_sk(sk)->skb_msg_name(skb, msg->msg_name,
 						&msg->msg_namelen);
+		else
+			msg->msg_namelen = 0;
 	}
 
 	skb_free_datagram(sk, skb);
@@ -322,7 +297,7 @@ int bt_sock_stream_recvmsg(struct kiocb *iocb, struct socket *sock,
 	if (flags & MSG_OOB)
 		return -EOPNOTSUPP;
 
-	BT_DBG("sk %pK size %zu", sk, size);
+	BT_DBG("sk %p size %zu", sk, size);
 
 	lock_sock(sk);
 
@@ -438,7 +413,7 @@ unsigned int bt_sock_poll(struct file *file, struct socket *sock,
 	struct sock *sk = sock->sk;
 	unsigned int mask = 0;
 
-	BT_DBG("sock %pK, sk %pK", sock, sk);
+	BT_DBG("sock %p, sk %p", sock, sk);
 
 	poll_wait(file, sk_sleep(sk), wait);
 
@@ -482,7 +457,7 @@ int bt_sock_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 	long amount;
 	int err;
 
-	BT_DBG("sk %pK cmd %x arg %lx", sk, cmd, arg);
+	BT_DBG("sk %p cmd %x arg %lx", sk, cmd, arg);
 
 	switch (cmd) {
 	case TIOCOUTQ:
@@ -529,7 +504,7 @@ int bt_sock_wait_state(struct sock *sk, int state, unsigned long timeo)
 	DECLARE_WAITQUEUE(wait, current);
 	int err = 0;
 
-	BT_DBG("sk %pK", sk);
+	BT_DBG("sk %p", sk);
 
 	add_wait_queue(sk_sleep(sk), &wait);
 	set_current_state(TASK_INTERRUPTIBLE);
@@ -566,7 +541,7 @@ int bt_sock_wait_ready(struct sock *sk, unsigned long flags)
 	unsigned long timeo;
 	int err = 0;
 
-	BT_DBG("sk %pK", sk);
+	BT_DBG("sk %p", sk);
 
 	timeo = sock_sndtimeo(sk, flags & O_NONBLOCK);
 
@@ -746,6 +721,10 @@ static int __init bt_init(void)
 
 	BT_INFO("Core ver %s", VERSION);
 
+	err = bt_selftest();
+	if (err < 0)
+		return err;
+
 	bt_debugfs = debugfs_create_dir("bluetooth", NULL);
 
 	err = bt_sysfs_init();
@@ -774,6 +753,13 @@ static int __init bt_init(void)
 		goto sock_err;
 	}
 
+	err = mgmt_init();
+	if (err < 0) {
+		sco_exit();
+		l2cap_exit();
+		goto sock_err;
+	}
+
 	return 0;
 
 sock_err:
@@ -788,6 +774,8 @@ error:
 
 static void __exit bt_exit(void)
 {
+	mgmt_exit();
+
 	sco_exit();
 
 	l2cap_exit();

@@ -159,6 +159,7 @@ void wake_up_atomic_t(atomic_t *);
 int out_of_line_wait_on_bit(void *, int, wait_bit_action_f *, unsigned);
 int out_of_line_wait_on_bit_timeout(void *, int, wait_bit_action_f *, unsigned, unsigned long);
 int out_of_line_wait_on_bit_lock(void *, int, wait_bit_action_f *, unsigned);
+int out_of_line_wait_on_bit_timeout(void *, int, wait_bit_action_f *, unsigned, unsigned long);
 int out_of_line_wait_on_atomic_t(atomic_t *, int (*)(atomic_t *), unsigned);
 wait_queue_head_t *bit_waitqueue(void *, int);
 
@@ -995,6 +996,10 @@ wait_on_bit_lock_io(void *word, int bit, unsigned mode)
 		return 0;
 	return out_of_line_wait_on_bit_lock(word, bit, bit_wait_io, mode);
 }
+
+
+extern int bit_wait_timeout(struct wait_bit_key *);
+extern int bit_wait_io_timeout(struct wait_bit_key *);
 
 /**
  * wait_on_bit_lock_action - wait for a bit to be cleared, when wanting to set it

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -38,9 +38,8 @@
 #define PANEL_TX_MAX_BUF 256
 #define PANEL_CMD_MIN_TX_COUNT 2
 #define PANEL_DATA_NODE_LEN 80
-
-/* Hex number + whitespace */
-#define NEXT_VALUE_OFFSET 3
+/* MDP3 HW Version */
+#define MDP_CORE_HW_VERSION 0x03050306
 
 static char panel_reg[2] = {DEFAULT_READ_PANEL_POWER_MODE_REG, 0x00};
 
@@ -130,12 +129,13 @@ static ssize_t panel_debug_base_reg_write(struct file *file,
 	struct mdss_debug_base *dbg = file->private_data;
 	char buf[PANEL_TX_MAX_BUF] = {0x0};
 	char reg[PANEL_TX_MAX_BUF] = {0x0};
-	u32 len = 0, value = 0;
+	u32 len = 0, step = 0, value = 0;
 	char *bufp;
 
 	struct mdss_data_type *mdata = mdss_res;
-	struct mdss_mdp_ctl *ctl;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata;
+	struct mdss_mdp_ctl *ctl = mdata->ctl_off + 0;
+	struct mdss_panel_data *panel_data = NULL;
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 	struct dsi_cmd_desc dsi_write_cmd = {
 		{0/*data type*/, 1, 0, 0, 0, 0/* len */}, reg};
 	struct dcs_cmd_req cmdreq;
@@ -150,24 +150,25 @@ static ssize_t panel_debug_base_reg_write(struct file *file,
 	if (copy_from_user(buf, user_buf, count))
 		return -EFAULT;
 
+	if ((mdata->mdp_rev <= MDSS_MDP_HW_REV_105) ||
+			(mdata->mdp_rev == MDP_CORE_HW_VERSION))
+		panel_data = mdss_res->pdata;
+	else
+		panel_data = ctl->panel_data;
+
+	ctrl_pdata = container_of(panel_data,
+			struct mdss_dsi_ctrl_pdata, panel_data);
+
 	buf[count] = 0;	/* end of string */
 
 	bufp = buf;
-	/* End of a hex value in given string */
-	bufp[NEXT_VALUE_OFFSET - 1] = 0;
-	while (kstrtouint(bufp, 16, &value) == 0) {
+	while (sscanf(bufp, "%x%n", &value, &step) > 0) {
 		reg[len++] = value;
 		if (len >= PANEL_TX_MAX_BUF) {
 			pr_err("wrong input reg len\n");
 			return -EFAULT;
 		}
-		bufp += NEXT_VALUE_OFFSET;
-		if ((bufp >= (buf + count)) || (bufp < buf)) {
-			pr_warn("%s,buffer out-of-bounds\n", __func__);
-			break;
-		}
-		/* End of a hex value in given string */
-		bufp[NEXT_VALUE_OFFSET - 1] = 0;
+		bufp += step;
 	}
 	if (len < PANEL_CMD_MIN_TX_COUNT) {
 		pr_err("wrong input reg len\n");
@@ -208,10 +209,8 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 	char *panel_reg_buf, *rx_buf;
 	struct mdss_data_type *mdata = mdss_res;
 	struct mdss_mdp_ctl *ctl = mdata->ctl_off + 0;
-	struct mdss_panel_data *panel_data = ctl->panel_data;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = container_of(panel_data,
-					struct mdss_dsi_ctrl_pdata, panel_data);
-	int rc = -EFAULT;
+	struct mdss_panel_data *panel_data = NULL;
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 
 	if (!dbg)
 		return -ENODEV;
@@ -230,20 +229,31 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 
 	if (!rx_buf || !panel_reg_buf) {
 		pr_err("not enough memory to hold panel reg dump\n");
-		rc = -ENOMEM;
-		goto read_reg_fail;
+		return -ENOMEM;
 	}
 
 	if (mdata->debug_inf.debug_enable_clock)
 		mdata->debug_inf.debug_enable_clock(1);
 
 	panel_reg[0] = dbg->off;
+
+	if ((mdata->mdp_rev <= MDSS_MDP_HW_REV_105) ||
+			(mdata->mdp_rev == MDP_CORE_HW_VERSION))
+		panel_data = mdss_res->pdata;
+	else
+		panel_data = ctl->panel_data;
+
+	ctrl_pdata = container_of(panel_data,
+			struct mdss_dsi_ctrl_pdata, panel_data);
+
 	mdss_dsi_panel_cmd_read(ctrl_pdata, panel_reg[0], panel_reg[1],
 				NULL, rx_buf, dbg->cnt);
 
 	len = snprintf(panel_reg_buf, reg_buf_len, "0x%02zx: ", dbg->off);
 	if (len < 0)
 		goto read_reg_fail;
+
+	pr_emerg("%s len=%d reg_buf_len=%d rx_len=%d\n",__func__,len,reg_buf_len,ctrl_pdata->rx_len);
 
 	for (i = 0; (len < reg_buf_len) && (i < ctrl_pdata->rx_len); i++)
 		len += scnprintf(panel_reg_buf + len, reg_buf_len - len,
@@ -270,7 +280,8 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 read_reg_fail:
 	kfree(rx_buf);
 	kfree(panel_reg_buf);
-	return rc;
+	return -EFAULT;
+
 }
 
 static const struct file_operations panel_off_fops = {
@@ -1317,7 +1328,7 @@ static inline struct mdss_mdp_misr_map *mdss_misr_get_map(u32 block_id,
 		return NULL;
 	}
 
-	pr_debug("MISR Module(%d) CTRL(0x%x) SIG(0x%x) intf_base(0x%pK)\n",
+	pr_debug("MISR Module(%d) CTRL(0x%x) SIG(0x%x) intf_base(0x%p)\n",
 			block_id, map->ctrl_reg, map->value_reg, intf_base);
 	return map;
 }
@@ -1360,7 +1371,7 @@ int mdss_misr_set(struct mdss_data_type *mdata,
 	bool use_mdp_up_misr = false;
 
 	if (!mdata || !req || !ctl) {
-		pr_err("Invalid input params: mdata = %pK req = %pK ctl = %pK",
+		pr_err("Invalid input params: mdata = %p req = %p ctl = %p",
 			mdata, req, ctl);
 		return -EINVAL;
 	}

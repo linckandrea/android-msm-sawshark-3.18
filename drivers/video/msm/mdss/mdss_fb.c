@@ -54,8 +54,6 @@
 #include "mdss_debug.h"
 #include "mdss_smmu.h"
 #include "mdss_mdp.h"
-#include "mdss_dsi.h"
-
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MDSS_FB_NUM 3
@@ -77,12 +75,8 @@
 #define BLANK_FLAG_ULP	FB_BLANK_NORMAL
 #endif
 
-#define BUFF_LEN   10
-
 static struct fb_info *fbi_list[MAX_FBI_LIST];
 static int fbi_list_index;
-
-static void *panel_lk_addr = NULL;
 
 static u32 mdss_fb_pseudo_palette[16] = {
 	0x00000000, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -767,548 +761,6 @@ static ssize_t mdss_fb_get_dfps_mode(struct device *dev,
 	return ret;
 }
 
-static ssize_t mdss_fb_set_idle_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data *pdata;
-	int rc = 0;
-	int idle_mode = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-
-	rc = kstrtoint(buf, 10, &idle_mode);
-	if (rc) {
-		pr_err("kstrtoint failed. rc=%d\n", rc);
-		return rc;
-	}
-
-	pr_debug("Idle mode = %d\n", idle_mode);
-
-	if (mfd->index == 0) {
-		if (ctrl_pdata && ctrl_pdata->low_power_config)
-			ctrl_pdata->low_power_config(pdata, idle_mode);
-	}
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_display_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-	char *rx_buf = NULL;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	rx_buf= kzalloc(2, GFP_KERNEL);
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;;
-	}
-	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x0a, 0x00,
-				NULL, rx_buf, 1);
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);
-
-	kfree(rx_buf);
-
-	return ret;
-}
-
-static ssize_t mdss_fb_get_panel_signature(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-
-	ret = scnprintf(buf, PAGE_SIZE, "%d\n",pinfo->signature);
-
-	return ret;
-}
-static ssize_t mdss_fb_set_ulps_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data *pdata;
-	int rc = 0;
-	int ulps_mode = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-
-	rc = kstrtoint(buf, 10, &ulps_mode);
-	if (rc) {
-		pr_err("kstrtoint failed. rc=%d\n", rc);
-		return rc;
-	}
-
-	pr_err("ulpm_mode = %d\n", ulps_mode);
-
-	if(ulps_mode == 1){
-		ctrl_pdata->ulps_mode = 1;
-		mfd->ulps_fmode = true;
-	}
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_lk_info(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	uint32_t read_val = 0;
-	int ret = 0;
-
-	if(panel_lk_addr){
-		read_val = __raw_readl(panel_lk_addr);
-		pr_err("The read value is 0x%02x",read_val);
-	}
-	else
-		pr_err("There is no error info\n");
-
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",read_val);
-
-	return ret;
-}
-
-static ssize_t mdss_fb_set_boost_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data *pdata;
-	int rc = 0;
-	int boost_mode = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-
-	rc = kstrtoint(buf, 10, &boost_mode);
-	if (rc) {
-		pr_err("kstrtoint failed. rc=%d\n", rc);
-		return rc;
-	}
-
-	pr_err("boost_mode = %d\n", boost_mode);
-
-	if (mfd->index == 0) {
-		if (ctrl_pdata && ctrl_pdata->boost_mode_config)
-			ctrl_pdata->boost_mode_config(pdata, boost_mode);
-	}
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_acl_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data *pdata = NULL;
-	int rc = -1;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if ( NULL == pdata )
-	{
-		pr_err("%s pdata failed. rc=%d\n", __func__,rc);
-		return rc;
-	}
-
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	if ( NULL == ctrl_pdata )
-	{
-		pr_err("%s ctrl_pdate failed. rc=%d\n",__func__, rc);
-		return rc;
-	}
-
-	rc = scnprintf(buf, PAGE_SIZE, "%d\n",ctrl_pdata->acl_enable);
-
-	return rc;
-}
-
-static ssize_t mdss_fb_set_acl_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data *pdata = NULL;
-	int rc = 0;
-	int acl_enable = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if ( NULL == pdata )
-	{
-		rc = -1;
-		pr_err("%s pdata failed. rc=%d\n", __func__,rc);
-		return rc;
-	}
-
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	if ( NULL == ctrl_pdata )
-	{
-		rc = -1;
-		pr_err("%s ctrl_pdate failed. rc=%d\n",__func__, rc);
-		return rc;
-	}
-
-	rc = kstrtoint(buf, BUFF_LEN , &acl_enable);
-	if (rc)
-	{
-		pr_err("kstrtoint failed. rc=%d\n", rc);
-		return rc;
-	}
-
-	pr_err("acl_mode = %d\n", acl_enable);
-
-	if ( 0 == mfd->index )
-	{
-		if (ctrl_pdata && ctrl_pdata->set_acl)
-		{
-			ctrl_pdata->acl_enable = acl_enable;
-			//effect acl feature in unblank state
-			ctrl_pdata->set_acl(pdata, acl_enable);
-		}
-	}
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_image_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-	char *rx_buf = NULL;
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	rx_buf= kzalloc(2, GFP_KERNEL);//malloc 2 bytes buffer
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;;
-	}
-	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x0d, 0x00,
-				NULL, rx_buf, 1);//read image mode
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);
-
-	kfree(rx_buf);
-
-	return ret;
-}
-
-static ssize_t mdss_fb_set_image_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data* pdata;
-	struct mdss_panel_info* pinfo;
-	struct mdss_dsi_ctrl_pdata* ctrl_pdata = NULL;
-	struct dcs_cmd_req cmdreq;
-	static char cmd[2] = {0x13, 0x00};//normal mode cmd
-	static struct dsi_cmd_desc dsi_cmd = {
-		{DTYPE_DCS_WRITE, 1, 0, 0, 1, sizeof(cmd)},cmd};
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata, panel_data);
-
-	memset(&cmdreq, 0, sizeof(cmdreq));
-	cmdreq.cmds = &dsi_cmd;
-	cmdreq.cmds_cnt = 1;
-	cmdreq.flags = CMD_REQ_COMMIT | CMD_CLK_CTRL;
-	cmdreq.rlen = 0;
-	cmdreq.cb = NULL;
-
-	mdss_dsi_cmdlist_put(ctrl_pdata, &cmdreq);
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_pixel_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-	char *rx_buf = NULL;
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	rx_buf= kzalloc(2, GFP_KERNEL);//malloc 2 bytes buffer
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;;
-	}
-	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x0c, 0x00,
-				NULL, rx_buf, 1);//read pixel mode
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);
-
-	kfree(rx_buf);
-
-	return ret;
-}
-
-static ssize_t mdss_fb_set_pixel_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data* pdata;
-	struct mdss_panel_info* pinfo;
-	struct mdss_dsi_ctrl_pdata* ctrl_pdata = NULL;
-	struct dcs_cmd_req cmdreq;
-	static char cmd[2] = {0x22, 0x00};//all pixel off cmd
-	static struct dsi_cmd_desc dsi_cmd = {
-		{DTYPE_DCS_WRITE, 1, 0, 0, 1, sizeof(cmd)},cmd};
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata, panel_data);
-
-	memset(&cmdreq, 0, sizeof(cmdreq));
-	cmdreq.cmds = &dsi_cmd;
-	cmdreq.cmds_cnt = 1;
-	cmdreq.flags = CMD_REQ_COMMIT | CMD_CLK_CTRL;
-	cmdreq.rlen = 0;
-	cmdreq.cb = NULL;
-
-	mdss_dsi_cmdlist_put(ctrl_pdata, &cmdreq);
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_signal_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-	char *rx_buf = NULL;
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	rx_buf= kzalloc(2, GFP_KERNEL);//malloc 2 bytes buffer
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;;
-	}
-	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x0e, 0x00,
-				NULL, rx_buf, 1);
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);//read signal mode
-
-	kfree(rx_buf);
-
-	return ret;
-}
-
-static ssize_t mdss_fb_get_bright_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-	char *rx_buf = NULL;
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	rx_buf= kzalloc(2, GFP_KERNEL);//malloc 2 bytes buffer
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;;
-	}
-	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x52, 0x00,
-				NULL, rx_buf, 1);//read bright mode
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);
-
-	kfree(rx_buf);
-
-	return ret;
-}
-
-static ssize_t mdss_fb_set_bright_mode(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = fbi->par;
-	struct mdss_panel_data* pdata;
-	struct mdss_panel_info* pinfo;
-	struct mdss_dsi_ctrl_pdata* ctrl_pdata = NULL;
-	struct dcs_cmd_req cmdreq;
-	static char cmd[2] = {0x51, 0xff};//set brightness to max cmd
-	static struct dsi_cmd_desc dsi_cmd = {
-		{DTYPE_DCS_WRITE1, 1, 0, 0, 1, sizeof(cmd)},cmd};
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata, panel_data);
-
-	memset(&cmdreq, 0, sizeof(cmdreq));
-	cmdreq.cmds = &dsi_cmd;
-	cmdreq.cmds_cnt = 1;
-	cmdreq.flags = CMD_REQ_COMMIT | CMD_CLK_CTRL;
-	cmdreq.rlen = 0;
-	cmdreq.cb = NULL;
-
-	mdss_dsi_cmdlist_put(ctrl_pdata, &cmdreq);
-
-	return count;
-}
-
-static ssize_t mdss_fb_get_bright_en_mode(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct fb_info *fbi = dev_get_drvdata(dev);
-	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)fbi->par;
-	struct mdss_panel_data *pdata;
-	struct mdss_panel_info *pinfo;
-	int ret = 0;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
-	char *rx_buf = NULL;
-
-	if ((!dev) || (!attr) || (!buf))
-	{
-		pr_err("dev attr buf NULL!\n");
-		return -EINVAL;
-	}
-	pdata = dev_get_platdata(&mfd->pdev->dev);
-	if (!pdata) {
-		pr_err("no panel connected!\n");
-		return -EINVAL;
-	}
-	pinfo = &pdata->panel_info;
-	ctrl_pdata = container_of(pdata, struct mdss_dsi_ctrl_pdata,
-				panel_data);
-	rx_buf= kzalloc(2, GFP_KERNEL);//malloc 2 bytes buffer
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;;
-	}
-	mdss_dsi_panel_cmd_read(ctrl_pdata, 0x54, 0x00,
-				NULL, rx_buf, 1);//read bright enable mode
-	ret = scnprintf(buf, PAGE_SIZE, "0x%02x\n",rx_buf[0]);
-
-	kfree(rx_buf);
-
-	return ret;
-}
 static DEVICE_ATTR(msm_fb_type, S_IRUGO, mdss_fb_get_type, NULL);
 static DEVICE_ATTR(msm_fb_split, S_IRUGO | S_IWUSR, mdss_fb_show_split,
 					mdss_fb_store_split);
@@ -1325,18 +777,6 @@ static DEVICE_ATTR(msm_fb_panel_status, S_IRUGO | S_IWUSR,
 	mdss_fb_get_panel_status, mdss_fb_force_panel_dead);
 static DEVICE_ATTR(msm_fb_dfps_mode, S_IRUGO | S_IWUSR,
 	mdss_fb_get_dfps_mode, mdss_fb_change_dfps_mode);
-static DEVICE_ATTR(idle_mode, S_IRUGO | S_IWUSR | S_IWGRP, NULL, mdss_fb_set_idle_mode);
-static DEVICE_ATTR(display_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_display_mode, NULL);
-static DEVICE_ATTR(panel_signature, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_panel_signature, NULL);
-static DEVICE_ATTR(ulps_mode, S_IRUGO | S_IWUSR | S_IWGRP, NULL, mdss_fb_set_ulps_mode);
-static DEVICE_ATTR(boost_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_lk_info, mdss_fb_set_boost_mode);
-static DEVICE_ATTR(acl_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_acl_mode, mdss_fb_set_acl_mode);
-static DEVICE_ATTR(image_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_image_mode, mdss_fb_set_image_mode);
-static DEVICE_ATTR(pixel_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_pixel_mode, mdss_fb_set_pixel_mode);
-static DEVICE_ATTR(signal_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_signal_mode, NULL);
-static DEVICE_ATTR(bright_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_bright_mode, mdss_fb_set_bright_mode);
-static DEVICE_ATTR(bright_en_mode, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_bright_en_mode, NULL);
-
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
 	&dev_attr_msm_fb_split.attr,
@@ -1348,17 +788,6 @@ static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_thermal_level.attr,
 	&dev_attr_msm_fb_panel_status.attr,
 	&dev_attr_msm_fb_dfps_mode.attr,
-	&dev_attr_idle_mode.attr,
-	&dev_attr_display_mode.attr,
-	&dev_attr_panel_signature.attr,
-	&dev_attr_ulps_mode.attr,
-	&dev_attr_boost_mode.attr,
-	&dev_attr_acl_mode.attr,
-	&dev_attr_image_mode.attr,
-	&dev_attr_pixel_mode.attr,
-	&dev_attr_signal_mode.attr,
-	&dev_attr_bright_mode.attr,
-	&dev_attr_bright_en_mode.attr,
 	NULL,
 };
 
@@ -1618,7 +1047,6 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	struct mdss_panel_data *pdata;
 	struct fb_info *fbi;
 	int rc;
-	struct device_node *np;
 
 	if (fbi_list_index >= MAX_FBI_LIST)
 		return -ENOMEM;
@@ -1663,7 +1091,6 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	mfd->ad_bl_level = 0;
 	mfd->fb_imgType = MDP_RGBA_8888;
 	mfd->calib_mode_bl = 0;
-	mfd->ulps_fmode = false;
 
 	mfd->pdev = pdev;
 
@@ -1777,18 +1204,6 @@ static int mdss_fb_probe(struct platform_device *pdev)
 
 	INIT_DELAYED_WORK(&mfd->idle_notify_work, __mdss_fb_idle_notify_work);
 
-	np = of_find_compatible_node(NULL, NULL,
-				"qcom,msm-imem-panel_log_lk");
-
-	if (!np) {
-		pr_err("unable to find panel_lk_addr\n");
-	} else {
-		panel_lk_addr = of_iomap(np, 0);
-		if (!panel_lk_addr) {
-			pr_err("unable to map panel_lk_addr\n");
-		}
-	}
-
 	return rc;
 }
 
@@ -1831,7 +1246,6 @@ static int mdss_fb_remove(struct platform_device *pdev)
 		return -EINVAL;
 
 	mdss_fb_unregister_input_handler(mfd);
-	mdss_panel_debugfs_cleanup(mfd->panel_info);
 
 	if (mdss_fb_suspend_sub(mfd))
 		pr_err("msm_fb_remove: can't stop the device %d\n",
@@ -2050,7 +1464,6 @@ static struct platform_driver mdss_fb_driver = {
 	.driver = {
 		.name = "mdss_fb",
 		.of_match_table = mdss_fb_dt_match,
-		.pm = &mdss_fb_pm_ops,
 	},
 };
 
@@ -2614,7 +2027,7 @@ int mdss_fb_alloc_fb_ion_memory(struct msm_fb_data_type *mfd, size_t fb_size)
 		rc = PTR_ERR(vaddr);
 		goto err_unmap;
 	}
-	pr_debug("alloc 0x%zuB vaddr = %pK for fb%d\n", fb_size,
+	pr_debug("alloc 0x%zuB vaddr = %p for fb%d\n", fb_size,
 			vaddr, mfd->index);
 
 	mfd->fbi->screen_base = (char *) vaddr;
@@ -2713,7 +2126,7 @@ static int mdss_fb_fbmem_ion_mmap(struct fb_info *info,
 				vma->vm_page_prot =
 					pgprot_writecombine(vma->vm_page_prot);
 
-			pr_debug("vma=%pK, addr=%x len=%ld\n",
+			pr_debug("vma=%p, addr=%x len=%ld\n",
 					vma, (unsigned int)addr, len);
 			pr_debug("vm_start=%x vm_end=%x vm_page_prot=%ld\n",
 					(unsigned int)vma->vm_start,
@@ -2880,7 +2293,7 @@ static int mdss_fb_alloc_fbmem_iommu(struct msm_fb_data_type *mfd, int dom)
 		return -ERANGE;
 	}
 
-	pr_debug("alloc 0x%zxB @ (%pa phys) (0x%pK virt) (%pa iova) for fb%d\n",
+	pr_debug("alloc 0x%zxB @ (%pa phys) (0x%p virt) (%pa iova) for fb%d\n",
 		 size, &phys, virt, &mfd->iova, mfd->index);
 
 	mfd->fbi->screen_base = virt;
@@ -3168,7 +2581,7 @@ static int mdss_fb_open(struct fb_info *info, int user)
 	}
 
 	mfd->ref_cnt++;
-	pr_debug("mfd refcount:%d file:%pK\n", mfd->ref_cnt, info->file);
+	pr_debug("mfd refcount:%d file:%p\n", mfd->ref_cnt, info->file);
 
 	return 0;
 
@@ -3233,7 +2646,7 @@ static int mdss_fb_release_all(struct fb_info *info, bool release_all)
 		pr_warn("file node not found or wrong ref cnt: release all:%d refcnt:%d\n",
 			release_all, mfd->ref_cnt);
 
-	pr_debug("current process=%s pid=%d mfd->ref=%d file:%pK\n",
+	pr_debug("current process=%s pid=%d mfd->ref=%d file:%p\n",
 		task->comm, current->tgid, mfd->ref_cnt, info->file);
 
 	if (!mfd->ref_cnt || release_all) {
@@ -3357,12 +2770,9 @@ static int __mdss_fb_wait_for_fence_sub(struct msm_sync_pt_data *sync_pt_data,
 
 			pr_warn("%s: sync_fence_wait timed out! ",
 					sync_pt_data->fence_name);
-			pr_warn("%s: sync_fence_wait timed out! ",
-					fences[i]->name);
 			pr_cont("Waiting %ld.%ld more seconds\n",
 				(wait_ms/MSEC_PER_SEC), (wait_ms%MSEC_PER_SEC));
-			MDSS_XLOG(sync_pt_data->timeline_value);
-			MDSS_XLOG_TOUT_HANDLER("mdp");
+
 			ret = sync_fence_wait(fences[i], wait_ms);
 
 			if (ret == -ETIME)
@@ -3408,7 +2818,6 @@ void mdss_fb_signal_timeline(struct msm_sync_pt_data *sync_pt_data)
 	if (atomic_add_unless(&sync_pt_data->commit_cnt, -1, 0) &&
 			sync_pt_data->timeline) {
 		sw_sync_timeline_inc(sync_pt_data->timeline, 1);
-		MDSS_XLOG(sync_pt_data->timeline_value);
 		sync_pt_data->timeline_value++;
 
 		pr_debug("%s: buffer signaled! timeline val=%d remaining=%d\n",
@@ -3773,7 +3182,7 @@ int mdss_fb_atomic_commit(struct fb_info *info,
 
 	if (!mfd || (!mfd->op_enable)) {
 		pr_err("mfd is NULL or operation not permitted\n");
-		return -EPERM;
+		goto end;
 	}
 
 	if ((mdss_fb_is_power_off(mfd)) &&
@@ -4026,11 +3435,9 @@ static int __mdss_fb_perform_commit(struct msm_fb_data_type *mfd)
 			mfd->pending_switch = false;
 	}
 	if (fb_backup->disp_commit.flags & MDP_DISPLAY_COMMIT_OVERLAY) {
-		if (mfd->mdp.kickoff_fnc && !mfd->ulps_fmode)
+		if (mfd->mdp.kickoff_fnc)
 			ret = mfd->mdp.kickoff_fnc(mfd,
 					&fb_backup->disp_commit);
-		else if(mfd->ulps_fmode)
-			pr_debug("going to ULPS mode\n");
 		else
 			pr_warn("no kickoff function setup for fb%d\n",
 					mfd->index);
@@ -4640,10 +4047,6 @@ static int mdss_fb_handle_buf_sync_ioctl(struct msm_sync_pt_data *sync_pt_data,
 	val = sync_pt_data->timeline_value + sync_pt_data->threshold +
 			atomic_read(&sync_pt_data->commit_cnt);
 
-	MDSS_XLOG(sync_pt_data->timeline_value, val,
-		atomic_read(&sync_pt_data->commit_cnt));
-	pr_debug("%s: fence CTL%d Commit_cnt%d\n", sync_pt_data->fence_name,
-		sync_pt_data->timeline_value,  atomic_read(&sync_pt_data->commit_cnt));
 	/* Set release fence */
 	rel_fence = mdss_fb_sync_get_fence(sync_pt_data->timeline,
 			sync_pt_data->fence_name, val);
@@ -4837,7 +4240,7 @@ static int mdss_fb_atomic_commit_ioctl(struct fb_info *info,
 			ret = copy_from_user(scale, layer->scale,
 					sizeof(struct mdp_scale_data));
 			if (ret) {
-				pr_err("layer list copy from user failed, scale = %pK\n",
+				pr_err("layer list copy from user failed, scale = %p\n",
 						layer->scale);
 				kfree(scale);
 				scale = NULL;
@@ -4988,7 +4391,6 @@ static int __ioctl_wait_idle(struct msm_fb_data_type *mfd, u32 cmd)
 {
 	int ret = 0;
 
-#ifndef TARGET_HW_MDSS_MDP3
 	if (mfd->wait_for_kickoff &&
 		((cmd == MSMFB_OVERLAY_PREPARE) ||
 		(cmd == MSMFB_BUFFER_SYNC) ||
@@ -5001,16 +4403,7 @@ static int __ioctl_wait_idle(struct msm_fb_data_type *mfd, u32 cmd)
 		(cmd == MSMFB_OVERLAY_SET))) {
 		ret = mdss_fb_wait_for_kickoff(mfd);
 	}
-#else
-	if ((cmd != MSMFB_VSYNC_CTRL) &&
-		(cmd != MSMFB_OVERLAY_VSYNC_CTRL) &&
-		(cmd != MSMFB_ASYNC_BLIT) &&
-		(cmd != MSMFB_BLIT) &&
-		(cmd != MSMFB_NOTIFY_UPDATE) &&
-		(cmd != MSMFB_OVERLAY_PREPARE)) {
-		ret = mdss_fb_wait_for_kickoff(mfd);
-	}
-#endif
+
 	if (ret && (ret != -ESHUTDOWN))
 		pr_err("wait_idle failed. cmd=0x%x rc=%d\n", cmd, ret);
 
