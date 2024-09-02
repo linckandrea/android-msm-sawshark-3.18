@@ -801,6 +801,7 @@ static int sanity_check_raw_super(struct super_block *sb,
 		return 1;
 	}
 
+<<<<<<< HEAD
 	if (le32_to_cpu(raw_super->segment_count) > F2FS_MAX_SEGMENT) {
 		f2fs_msg(sb, KERN_INFO,
 			"Invalid segment count (%u)",
@@ -808,6 +809,8 @@ static int sanity_check_raw_super(struct super_block *sb,
 		return 1;
 	}
 
+=======
+>>>>>>> LAW.BR.2.0-05510-8x09w.0
 	/* check log blocks per segment */
 	if (le32_to_cpu(raw_super->log_blocks_per_seg) != 9) {
 		f2fs_msg(sb, KERN_INFO,

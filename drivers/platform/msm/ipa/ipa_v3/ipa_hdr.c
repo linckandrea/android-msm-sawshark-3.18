@@ -702,7 +702,11 @@ int __ipa3_del_hdr(u32 hdr_hdl, bool by_user)
 				return -EPERM;
 			}
 		}
+<<<<<<< HEAD
  		entry->user_deleted = true;
+=======
+		entry->user_deleted = true;
+>>>>>>> LAW.BR.2.0-05510-8x09w.0
 	}
 
 	if (--entry->ref_cnt) {
@@ -1005,6 +1009,7 @@ int ipa3_reset_hdr(void)
 			IPADBG("Trying to remove hdr %s offset=%u\n",
 				entry->name, entry->offset_entry->offset);
 			if (!entry->offset_entry->offset) {
+<<<<<<< HEAD
 				if (entry->is_hdr_proc_ctx) {
 					IPAERR("default header is proc ctx\n");
 					mutex_unlock(&ipa3_ctx->lock);
@@ -1015,6 +1020,12 @@ int ipa3_reset_hdr(void)
 				continue;
  			}
  		}
+=======
+				IPADBG("skip default header\n");
+				continue;
+			}
+		}
+>>>>>>> LAW.BR.2.0-05510-8x09w.0
 
 		if (ipa3_id_find(entry->id) == NULL) {
 			WARN_ON(1);

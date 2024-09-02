@@ -752,8 +752,8 @@ static int tmc_enable(struct tmc_drvdata *drvdata, enum tmc_mode mode)
 	spin_lock_irqsave(&drvdata->spinlock, flags);
 	if (drvdata->reading) {
 		spin_unlock_irqrestore(&drvdata->spinlock, flags);
+		clk_disable_unprepare(drvdata->clk);
 		mutex_unlock(&drvdata->mem_lock);
-		pm_runtime_put(drvdata->dev);
 		return -EBUSY;
 	}
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);

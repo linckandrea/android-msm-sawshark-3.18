@@ -101,9 +101,8 @@ static int msm_rpm_master_copy_stats(
 	char *buf;
 
 	/* Iterate possible number of masters */
-	if (prvdata->master_cnt > prvdata->num_masters - 1) {
-		prvdata->master_cnt = 0;
-		mutex_unlock(&msm_rpm_master_stats_mutex);
+	if (master_cnt > prvdata->num_masters - 1) {
+		master_cnt = 0;
 		return 0;
 	}
 
@@ -255,8 +254,8 @@ static int msm_rpm_master_copy_stats(
 				BITS_PER_LONG, j + 1);
 	}
 
-	prvdata->master_cnt++;
-	mutex_unlock(&msm_rpm_master_stats_mutex);
+
+	master_cnt++;
 	return RPM_MASTERS_BUF_LEN - count;
 }
 
@@ -334,7 +333,6 @@ static int msm_rpm_master_stats_file_open(struct inode *inode,
 	prvdata->num_masters = pdata->num_masters;
 	prvdata->master_names = pdata->masters;
 	prvdata->platform_data = pdata;
-	prvdata->master_cnt = 0;
 exit:
 	mutex_unlock(&msm_rpm_master_stats_mutex);
 	return ret;

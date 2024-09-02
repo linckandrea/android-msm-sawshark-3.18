@@ -759,6 +759,7 @@ static long qbt1000_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		return -EINVAL;
 	}
 
+	pm_runtime_get_sync(drvdata->dev);
 	mutex_lock(&drvdata->mutex);
 	if (((drvdata->sensor_conn_type == SPI) && (!drvdata->clock_state)) ||
 	    ((drvdata->sensor_conn_type == SSC_SPI) && (!drvdata->ssc_state))) {

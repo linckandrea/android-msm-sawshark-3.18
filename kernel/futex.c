@@ -400,6 +400,7 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
 	unsigned long address = (unsigned long)uaddr;
 	struct mm_struct *mm = current->mm;
 	struct page *page, *page_head;
+	struct address_space *mapping;
 	int err, ro = 0;
 	struct address_space *mapping;
 	/*
@@ -506,31 +507,31 @@ again:
 	 * shmem_writepage move it from filecache to swapcache beneath us:
 	 * an unlikely race, but we do need to retry for page_head->mapping.
 	 */
-
 	if (unlikely(!mapping)) {
 		int shmem_swizzled;
 
 		/*
-		* Page lock is required to identify which special case above
-		* applies. If this is really a shmem page then the page lock
-		* will prevent unexpected transitions.
-		*/
-                lock_page(page);
-                shmem_swizzled = PageSwapCache(page) || page->mapping;
-
+		 * Page lock is required to identify which special case above
+		 * applies. If this is really a shmem page then the page lock
+		 * will prevent unexpected transitions.
+		 */
+		lock_page(page);
+		shmem_swizzled = PageSwapCache(page) || page->mapping;
 		unlock_page(page_head);
 		put_page(page_head);
+
 		if (shmem_swizzled)
 			goto again;
+
 		return -EFAULT;
 	}
 
 	/*
 	 * Private mappings are handled in a simple way.
 	 *
-         * If the futex key is stored on an anonymous page, then the associated
-     	 * object is the mm which is implicitly pinned by the calling process.
-     	 *
+	 * If the futex key is stored on an anonymous page, then the associated
+	 * object is the mm which is implicitly pinned by the calling process.
+	 *
 	 * NOTE: When userspace waits on a MAP_SHARED mapping, even if
 	 * it's a read-only handle, it's expected that futexes attach to
 	 * the object not the particular process.
@@ -548,20 +549,23 @@ again:
 		key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
 		key->private.mm = mm;
 		key->private.address = address;
+
 		get_futex_key_refs(key); /* implies smp_mb(); (B) */
+
 	} else {
 		struct inode *inode;
+
 		/*
-		* The associated futex object in this case is the inode and
-		* the page->mapping must be traversed. Ordinarily this should
-		* be stabilised under page lock but it's not strictly
-		* necessary in this case as we just want to pin the inode, not
-		* update the radix tree or anything like that.
-		*
-		* The RCU read lock is taken as the inode is finally freed
-		* under RCU. If the mapping still matches expectations then the
-		* mapping->host can be safely accessed as being a valid inode.
-		*/
+		 * The associated futex object in this case is the inode and
+		 * the page->mapping must be traversed. Ordinarily this should
+		 * be stabilised under page lock but it's not strictly
+		 * necessary in this case as we just want to pin the inode, not
+		 * update the radix tree or anything like that.
+		 *
+		 * The RCU read lock is taken as the inode is finally freed
+		 * under RCU. If the mapping still matches expectations then the
+		 * mapping->host can be safely accessed as being a valid inode.
+		 */
 		rcu_read_lock();
 
 		if (READ_ONCE(page_head->mapping) != mapping) {
@@ -610,7 +614,6 @@ again:
 		key->shared.pgoff = basepage_index(page);
 		rcu_read_unlock();
 	}
-
 
 out:
 	put_page(page_head);
