@@ -31,7 +31,17 @@ config MSM_QPNP_INT
 config MSM_SPMI_DEBUGFS_RO
 	depends on DEBUG_FS
 	depends on MSM_SPMI
+<<<<<<< HEAD
 	bool "Disable SPMI debugfs write"
 	help
 	  Say 'y' here to disable the SPMI debugfs register write operation.
+=======
+	default y
+	bool "Disable SPMI debugfs write"
+	help
+	  Say 'y' here to disable the SPMI debugfs register write operation.
+	  Unfettered SPMI debugfs writing may trigger a device crash so disable
+	  this option (allow SPMI debugfs write) on a production device is not
+	  recommended.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 endif

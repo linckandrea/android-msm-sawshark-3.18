@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, 2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1956,7 +1956,8 @@ static void ul_wakeup(void)
 					&ul_wakeup_ack_completion,
 					msecs_to_jiffies(UL_WAKEUP_TIMEOUT_MS));
 		wait_for_ack = 0;
-		if (unlikely(ret == 0) && ssrestart_check()) {
+		if (unlikely(in_global_reset == 1)
+			|| (unlikely(ret == 0) && ssrestart_check())) {
 			mutex_unlock(&wakeup_lock);
 			BAM_DMUX_LOG("%s timeout previous ack\n", __func__);
 			return;
@@ -1967,7 +1968,8 @@ static void ul_wakeup(void)
 	BAM_DMUX_LOG("%s waiting for wakeup ack\n", __func__);
 	ret = wait_for_completion_timeout(&ul_wakeup_ack_completion,
 					msecs_to_jiffies(UL_WAKEUP_TIMEOUT_MS));
-	if (unlikely(ret == 0) && ssrestart_check()) {
+	if (unlikely(in_global_reset == 1)
+		|| (unlikely(ret == 0) && ssrestart_check())) {
 		mutex_unlock(&wakeup_lock);
 		BAM_DMUX_LOG("%s timeout wakeup ack\n", __func__);
 		return;
@@ -1975,7 +1977,8 @@ static void ul_wakeup(void)
 	BAM_DMUX_LOG("%s waiting completion\n", __func__);
 	ret = wait_for_completion_timeout(&bam_connection_completion,
 					msecs_to_jiffies(UL_WAKEUP_TIMEOUT_MS));
-	if (unlikely(ret == 0) && ssrestart_check()) {
+	if (unlikely(in_global_reset == 1)
+		|| (unlikely(ret == 0) && ssrestart_check())) {
 		mutex_unlock(&wakeup_lock);
 		BAM_DMUX_LOG("%s timeout power on\n", __func__);
 		return;
@@ -2207,6 +2210,9 @@ static int restart_notifier_cb(struct notifier_block *this,
 	if (code == SUBSYS_BEFORE_SHUTDOWN) {
 		BAM_DMUX_LOG("%s: begin\n", __func__);
 		in_global_reset = 1;
+		/* wakeup ul_wakeup() thread*/
+		complete_all(&ul_wakeup_ack_completion);
+		complete_all(&bam_connection_completion);
 		/* sync to ensure the driver sees SSR */
 		synchronize_srcu(&bam_dmux_srcu);
 		BAM_DMUX_LOG("%s: ssr signaling complete\n", __func__);
@@ -2299,7 +2305,9 @@ static int bam_init(void)
 	a2_props.virt_addr = a2_virt_addr;
 	a2_props.virt_size = a2_phys_size;
 	a2_props.irq = a2_bam_irq;
-	a2_props.options = SPS_BAM_OPT_IRQ_WAKEUP | SPS_BAM_HOLD_MEM;
+	a2_props.options = SPS_BAM_OPT_IRQ_WAKEUP
+				| SPS_BAM_HOLD_MEM
+				| SPS_BAM_OPT_IRQ_NO_SUSPEND;
 	a2_props.num_pipes = A2_NUM_PIPES;
 	a2_props.summing_threshold = A2_SUMMING_THRESHOLD;
 	a2_props.constrained_logging = true;
@@ -2741,7 +2749,11 @@ static int bam_dmux_probe(struct platform_device *pdev)
 	 * block the watchdog pet function, so that netif_rx() in rmnet
 	 * only uses one queue.
 	 */
-	bam_mux_rx_workqueue = alloc_workqueue("bam_dmux_rx",
+	if (no_cpu_affinity)
+		bam_mux_rx_workqueue =
+			create_singlethread_workqueue("bam_dmux_rx");
+	else
+		bam_mux_rx_workqueue = alloc_workqueue("bam_dmux_rx",
 					WQ_MEM_RECLAIM | WQ_CPU_INTENSIVE, 1);
 	if (!bam_mux_rx_workqueue)
 		return -ENOMEM;

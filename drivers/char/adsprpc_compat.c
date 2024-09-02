@@ -30,6 +30,13 @@
 		_IOWR('R', 4, struct compat_fastrpc_ioctl_invoke_fd)
 #define COMPAT_FASTRPC_IOCTL_INIT \
 		_IOWR('R', 6, struct compat_fastrpc_ioctl_init)
+<<<<<<< HEAD
+=======
+#define COMPAT_FASTRPC_IOCTL_MMAP_64 \
+		_IOWR('R', 14, struct compat_fastrpc_ioctl_mmap_64)
+#define COMPAT_FASTRPC_IOCTL_MUNMAP_64 \
+		_IOWR('R', 15, struct compat_fastrpc_ioctl_munmap_64)
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #define COMPAT_FASTRPC_IOCTL_CONTROL \
 		_IOWR('R', 12, struct compat_fastrpc_ioctl_control)
 
@@ -62,9 +69,25 @@ struct compat_fastrpc_ioctl_mmap {
 	compat_uptr_t vaddrout;	/* dsps virtual address */
 };
 
+struct compat_fastrpc_ioctl_mmap_64 {
+	compat_int_t fd;	/* ion fd */
+	compat_uint_t flags;	/* flags for dsp to map with */
+	compat_u64 vaddrin;	/* optional virtual address */
+	compat_size_t size;	/* size */
+	compat_u64 vaddrout;	/* dsps virtual address */
+};
+
 struct compat_fastrpc_ioctl_munmap {
 	compat_uptr_t vaddrout;	/* address to unmap */
 	compat_size_t size;	/* size */
+<<<<<<< HEAD
+=======
+};
+
+struct compat_fastrpc_ioctl_munmap_64 {
+	compat_u64 vaddrout;	/* address to unmap */
+	compat_size_t size;	/* size */
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 };
 
 struct compat_fastrpc_ioctl_init {
@@ -77,6 +100,20 @@ struct compat_fastrpc_ioctl_init {
 	compat_int_t memfd;	/* ION fd for the mem */
 };
 
+<<<<<<< HEAD
+=======
+#define FASTRPC_CONTROL_LATENCY		(1)
+struct compat_fastrpc_ctrl_latency {
+	compat_uint_t enable;		/* !latency control enable */
+	compat_uint_t level;		/* !level of control */
+};
+
+#define FASTRPC_CONTROL_SMMU		(2)
+struct compat_fastrpc_ctrl_smmu {
+	compat_uint_t sharedcb;
+};
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #define FASTRPC_CONTROL_KALLOC		(3)
 struct compat_fastrpc_ctrl_kalloc {
 	compat_uint_t kalloc_support; /* Remote memory allocation from kernel */
@@ -85,10 +122,18 @@ struct compat_fastrpc_ctrl_kalloc {
 struct compat_fastrpc_ioctl_control {
 	compat_uint_t req;
 	union {
+<<<<<<< HEAD
 		struct compat_fastrpc_ctrl_kalloc kalloc;
 	};
 };
 
+=======
+		struct compat_fastrpc_ctrl_latency lp;
+		struct compat_fastrpc_ctrl_smmu smmu;
+		struct compat_fastrpc_ctrl_kalloc kalloc;
+	};
+};
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 static int compat_get_fastrpc_ioctl_invoke(
 			struct compat_fastrpc_ioctl_invoke_fd __user *inv32,
 			struct fastrpc_ioctl_invoke_fd __user **inva,
@@ -194,11 +239,46 @@ static int compat_get_fastrpc_ioctl_mmap(
 	return err;
 }
 
+static int compat_get_fastrpc_ioctl_mmap_64(
+			struct compat_fastrpc_ioctl_mmap_64 __user *map32,
+			struct fastrpc_ioctl_mmap __user *map)
+{
+	compat_uint_t u;
+	compat_int_t i;
+	compat_size_t s;
+	compat_u64 p;
+	int err;
+
+	err = get_user(i, &map32->fd);
+	err |= put_user(i, &map->fd);
+	err |= get_user(u, &map32->flags);
+	err |= put_user(u, &map->flags);
+	err |= get_user(p, &map32->vaddrin);
+	err |= put_user(p, &map->vaddrin);
+	err |= get_user(s, &map32->size);
+	err |= put_user(s, &map->size);
+
+	return err;
+}
+
 static int compat_put_fastrpc_ioctl_mmap(
 			struct compat_fastrpc_ioctl_mmap __user *map32,
 			struct fastrpc_ioctl_mmap __user *map)
 {
 	compat_uptr_t p;
+	int err;
+
+	err = get_user(p, &map->vaddrout);
+	err |= put_user(p, &map32->vaddrout);
+
+	return err;
+}
+
+static int compat_put_fastrpc_ioctl_mmap_64(
+			struct compat_fastrpc_ioctl_mmap_64 __user *map32,
+			struct fastrpc_ioctl_mmap __user *map)
+{
+	compat_u64 p;
 	int err;
 
 	err = get_user(p, &map->vaddrout);
@@ -223,6 +303,25 @@ static int compat_get_fastrpc_ioctl_munmap(
 	return err;
 }
 
+<<<<<<< HEAD
+=======
+static int compat_get_fastrpc_ioctl_munmap_64(
+			struct compat_fastrpc_ioctl_munmap_64 __user *unmap32,
+			struct fastrpc_ioctl_munmap __user *unmap)
+{
+	compat_u64 p;
+	compat_size_t s;
+	int err;
+
+	err = get_user(p, &unmap32->vaddrout);
+	err |= put_user(p, &unmap->vaddrout);
+	err |= get_user(s, &unmap32->size);
+	err |= put_user(s, &unmap->size);
+
+	return err;
+}
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 static int compat_get_fastrpc_ioctl_control(
 			struct compat_fastrpc_ioctl_control __user *ctrl32,
 			struct fastrpc_ioctl_control __user *ctrl)
@@ -312,6 +411,27 @@ long compat_fastrpc_device_ioctl(struct file *filp, unsigned int cmd,
 		VERIFY(err, 0 == compat_put_fastrpc_ioctl_mmap(map32, map));
 		return err;
 	}
+	case COMPAT_FASTRPC_IOCTL_MMAP_64:
+	{
+		struct compat_fastrpc_ioctl_mmap_64  __user *map32;
+		struct fastrpc_ioctl_mmap __user *map;
+		long ret;
+
+		map32 = compat_ptr(arg);
+		VERIFY(err, NULL != (map = compat_alloc_user_space(
+							sizeof(*map))));
+		if (err)
+			return -EFAULT;
+		VERIFY(err, 0 == compat_get_fastrpc_ioctl_mmap_64(map32, map));
+		if (err)
+			return err;
+		ret = filp->f_op->unlocked_ioctl(filp, FASTRPC_IOCTL_MMAP_64,
+							(unsigned long)map);
+		if (ret)
+			return ret;
+		VERIFY(err, 0 == compat_put_fastrpc_ioctl_mmap_64(map32, map));
+		return err;
+	}
 	case COMPAT_FASTRPC_IOCTL_MUNMAP:
 	{
 		struct compat_fastrpc_ioctl_munmap __user *unmap32;
@@ -327,6 +447,23 @@ long compat_fastrpc_device_ioctl(struct file *filp, unsigned int cmd,
 		if (err)
 			return err;
 		return filp->f_op->unlocked_ioctl(filp, FASTRPC_IOCTL_MUNMAP,
+							(unsigned long)unmap);
+	}
+	case COMPAT_FASTRPC_IOCTL_MUNMAP_64:
+	{
+		struct compat_fastrpc_ioctl_munmap_64 __user *unmap32;
+		struct fastrpc_ioctl_munmap __user *unmap;
+
+		unmap32 = compat_ptr(arg);
+		VERIFY(err, NULL != (unmap = compat_alloc_user_space(
+							sizeof(*unmap))));
+		if (err)
+			return -EFAULT;
+		VERIFY(err, 0 == compat_get_fastrpc_ioctl_munmap_64(unmap32,
+							unmap));
+		if (err)
+			return err;
+		return filp->f_op->unlocked_ioctl(filp, FASTRPC_IOCTL_MUNMAP_64,
 							(unsigned long)unmap);
 	}
 	case COMPAT_FASTRPC_IOCTL_INIT:
@@ -345,6 +482,26 @@ long compat_fastrpc_device_ioctl(struct file *filp, unsigned int cmd,
 			return err;
 		return filp->f_op->unlocked_ioctl(filp, FASTRPC_IOCTL_INIT,
 							(unsigned long)init);
+	}
+	case FASTRPC_IOCTL_GETINFO:
+	{
+		compat_uptr_t __user *info32;
+		uint32_t __user *info;
+		compat_uint_t u;
+		long ret;
+
+		info32 = compat_ptr(arg);
+		VERIFY(err, NULL != (info = compat_alloc_user_space(
+							sizeof(*info))));
+		if (err)
+			return -EFAULT;
+		ret = filp->f_op->unlocked_ioctl(filp, FASTRPC_IOCTL_GETINFO,
+							(unsigned long)info);
+		if (ret)
+			return ret;
+		err = get_user(u, info);
+		err |= put_user(u, info32);
+		return err;
 	}
 	case FASTRPC_IOCTL_SETMODE:
 		return filp->f_op->unlocked_ioctl(filp, cmd,

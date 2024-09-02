@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2002,2008-2017,2021, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2002,2008-2017, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -174,6 +178,7 @@ static const struct flag_entry context_flags[] = {KGSL_CONTEXT_FLAGS};
  * KGSL_CONTEXT_PRIV_DEVICE_SPECIFIC so it is ok to cross the streams here.
  */
 static const struct flag_entry context_priv[] = {
+	{ KGSL_CONTEXT_PRIV_SUBMITTED, "submitted"},
 	{ KGSL_CONTEXT_PRIV_DETACHED, "detached"},
 	{ KGSL_CONTEXT_PRIV_INVALID, "invalid"},
 	{ KGSL_CONTEXT_PRIV_PAGEFAULT, "pagefault"},
@@ -232,8 +237,7 @@ static void cmdbatch_print(struct seq_file *s, struct kgsl_cmdbatch *cmdbatch)
 	if (cmdbatch->flags & KGSL_CONTEXT_SYNC)
 		return;
 
-	seq_printf(s, "\t%d: ib: expires: %lu",
-		cmdbatch->timestamp, cmdbatch->expires);
+	seq_printf(s, "\t%d: ", cmdbatch->timestamp);
 
 	seq_puts(s, " flags: ");
 	print_flags(s, cmdbatch_flags, ARRAY_SIZE(cmdbatch_flags),

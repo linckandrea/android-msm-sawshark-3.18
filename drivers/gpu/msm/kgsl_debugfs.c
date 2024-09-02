@@ -129,7 +129,7 @@ static int print_mem_entry(void *data, void *ptr)
 {
 	struct seq_file *s = data;
 	struct kgsl_mem_entry *entry = ptr;
-	char flags[8];
+	char flags[9];
 	char usage[16];
 	struct kgsl_memdesc *m = &entry->memdesc;
 	unsigned int usermem_type = kgsl_memdesc_usermem_type(m);
@@ -141,12 +141,18 @@ static int print_mem_entry(void *data, void *ptr)
 	flags[3] = get_alignflag(m);
 	flags[4] = get_cacheflag(m);
 	flags[5] = kgsl_memdesc_use_cpu_map(m) ? 'p' : '-';
+<<<<<<< HEAD
 	/*
 	 * Show Y if at least one vma has this entry
 	 * mapped (could be multiple)
 	 */
 	flags[6] = atomic_read(&entry->map_count) ? 'Y' : 'N';
 	flags[7] = '\0';
+=======
+	flags[6] = (m->useraddr) ? 'Y' : 'N';
+	flags[7] = kgsl_memdesc_is_secured(m) ?  's' : '-';
+	flags[8] = '\0';
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 	kgsl_get_memory_usage(usage, sizeof(usage), m->flags);
 
@@ -154,6 +160,7 @@ static int print_mem_entry(void *data, void *ptr)
 		kgsl_get_egl_counts(entry, &egl_surface_count,
 						&egl_image_count);
 
+<<<<<<< HEAD
 	seq_printf(s, "%pK %d %16llu %5d %8s %10s %16s %5d %16d %6d %6d",
 			(uint64_t *)(uintptr_t) m->gpuaddr,
 			/*
@@ -164,6 +171,14 @@ static int print_mem_entry(void *data, void *ptr)
 			memtype_str(usermem_type),
 			usage, (m->sgt ? m->sgt->nents : 0),
 			atomic_read(&entry->map_count),
+=======
+	seq_printf(s, "%pK %pK %16llu %5d %9s %10s %16s %5d %16llu %6d %6d",
+			(uint64_t *)(uintptr_t) m->gpuaddr,
+			(unsigned long *) m->useraddr,
+			m->size, entry->id, flags,
+			memtype_str(usermem_type),
+			usage, (m->sgt ? m->sgt->nents : 0), m->mapsize,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			egl_surface_count, egl_image_count);
 
 	if (entry->metadata[0] != 0)
@@ -231,9 +246,15 @@ static void *process_mem_seq_next(struct seq_file *s, void *ptr,
 static int process_mem_seq_show(struct seq_file *s, void *ptr)
 {
 	if (ptr == SEQ_START_TOKEN) {
+<<<<<<< HEAD
 		seq_printf(s, "%16s %16s %16s %5s %9s %10s %16s %5s %16s\n",
 				"gpuaddr", "useraddr", "size", "id", "flags",
 				"type", "usage", "sglen", "mapcount");
+=======
+		seq_printf(s, "%16s %16s %16s %5s %9s %10s %16s %5s %16s %6s %6s\n",
+			"gpuaddr", "useraddr", "size", "id", "flags", "type",
+			"usage", "sglen", "mapsize", "eglsrf", "eglimg");
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		return 0;
 	} else
 		return print_mem_entry(s, ptr);
@@ -288,6 +309,29 @@ static const struct file_operations process_mem_fops = {
 };
 
 
+static int globals_print(struct seq_file *s, void *unused)
+{
+	kgsl_print_global_pt_entries(s);
+	return 0;
+}
+
+static int globals_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, globals_print, NULL);
+}
+
+static int globals_release(struct inode *inode, struct file *file)
+{
+	return single_release(inode, file);
+}
+
+static const struct file_operations global_fops = {
+	.open = globals_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = globals_release,
+};
+
 /**
  * kgsl_process_init_debugfs() - Initialize debugfs for a process
  * @private: Pointer to process private structure created for the process
@@ -335,6 +379,9 @@ void kgsl_core_debugfs_init(void)
 	struct dentry *debug_dir;
 
 	kgsl_debugfs_dir = debugfs_create_dir("kgsl", NULL);
+
+	debugfs_create_file("globals", 0444, kgsl_debugfs_dir, NULL,
+		&global_fops);
 
 	debug_dir = debugfs_create_dir("debug", kgsl_debugfs_dir);
 

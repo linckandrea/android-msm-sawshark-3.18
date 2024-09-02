@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013, Sony Mobile Communications AB.
- * Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -874,11 +874,24 @@ static int msm_gpio_init(struct msm_pinctrl *pctrl)
 		return ret;
 	}
 
-	ret = gpiochip_add_pin_range(&pctrl->chip, dev_name(pctrl->dev), 0, 0, chip->ngpio);
-	if (ret) {
-		dev_err(pctrl->dev, "Failed to add pin range\n");
-		gpiochip_remove(&pctrl->chip);
-		return ret;
+	/*
+	 * For DeviceTree-supported systems, the gpio core checks the
+	 * pinctrl's device node for the "gpio-ranges" property.
+	 * If it is present, it takes care of adding the pin ranges
+	 * for the driver. In this case the driver can skip ahead.
+	 *
+	 * In order to remain compatible with older, existing DeviceTree
+	 * files which don't set the "gpio-ranges" property or systems that
+	 * utilize ACPI the driver has to call gpiochip_add_pin_range().
+	 */
+	if (!of_property_read_bool(pctrl->dev->of_node, "gpio-ranges")) {
+		ret = gpiochip_add_pin_range(&pctrl->chip,
+			dev_name(pctrl->dev), 0, 0, chip->ngpio);
+		if (ret) {
+			dev_err(pctrl->dev, "Failed to add pin range\n");
+			gpiochip_remove(&pctrl->chip);
+			return ret;
+		}
 	}
 
 	ret = gpiochip_irqchip_add(chip,
@@ -957,7 +970,11 @@ static void msm_pinctrl_resume(void)
 	spin_lock_irqsave(&pctrl->lock, flags);
 	for_each_set_bit(i, pctrl->enabled_irqs, pctrl->chip.ngpio) {
 		g = &pctrl->soc->groups[i];
+<<<<<<< HEAD
 		val = readl(pctrl->regs + g->intr_status_reg);
+=======
+		val = readl_relaxed(pctrl->regs + g->intr_status_reg);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		if (val & BIT(g->intr_status_bit)) {
 			irq = irq_find_mapping(pctrl->chip.irqdomain, i);
 			desc = irq_to_desc(irq);
@@ -966,9 +983,13 @@ static void msm_pinctrl_resume(void)
 			else if (desc->action && desc->action->name)
 				name = desc->action->name;
 
+<<<<<<< HEAD
 			log_base_wakeup_reason(irq);
 			pr_warning("%s: %d triggered %s\n",
 				__func__, irq, name);
+=======
+			pr_warn("%s: %d triggered %s\n", __func__, irq, name);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		}
 	}
 	spin_unlock_irqrestore(&pctrl->lock, flags);

@@ -47,7 +47,7 @@
 #include <linux/pm_runtime.h>
 #include <linux/debugfs.h>
 #include <linux/types.h>
-#include <linux/ipa.h>
+#include <linux/ipa_odu_bridge.h>
 #define DRIVER_VERSION		"22-Aug-2005"
 
 
@@ -127,6 +127,11 @@ int usbnet_get_endpoints(struct usbnet *dev, struct usb_interface *intf)
 			int				intr = 0;
 
 			e = alt->endpoint + ep;
+
+			/* ignore endpoints which cannot transfer data */
+			if (!usb_endpoint_maxp(&e->desc))
+				continue;
+
 			switch (e->desc.bmAttributes) {
 			case USB_ENDPOINT_XFER_INT:
 				if (!usb_endpoint_dir_in(&e->desc))
@@ -416,6 +421,8 @@ void usbnet_update_max_qlen(struct usbnet *dev)
 {
 	enum usb_device_speed speed = dev->udev->speed;
 
+	if (!dev->rx_urb_size || !dev->hard_mtu)
+		goto insanity;
 	switch (speed) {
 	case USB_SPEED_HIGH:
 		dev->rx_qlen = MAX_QUEUE_MEMORY / dev->rx_urb_size;
@@ -431,6 +438,7 @@ void usbnet_update_max_qlen(struct usbnet *dev)
 		dev->tx_qlen = 5 * MAX_QUEUE_MEMORY / dev->hard_mtu;
 		break;
 	default:
+insanity:
 		dev->rx_qlen = dev->tx_qlen = 4;
 	}
 }
@@ -561,6 +569,7 @@ static int rx_submit (struct usbnet *dev, struct urb *urb, gfp_t flags)
 
 	if (netif_running (dev->net) &&
 	    netif_device_present (dev->net) &&
+	    test_bit(EVENT_DEV_OPEN, &dev->flags) &&
 	    !test_bit (EVENT_RX_HALT, &dev->flags) &&
 	    !test_bit (EVENT_DEV_ASLEEP, &dev->flags)) {
 		switch (retval = usb_submit_urb (urb, GFP_ATOMIC)) {
@@ -1360,7 +1369,7 @@ netdev_tx_t usbnet_start_xmit (struct sk_buff *skb,
 				     struct net_device *net)
 {
 	struct usbnet		*dev = netdev_priv(net);
-	int			length;
+	unsigned int			length;
 	struct urb		*urb = NULL;
 	struct skb_data		*entry;
 	struct driver_info	*info = dev->driver_info;
@@ -1444,6 +1453,11 @@ netdev_tx_t usbnet_start_xmit (struct sk_buff *skb,
 		spin_unlock_irqrestore(&dev->txq.lock, flags);
 		goto drop;
 	}
+	if (netif_queue_stopped(net)) {
+		usb_autopm_put_interface_async(dev->intf);
+		spin_unlock_irqrestore(&dev->txq.lock, flags);
+		goto drop;
+	}
 
 #ifdef CONFIG_PM
 	/* if this triggers the device is still a sleep */
@@ -1491,7 +1505,7 @@ not_drop:
 		}
 	} else
 		netif_dbg(dev, tx_queued, dev->net,
-			  "> tx, len %d, type 0x%x\n", length, skb->protocol);
+			  "> tx, len %u, type 0x%x\n", length, skb->protocol);
 #ifdef CONFIG_PM
 deferred:
 #endif
@@ -1683,7 +1697,7 @@ static void usbnet_ipa_cleanup_rm(struct usbnet *dev)
 
 	ret =  ipa_rm_release_resource(IPA_RM_RESOURCE_ODU_ADAPT_PROD);
 	if (ret) {
-		if (ret != EINPROGRESS)
+		if (ret != -EINPROGRESS)
 			dev_err(&dev->udev->dev,
 				"Release ODU PROD resource failed:%d\n", ret);
 
@@ -1694,6 +1708,9 @@ static void usbnet_ipa_cleanup_rm(struct usbnet *dev)
 			dev_err(&dev->udev->dev,
 				"Timeout releasing ODU prod resource\n");
 	}
+
+	ipa_rm_delete_dependency(IPA_RM_RESOURCE_ODU_ADAPT_PROD,
+				 IPA_RM_RESOURCE_APPS_CONS);
 
 	ret = ipa_rm_delete_resource(IPA_RM_RESOURCE_ODU_ADAPT_PROD);
 	if (ret)
@@ -1849,9 +1866,12 @@ static int usbnet_ipa_setup_rm(struct usbnet *dev)
 
 	init_completion(&dev->rm_prod_granted_comp);
 
+	ipa_rm_add_dependency(IPA_RM_RESOURCE_ODU_ADAPT_PROD,
+			      IPA_RM_RESOURCE_APPS_CONS);
+
 	ret =  ipa_rm_request_resource(IPA_RM_RESOURCE_ODU_ADAPT_PROD);
 	if (ret) {
-		if (ret != EINPROGRESS) {
+		if (ret != -EINPROGRESS) {
 			dev_err(&dev->udev->dev,
 				"Request ODU PROD resource failed: %d\n", ret);
 			goto delete_cons;
@@ -1865,6 +1885,8 @@ static int usbnet_ipa_setup_rm(struct usbnet *dev)
 			ret = -ETIMEDOUT;
 			goto delete_cons;
 		}
+		/* return success when it is not timeout */
+		ret = 0;
 	}
 
 	return ret;
@@ -2272,6 +2294,13 @@ unbind:
 	if (info->unbind)
 		info->unbind (dev, udev);
 free_netdevice:
+	/* subdrivers must undo all they did in bind() if they
+	 * fail it, but we may fail later and a deferred kevent
+	 * may trigger an error resubmitting itself and, worse,
+	 * schedule a timer. So we kill it all just in case.
+	 */
+	cancel_work_sync(&dev->kevent);
+	del_timer_sync(&dev->delay);
 	free_netdev(net);
 exit:
 	return status;

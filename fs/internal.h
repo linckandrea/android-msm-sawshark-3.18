@@ -124,7 +124,6 @@ extern void inode_add_lru(struct inode *inode);
 extern void inode_wb_list_del(struct inode *inode);
 
 extern long get_nr_dirty_inodes(void);
-extern void evict_inodes(struct super_block *);
 extern int invalidate_inodes(struct super_block *, bool);
 
 /*
@@ -150,3 +149,29 @@ extern const struct file_operations pipefifo_fops;
  */
 extern void sb_pin_kill(struct super_block *sb);
 extern void mnt_pin_kill(struct mount *m);
+
+#ifdef CONFIG_FILE_TABLE_DEBUG
+void global_filetable_print_warning_once(void);
+void global_filetable_add(struct file *filp);
+void global_filetable_del(struct file *filp);
+void global_filetable_delayed_print(struct mount *mnt);
+
+#else /* i.e NOT CONFIG_FILE_TABLE_DEBUG */
+
+static inline void global_filetable_print_warning_once(void)
+{
+}
+
+static inline void global_filetable_add(struct file *filp)
+{
+}
+
+static inline void global_filetable_del(struct file *filp)
+{
+}
+
+static inline void global_filetable_delayed_print(struct mount *mnt)
+{
+}
+
+#endif /* CONFIG_FILE_TABLE_DEBUG */

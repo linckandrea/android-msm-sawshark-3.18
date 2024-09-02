@@ -53,7 +53,7 @@ static int pci_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
 	struct irq_domain *domain;
 
 	domain = pci_msi_get_domain(dev);
-	if (domain)
+	if (domain && irq_domain_is_hierarchy(domain))
 		return pci_msi_domain_alloc_irqs(domain, dev, nvec, type);
 
 	return arch_setup_msi_irqs(dev, nvec, type);
@@ -64,7 +64,7 @@ static void pci_msi_teardown_msi_irqs(struct pci_dev *dev)
 	struct irq_domain *domain;
 
 	domain = pci_msi_get_domain(dev);
-	if (domain)
+	if (domain && irq_domain_is_hierarchy(domain))
 		pci_msi_domain_free_irqs(domain, dev);
 	else
 		arch_teardown_msi_irqs(dev);
@@ -235,7 +235,7 @@ u32 __pci_msix_desc_mask_irq(struct msi_desc *desc, u32 flag)
 		return 0;
 
 	mask_bits &= ~PCI_MSIX_ENTRY_CTRL_MASKBIT;
-	if (flag)
+	if (flag & PCI_MSIX_ENTRY_CTRL_MASKBIT)
 		mask_bits |= PCI_MSIX_ENTRY_CTRL_MASKBIT;
 	writel(mask_bits, desc->mask_base + offset);
 

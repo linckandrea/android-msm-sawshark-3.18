@@ -296,6 +296,17 @@ static int notrace ramoops_pstore_write_buf(enum pstore_type_id type,
 
 	prz = cxt->przs[cxt->dump_write_cnt];
 
+	/*
+	 * Since this is a new crash dump, we need to reset the buffer in
+	 * case it still has an old dump present. Without this, the new dump
+	 * will get appended, which would seriously confuse anything trying
+	 * to check dump file contents. Specifically, ramoops_read_kmsg_hdr()
+	 * expects to find a dump header in the beginning of buffer data, so
+	 * we must to reset the buffer values, in order to ensure that the
+	 * header will be written to the beginning of the buffer.
+	 */
+	persistent_ram_zap(prz);
+
 	hlen = ramoops_write_kmsg_hdr(prz, compressed);
 	if (size + hlen > prz->buffer_size)
 		size = prz->buffer_size - hlen;
@@ -371,13 +382,14 @@ static void ramoops_free_przs(struct ramoops_context *cxt)
 {
 	int i;
 
-	cxt->max_dump_cnt = 0;
 	if (!cxt->przs)
 		return;
 
-	for (i = 0; !IS_ERR_OR_NULL(cxt->przs[i]); i++)
+	for (i = 0; i < cxt->max_dump_cnt; i++)
 		persistent_ram_free(cxt->przs[i]);
+
 	kfree(cxt->przs);
+	cxt->max_dump_cnt = 0;
 }
 
 static int ramoops_init_przs(struct device *dev, struct ramoops_context *cxt,
@@ -402,7 +414,7 @@ static int ramoops_init_przs(struct device *dev, struct ramoops_context *cxt,
 			     GFP_KERNEL);
 	if (!cxt->przs) {
 		dev_err(dev, "failed to initialize a prz array for dumps\n");
-		goto fail_prz;
+		goto fail_mem;
 	}
 
 	for (i = 0; i < cxt->max_dump_cnt; i++) {
@@ -410,11 +422,16 @@ static int ramoops_init_przs(struct device *dev, struct ramoops_context *cxt,
 
 		cxt->przs[i] = persistent_ram_new(*paddr, sz, 0,
 						  &cxt->ecc_info,
-						  cxt->memtype);
+						  cxt->memtype, 0);
 		if (IS_ERR(cxt->przs[i])) {
 			err = PTR_ERR(cxt->przs[i]);
 			dev_err(dev, "failed to request mem region (0x%zx@0x%llx): %d\n",
 				sz, (unsigned long long)*paddr, err);
+
+			while (i > 0) {
+				i--;
+				persistent_ram_free(cxt->przs[i]);
+			}
 			goto fail_prz;
 		}
 		*paddr += sz;
@@ -422,7 +439,9 @@ static int ramoops_init_przs(struct device *dev, struct ramoops_context *cxt,
 
 	return 0;
 fail_prz:
-	ramoops_free_przs(cxt);
+	kfree(cxt->przs);
+fail_mem:
+	cxt->max_dump_cnt = 0;
 	return err;
 }
 
@@ -440,7 +459,8 @@ static int ramoops_init_prz(struct device *dev, struct ramoops_context *cxt,
 		return -ENOMEM;
 	}
 
-	*prz = persistent_ram_new(*paddr, sz, sig, &cxt->ecc_info, cxt->memtype);
+	*prz = persistent_ram_new(*paddr, sz, sig, &cxt->ecc_info,
+				  cxt->memtype, 0);
 	if (IS_ERR(*prz)) {
 		int err = PTR_ERR(*prz);
 
@@ -474,9 +494,14 @@ static void  ramoops_of_init(struct platform_device *pdev)
 	const struct device *dev = &pdev->dev;
 	struct ramoops_platform_data *pdata;
 	struct device_node *np = pdev->dev.of_node;
+<<<<<<< HEAD
 	uint32_t ecc_info[4] = {0,};
 	u32 start = 0, size = 0, console = 0, pmsg = 0;
 	u32 record = 0, oops = 0, ftrace = 0;
+=======
+	u32 start = 0, size = 0, console = 0, pmsg = 0;
+	u32 record = 0, oops = 0;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	int ret;
 
 	pdata = dev_get_drvdata(dev);
@@ -514,6 +539,7 @@ static void  ramoops_of_init(struct platform_device *pdev)
 	if (ret)
 		pr_info("oops not configured");
 
+<<<<<<< HEAD
 	ret = of_property_read_u32(np, "android,ramoops-ftrace-size",
 				&ftrace);
 	if (ret)
@@ -523,17 +549,23 @@ static void  ramoops_of_init(struct platform_device *pdev)
 	if (ret)
 		pr_info("ecc_info not configured");
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	pdata->mem_address = start;
 	pdata->mem_size = size;
 	pdata->console_size = console;
 	pdata->pmsg_size = pmsg;
 	pdata->record_size = record;
+<<<<<<< HEAD
 	pdata->ftrace_size = ftrace;
 	pdata->dump_oops = (int)oops;
 	pdata->ecc_info.block_size = ecc_info[0];
 	pdata->ecc_info.ecc_size = ecc_info[1];
 	pdata->ecc_info.symsize = ecc_info[2];
 	pdata->ecc_info.poly = ecc_info[3];
+=======
+	pdata->dump_oops = (int)oops;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 }
 #else
 static inline void ramoops_of_init(struct platform_device *pdev)
@@ -561,8 +593,11 @@ static int ramoops_probe(struct platform_device *pdev)
 
 	if (pdev->dev.of_node)
 		ramoops_of_init(pdev);
+<<<<<<< HEAD
 	else if (pdev->dev.platform_data)
 		memcpy(pdata, pdev->dev.platform_data, sizeof(*pdata));
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 	/* Only a single ramoops area allowed at a time, so fail extra
 	 * probes.
@@ -691,7 +726,6 @@ static int __exit ramoops_remove(struct platform_device *pdev)
 
 	iounmap(cxt->virt_addr);
 	release_mem_region(cxt->phys_addr, cxt->size);
-	cxt->max_dump_cnt = 0;
 
 	/* TODO(kees): When pstore supports unregistering, call it here. */
 	kfree(cxt->pstore.buf);
@@ -707,9 +741,13 @@ static struct platform_driver ramoops_driver = {
 	.remove		= __exit_p(ramoops_remove),
 	.driver		= {
 		.name	= "ramoops",
+<<<<<<< HEAD
 #ifdef CONFIG_OF
 		.of_match_table = of_match_ptr(ramoops_of_match),
 #endif
+=======
+		.of_match_table = of_match_ptr(ramoops_of_match),
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		.owner	= THIS_MODULE,
 	},
 };

@@ -33,7 +33,11 @@ enum tz_sched_cmd_status {
 	TZ_SCHED_STATUS_MAX  = 0x7FFFFFFF
 };
 /* Command structure for initializing shared buffers */
+<<<<<<< HEAD
 struct __packed qse_pr_init_sb_req_s {
+=======
+struct qse_pr_init_sb_req_s {
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	/* First 4 bytes should always be command id */
 	uint32_t                  pr_cmd;
 	/* Pointer to the physical location of sb buffer */
@@ -41,14 +45,18 @@ struct __packed qse_pr_init_sb_req_s {
 	/* length of shared buffer */
 	uint32_t                  sb_len;
 	uint32_t                  listener_id;
-};
+} __attribute__((__packed__));
 
+<<<<<<< HEAD
 struct __packed qse_pr_init_sb_rsp_s {
+=======
+struct qse_pr_init_sb_rsp_s {
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	/* First 4 bytes should always be command id */
 	uint32_t                  pr_cmd;
 	/* Return code, 0 for success, Approp error code otherwise */
 	int32_t                   ret;
-};
+} __attribute__((__packed__));
 
 /*
  * struct QSEECom_command - QSECom command buffer
@@ -57,11 +65,15 @@ struct __packed qse_pr_init_sb_rsp_s {
  *                buffer
  * @sb_in_cmd_len: length of command buffer
  */
+<<<<<<< HEAD
 struct __packed qseecom_command {
+=======
+struct qseecom_command {
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	uint32_t               cmd_type;
 	uint8_t                *sb_in_cmd_addr;
 	uint32_t               sb_in_cmd_len;
-};
+} __attribute__((__packed__));
 
 /*
  * struct QSEECom_response - QSECom response buffer
@@ -70,10 +82,14 @@ struct __packed qseecom_command {
  *                buffer
  * @sb_in_rsp_len: length of command response
  */
+<<<<<<< HEAD
 struct __packed qseecom_response {
+=======
+struct qseecom_response {
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	uint32_t                 cmd_status;
 	uint8_t                  *sb_in_rsp_addr;
 	uint32_t                 sb_in_rsp_len;
-};
+} __attribute__((__packed__));
 
 #endif /* __QSEECOM_LEGACY_H_ */

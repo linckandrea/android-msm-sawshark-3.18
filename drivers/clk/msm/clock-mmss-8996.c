@@ -52,7 +52,11 @@ static void __iomem *virt_base_gpu;
 #define dsi1phypll_mm_source_val		2
 #define ext_extpclk_clk_src_mm_source_val	1
 
+<<<<<<< HEAD
 #define FIXDIV(div) ((div > 0) ? (2 * (div) - 1) : (0))
+=======
+#define FIXDIV(div) (div != 0 ? (2 * (div) - 1) : (0))
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 #define F_MM(f, s, div, m, n) \
 	{ \
@@ -123,6 +127,7 @@ static struct alpha_pll_masks pll_masks_b = {
 	.alpha_en_mask = BIT(24),
 	.output_mask = 0xf,
 	.post_div_mask = BM(11, 8),
+	.update_mask = BIT(22),
 };
 
 static struct alpha_pll_vco_tbl mmpll_t_vco[] = {
@@ -317,6 +322,7 @@ static struct alpha_pll_clk mmpll9 = {
 	.num_vco = ARRAY_SIZE(mmpll_t_vco),
 	.post_div_config = 0x100,
 	.enable_config = 0x1,
+	.dynamic_update = true,
 	.c = {
 		.parent = &mmsscc_xo.c,
 		.rate = 960000000,
@@ -1516,6 +1522,7 @@ static struct rcg_clk extpclk_clk_src = {
 		.ops = &clk_ops_byte,
 		VDD_DIG_FMAX_MAP3(LOWER, 150000000, LOW, 300000000,
 							NOMINAL, 600000000),
+		.flags = CLKFLAG_NO_RATE_CACHE,
 		CLK_INIT(extpclk_clk_src.c),
 	},
 };
@@ -1612,6 +1619,7 @@ static struct rcg_clk video_subcore0_clk_src = {
 	.set_rate = set_rate_mnd,
 	.freq_tbl = ftbl_video_subcore0_clk_src,
 	.current_freq = &rcg_dummy_freq,
+	.non_local_control_timeout = 1000,
 	.base = &virt_base,
 	.c = {
 		.dbg_name = "video_subcore0_clk_src",
@@ -1651,6 +1659,7 @@ static struct rcg_clk video_subcore1_clk_src = {
 	.set_rate = set_rate_mnd,
 	.freq_tbl = ftbl_video_subcore1_clk_src,
 	.current_freq = &rcg_dummy_freq,
+	.non_local_control_timeout = 1000,
 	.base = &virt_base,
 	.c = {
 		.dbg_name = "video_subcore1_clk_src",
@@ -2527,6 +2536,7 @@ static struct branch_clk mdss_extpclk_clk = {
 		.dbg_name = "mdss_extpclk_clk",
 		.parent = &extpclk_clk_src.c,
 		.ops = &clk_ops_branch,
+		.flags = CLKFLAG_NO_RATE_CACHE,
 		CLK_INIT(mdss_extpclk_clk.c),
 	},
 };
@@ -3738,6 +3748,7 @@ int msm_mmsscc_8996_probe(struct platform_device *pdev)
 	ext_byte1_clk_src.c.flags = CLKFLAG_NO_RATE_CACHE;
 	ext_extpclk_clk_src.dev = &pdev->dev;
 	ext_extpclk_clk_src.clk_id = "extpclk_src";
+	ext_extpclk_clk_src.c.flags = CLKFLAG_NO_RATE_CACHE;
 
 	efuse = readl_relaxed(gpu_base);
 	gpu_speed_bin = ((efuse >> EFUSE_SHIFT_v3) & EFUSE_MASK_v3);

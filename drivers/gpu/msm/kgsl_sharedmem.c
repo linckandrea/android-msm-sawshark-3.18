@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2002,2007-2017,2021, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2002,2007-2017 The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -20,6 +24,7 @@
 #include <linux/scatterlist.h>
 #include <soc/qcom/scm.h>
 #include <soc/qcom/secure_buffer.h>
+#include <linux/ratelimit.h>
 
 #include "kgsl.h"
 #include "kgsl_sharedmem.h"
@@ -97,6 +102,75 @@ struct mem_entry_stats {
 
 static void kgsl_cma_unlock_secure(struct kgsl_memdesc *memdesc);
 
+static ssize_t
+imported_mem_show(struct kgsl_process_private *priv,
+				int type, char *buf)
+{
+	struct kgsl_mem_entry *entry;
+	uint64_t imported_mem = 0;
+	int id = 0;
+
+	spin_lock(&priv->mem_lock);
+	for (entry = idr_get_next(&priv->mem_idr, &id); entry;
+		id++, entry = idr_get_next(&priv->mem_idr, &id)) {
+
+		int egl_surface_count = 0, egl_image_count = 0;
+		struct kgsl_memdesc *m;
+
+		if (kgsl_mem_entry_get(entry) == 0)
+			continue;
+		spin_unlock(&priv->mem_lock);
+
+		m = &entry->memdesc;
+		if (kgsl_memdesc_usermem_type(m) == KGSL_MEM_ENTRY_ION) {
+			kgsl_get_egl_counts(entry, &egl_surface_count,
+					&egl_image_count);
+
+			if (kgsl_memdesc_get_memtype(m) ==
+						KGSL_MEMTYPE_EGL_SURFACE)
+				imported_mem += m->size;
+			else if (egl_surface_count == 0) {
+				uint64_t size = m->size;
+
+				do_div(size, (egl_image_count ?
+							egl_image_count : 1));
+				imported_mem += size;
+			}
+		}
+
+		kgsl_mem_entry_put(entry);
+		spin_lock(&priv->mem_lock);
+	}
+	spin_unlock(&priv->mem_lock);
+
+	return scnprintf(buf, PAGE_SIZE, "%llu\n", imported_mem);
+}
+
+static ssize_t
+gpumem_mapped_show(struct kgsl_process_private *priv,
+				int type, char *buf)
+{
+	return scnprintf(buf, PAGE_SIZE, "%llu\n",
+			priv->gpumem_mapped);
+}
+
+static ssize_t
+gpumem_unmapped_show(struct kgsl_process_private *priv, int type, char *buf)
+{
+	if (priv->gpumem_mapped > priv->stats[type].cur)
+		return -EIO;
+
+	return scnprintf(buf, PAGE_SIZE, "%llu\n",
+			priv->stats[type].cur - priv->gpumem_mapped);
+}
+
+static struct kgsl_mem_entry_attribute debug_memstats[] = {
+	__MEM_ENTRY_ATTR(0, imported_mem, imported_mem_show),
+	__MEM_ENTRY_ATTR(0, gpumem_mapped, gpumem_mapped_show),
+	__MEM_ENTRY_ATTR(KGSL_MEM_ENTRY_KERNEL, gpumem_unmapped,
+				gpumem_unmapped_show),
+};
+
 /**
  * Show the current amount of memory allocated for the given memtype
  */
@@ -126,12 +200,10 @@ static ssize_t mem_entry_sysfs_show(struct kobject *kobj,
 	ssize_t ret;
 
 	/*
-	 * 1. sysfs_remove_file waits for reads to complete before the node
-	 *    is deleted.
-	 * 2. kgsl_process_init_sysfs takes a refcount to the process_private,
-	 *    which is put at the end of kgsl_process_uninit_sysfs.
-	 * These two conditions imply that priv will not be freed until this
-	 * function completes, and no further locking is needed.
+	 * kgsl_process_init_sysfs takes a refcount to the process_private,
+	 * which is put when the kobj is released. This implies that priv will
+	 * not be freed until this function completes, and no further locking
+	 * is needed.
 	 */
 	priv = kobj ? container_of(kobj, struct kgsl_process_private, kobj) :
 			NULL;
@@ -144,12 +216,22 @@ static ssize_t mem_entry_sysfs_show(struct kobject *kobj,
 	return ret;
 }
 
+static void mem_entry_release(struct kobject *kobj)
+{
+	struct kgsl_process_private *priv;
+
+	priv = container_of(kobj, struct kgsl_process_private, kobj);
+	/* Put the refcount we got in kgsl_process_init_sysfs */
+	kgsl_process_private_put(priv);
+}
+
 static const struct sysfs_ops mem_entry_sysfs_ops = {
 	.show = mem_entry_sysfs_show,
 };
 
 static struct kobj_type ktype_mem_entry = {
 	.sysfs_ops = &mem_entry_sysfs_ops,
+	.release = &mem_entry_release,
 };
 
 static struct mem_entry_stats mem_stats[] = {
@@ -172,8 +254,6 @@ kgsl_process_uninit_sysfs(struct kgsl_process_private *private)
 	}
 
 	kobject_put(&private->kobj);
-	/* Put the refcount we got in kgsl_process_init_sysfs */
-	kgsl_process_private_put(private);
 }
 
 /**
@@ -213,7 +293,13 @@ void kgsl_process_init_sysfs(struct kgsl_device *device,
 			&mem_stats[i].max_attr.attr))
 			WARN(1, "Couldn't create sysfs file '%s'\n",
 				mem_stats[i].max_attr.attr.name);
+	}
 
+	for (i = 0; i < ARRAY_SIZE(debug_memstats); i++) {
+		if (sysfs_create_file(&private->kobj,
+			&debug_memstats[i].attr))
+			WARN(1, "Couldn't create sysfs file '%s'\n",
+				debug_memstats[i].attr.name);
 	}
 }
 
@@ -312,9 +398,12 @@ kgsl_sharedmem_init_sysfs(void)
 		drv_attr_list);
 }
 
+<<<<<<< HEAD
 static int kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 				uint64_t size);
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 static int kgsl_cma_alloc_secure(struct kgsl_device *device,
 			struct kgsl_memdesc *memdesc, uint64_t size);
 
@@ -370,6 +459,11 @@ static int kgsl_page_alloc_vmfault(struct kgsl_memdesc *memdesc,
 		get_page(page);
 		vmf->page = page;
 
+<<<<<<< HEAD
+=======
+		memdesc->mapsize += PAGE_SIZE;
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		return 0;
 	}
 
@@ -403,9 +497,6 @@ done:
 
 static void kgsl_page_alloc_free(struct kgsl_memdesc *memdesc)
 {
-	unsigned int i = 0;
-	struct scatterlist *sg;
-
 	kgsl_page_alloc_unmap_kernel(memdesc);
 	/* we certainly do not expect the hostptr to still be mapped */
 	BUG_ON(memdesc->hostptr);
@@ -430,6 +521,7 @@ static void kgsl_page_alloc_free(struct kgsl_memdesc *memdesc)
 		atomic_long_sub(memdesc->size, &kgsl_driver.stats.page_alloc);
 	}
 
+<<<<<<< HEAD
 	/* Free pages using the pages array for non secure paged memory */
 	if (memdesc->pages != NULL) {
 		for (i = 0; i < memdesc->page_count;) {
@@ -465,6 +557,23 @@ static void kgsl_page_alloc_free(struct kgsl_memdesc *memdesc)
 		}
 	}
 
+=======
+	if (memdesc->priv & KGSL_MEMDESC_TZ_LOCKED) {
+		struct sg_page_iter sg_iter;
+
+		for_each_sg_page(memdesc->sgt->sgl, &sg_iter,
+					memdesc->sgt->nents, 0)
+			ClearPagePrivate(sg_page_iter_page(&sg_iter));
+
+	}
+
+	/* Free pages using the pages array for non secure paged memory */
+	if (memdesc->pages != NULL)
+		kgsl_pool_free_pages(memdesc->pages, memdesc->page_count);
+	else
+		kgsl_pool_free_sgt(memdesc->sgt);
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 }
 
 /*
@@ -646,8 +755,13 @@ int kgsl_cache_range_op(struct kgsl_memdesc *memdesc, uint64_t offset,
 {
 	void *addr = NULL;
 	struct sg_table *sgt = NULL;
+<<<<<<< HEAD
 	struct scatterlist *sg = NULL;
 	unsigned int i = 0, pos = 0;
+=======
+	struct scatterlist *sg;
+	unsigned int i, pos = 0;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	int ret = 0;
 
 	if (size == 0 || size > UINT_MAX)
@@ -711,30 +825,24 @@ int kgsl_cache_range_op(struct kgsl_memdesc *memdesc, uint64_t offset,
 }
 EXPORT_SYMBOL(kgsl_cache_range_op);
 
-#ifndef CONFIG_ALLOC_BUFFERS_IN_4K_CHUNKS
-static inline int get_page_size(size_t size, unsigned int align)
-{
-	return (align >= ilog2(SZ_64K) && size >= SZ_64K)
-					? SZ_64K : PAGE_SIZE;
-}
-#else
-static inline int get_page_size(size_t size, unsigned int align)
-{
-	return PAGE_SIZE;
-}
-#endif
-
-static int
+int
 kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 			uint64_t size)
 {
 	int ret = 0;
-	unsigned int j, pcount = 0, page_size, len_alloc;
+	unsigned int j, page_size, len_alloc;
+	unsigned int pcount = 0;
 	size_t len;
+<<<<<<< HEAD
 	pgprot_t page_prot = pgprot_writecombine(PAGE_KERNEL);
 	void *ptr;
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	unsigned int align;
-	unsigned int step = ((VMALLOC_END - VMALLOC_START)/8) >> PAGE_SHIFT;
+
+	static DEFINE_RATELIMIT_STATE(_rs,
+					DEFAULT_RATELIMIT_INTERVAL,
+					DEFAULT_RATELIMIT_BURST);
 
 	size = PAGE_ALIGN(size);
 	if (size == 0 || size > UINT_MAX)
@@ -742,15 +850,17 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 
 	align = (memdesc->flags & KGSL_MEMALIGN_MASK) >> KGSL_MEMALIGN_SHIFT;
 
-	page_size = get_page_size(size, align);
+	page_size = kgsl_get_page_size(size, align);
 
 	/*
 	 * The alignment cannot be less than the intended page size - it can be
 	 * larger however to accomodate hardware quirks
 	 */
 
-	if (align < ilog2(page_size))
+	if (align < ilog2(page_size)) {
 		kgsl_memdesc_set_align(memdesc, ilog2(page_size));
+		align = ilog2(page_size);
+	}
 
 	/*
 	 * There needs to be enough room in the page array to be able to
@@ -779,34 +889,15 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 	len = size;
 
 	while (len > 0) {
-		struct page *page;
-		gfp_t gfp_mask = __GFP_HIGHMEM;
-		int j;
+		int page_count;
 
-		/* don't waste space at the end of the allocation*/
-		if (len < page_size)
-			page_size = PAGE_SIZE;
-
-		/*
-		 * Don't do some of the more aggressive memory recovery
-		 * techniques for large order allocations
-		 */
-		if (page_size != PAGE_SIZE)
-			gfp_mask |= __GFP_COMP | __GFP_NORETRY |
-				__GFP_NO_KSWAPD | __GFP_NOWARN;
-		else
-			gfp_mask |= GFP_KERNEL;
-
-		if (sharedmem_noretry_flag == true)
-			gfp_mask |= __GFP_NORETRY | __GFP_NOWARN;
-
-		page = alloc_pages(gfp_mask, get_order(page_size));
-
-		if (page == NULL) {
-			if (page_size != PAGE_SIZE) {
-				page_size = PAGE_SIZE;
+		page_count = kgsl_pool_alloc_page(&page_size,
+					memdesc->pages + pcount,
+					len_alloc - pcount,
+					&align);
+		if (page_count <= 0) {
+			if (page_count == -EAGAIN)
 				continue;
-			}
 
 			/*
 			 * Update sglen and memdesc size,as requested allocation
@@ -815,7 +906,8 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 			 */
 			memdesc->size = (size - len);
 
-			if (sharedmem_noretry_flag != true)
+			if (sharedmem_noretry_flag != true &&
+					__ratelimit(&_rs))
 				KGSL_CORE_ERR(
 					"Out of memory: only allocated %lldKB of %lldKB requested\n",
 					(size - len) >> 10, size >> 10);
@@ -824,6 +916,7 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 			goto done;
 		}
 
+<<<<<<< HEAD
 		for (j = 0; j < page_size >> PAGE_SHIFT; j++)
 			memdesc->pages[pcount++] = nth_page(page, j);
 
@@ -831,6 +924,15 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 		memdesc->size += page_size;
 		memdesc->page_count = pcount;
 
+=======
+		pcount += page_count;
+		len -= page_size;
+		memdesc->size += page_size;
+		memdesc->page_count += page_count;
+
+		/* Get the needed page size for the next iteration */
+		page_size = kgsl_get_page_size(len, align);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	}
 
 	/* Call to the hypervisor to lock any secure buffer allocations */
@@ -885,6 +987,7 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 		goto done;
 	}
 
+<<<<<<< HEAD
 	/*
 	 * All memory that goes to the user has to be zeroed out before it gets
 	 * exposed to userspace. This means that the memory has to be mapped in
@@ -927,17 +1030,27 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 		}
 	}
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	KGSL_STATS_ADD(memdesc->size, &kgsl_driver.stats.page_alloc,
 		&kgsl_driver.stats.page_alloc_max);
 
 done:
 	if (ret) {
 		if (memdesc->pages) {
+<<<<<<< HEAD
 			for (j = 0; j < memdesc->page_count;) {
 				struct page *p = memdesc->pages[j];
 
 				j += 1 << compound_order(p);
 				__free_pages(p, compound_order(p));
+=======
+			unsigned int count = 1;
+
+			for (j = 0; j < pcount; j += count) {
+				count = 1 << compound_order(memdesc->pages[j]);
+				kgsl_pool_free_page(memdesc->pages[j]);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			}
 		}
 
@@ -982,8 +1095,8 @@ kgsl_sharedmem_readl(const struct kgsl_memdesc *memdesc,
 	if (offsetbytes % sizeof(uint32_t) != 0)
 		return -EINVAL;
 
-	WARN_ON(offsetbytes + sizeof(uint32_t) > memdesc->size);
-	if (offsetbytes + sizeof(uint32_t) > memdesc->size)
+	WARN_ON(offsetbytes > (memdesc->size - sizeof(uint32_t)));
+	if (offsetbytes > (memdesc->size - sizeof(uint32_t)))
 		return -ERANGE;
 
 	rmb();
@@ -1005,8 +1118,8 @@ kgsl_sharedmem_writel(struct kgsl_device *device,
 	if (offsetbytes % sizeof(uint32_t) != 0)
 		return -EINVAL;
 
-	WARN_ON(offsetbytes + sizeof(uint32_t) > memdesc->size);
-	if (offsetbytes + sizeof(uint32_t) > memdesc->size)
+	WARN_ON(offsetbytes > (memdesc->size - sizeof(uint32_t)));
+	if (offsetbytes > (memdesc->size - sizeof(uint32_t)))
 		return -ERANGE;
 	kgsl_cffdump_write(device,
 		memdesc->gpuaddr + offsetbytes,
@@ -1031,8 +1144,8 @@ kgsl_sharedmem_readq(const struct kgsl_memdesc *memdesc,
 	if (offsetbytes % sizeof(uint32_t) != 0)
 		return -EINVAL;
 
-	WARN_ON(offsetbytes + sizeof(uint32_t) > memdesc->size);
-	if (offsetbytes + sizeof(uint32_t) > memdesc->size)
+	WARN_ON(offsetbytes > (memdesc->size - sizeof(uint32_t)));
+	if (offsetbytes > (memdesc->size - sizeof(uint32_t)))
 		return -ERANGE;
 
 	/*
@@ -1058,8 +1171,8 @@ kgsl_sharedmem_writeq(struct kgsl_device *device,
 	if (offsetbytes % sizeof(uint32_t) != 0)
 		return -EINVAL;
 
-	WARN_ON(offsetbytes + sizeof(uint32_t) > memdesc->size);
-	if (offsetbytes + sizeof(uint32_t) > memdesc->size)
+	WARN_ON(offsetbytes > (memdesc->size - sizeof(uint32_t)));
+	if (offsetbytes > (memdesc->size - sizeof(uint32_t)))
 		return -ERANGE;
 	kgsl_cffdump_write(device,
 		lower_32_bits(memdesc->gpuaddr + offsetbytes), src);

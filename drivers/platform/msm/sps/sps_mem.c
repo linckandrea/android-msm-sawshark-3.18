@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2011-2013, 2015, 2019, The Linux Foundation.
+=======
+/* Copyright (c) 2011-2013, 2015, 2017, 2019, The Linux Foundation.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  * All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -130,7 +134,7 @@ int sps_mem_init(phys_addr_t pipemem_phys_base, u32 pipemem_size)
 
 		iomem_offset = 0;
 		SPS_DBG(sps,
-			"sps:sps_mem_init.iomem_phys=%pa,iomem_virt=0x%p.",
+			"sps:sps_mem_init.iomem_phys=%pa,iomem_virt=0x%pK.",
 			&iomem_phys, iomem_virt);
 	}
 

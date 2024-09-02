@@ -90,7 +90,10 @@ static ssize_t rsc_ops_write(struct file *fp, const char __user *user_buffer,
 		cmp += pos;
 		if (sscanf(cmp, "%5s %n", key_str, &pos) != 1) {
 			pr_err("Invalid number of arguments passed\n");
+<<<<<<< HEAD
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			goto err_request;
 		}
 

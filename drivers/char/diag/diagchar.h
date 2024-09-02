@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2008-2015,2017,2019-2020 The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2008-2020, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -607,6 +611,7 @@ struct diagchar_dev {
 #endif
 	int time_sync_enabled;
 	uint8_t uses_time_api;
+	struct platform_device *pdev;
 };
 
 extern struct diagchar_dev *driver;

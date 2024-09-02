@@ -50,7 +50,7 @@ static struct inet_protosw pingv6_protosw = {
 	.type =      SOCK_DGRAM,
 	.protocol =  IPPROTO_ICMPV6,
 	.prot =      &pingv6_prot,
-	.ops =       &inet6_dgram_ops,
+	.ops =       &inet6_sockraw_ops,
 	.flags =     INET_PROTOSW_REUSE,
 };
 
@@ -153,8 +153,15 @@ int ping_v6_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	rt = (struct rt6_info *) dst;
 
 	np = inet6_sk(sk);
+<<<<<<< HEAD
 	if (!np)
 		return -EBADF;
+=======
+	if (!np) {
+		err = -EBADF;
+		goto dst_err_out;
+	}
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 	pfh.icmph.type = user_icmph.icmp6_type;
 	pfh.icmph.code = user_icmph.icmp6_code;
@@ -183,6 +190,9 @@ int ping_v6_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 						 len);
 	}
 	release_sock(sk);
+
+dst_err_out:
+	dst_release(dst);
 
 	if (err)
 		return err;
@@ -227,7 +237,7 @@ static int __net_init ping_v6_proc_init_net(struct net *net)
 	return ping_proc_register(net, &ping_v6_seq_afinfo);
 }
 
-static void __net_init ping_v6_proc_exit_net(struct net *net)
+static void __net_exit ping_v6_proc_exit_net(struct net *net)
 {
 	return ping_proc_unregister(net, &ping_v6_seq_afinfo);
 }

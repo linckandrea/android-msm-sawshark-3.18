@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2008-2017,2019, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -168,8 +172,11 @@ EXPORT_SYMBOL(kgsl_cmdbatch_destroy_object);
 /*
  * a generic function to retire a pending sync event and (possibly)
  * kick the dispatcher
+ * Returns false if the event was already marked for cancellation in another
+ * thread. This function should return true if this thread is responsible for
+ * freeing up the memory, and the event will not be cancelled.
  */
-static void kgsl_cmdbatch_sync_expire(struct kgsl_device *device,
+static bool kgsl_cmdbatch_sync_expire(struct kgsl_device *device,
 	struct kgsl_cmdbatch_sync_event *event)
 {
 	/*
@@ -177,7 +184,7 @@ static void kgsl_cmdbatch_sync_expire(struct kgsl_device *device,
 	 * leave without doing anything useful
 	 */
 	if (!test_and_clear_bit(event->id, &event->cmdbatch->pending))
-		return;
+		return false;
 
 	/*
 	 * If no more pending events, delete the timer and schedule the command
@@ -190,6 +197,7 @@ static void kgsl_cmdbatch_sync_expire(struct kgsl_device *device,
 			device->ftbl->drawctxt_sched(device,
 				event->cmdbatch->context);
 	}
+	return true;
 }
 
 /*
@@ -204,8 +212,14 @@ static void kgsl_cmdbatch_sync_func(struct kgsl_device *device,
 	trace_syncpoint_timestamp_expire(event->cmdbatch,
 		event->context, event->timestamp);
 
-	kgsl_cmdbatch_sync_expire(device, event);
-	kgsl_context_put(event->context);
+	/*
+	 * Put down the context ref count only if
+	 * this thread successfully clears the pending bit mask.
+	 */
+
+	if (kgsl_cmdbatch_sync_expire(device, event))
+		kgsl_context_put(event->context);
+
 	kgsl_cmdbatch_put(event->cmdbatch);
 }
 
@@ -231,20 +245,17 @@ static inline void _free_memobj_list(struct list_head *list)
 void kgsl_cmdbatch_destroy(struct kgsl_cmdbatch *cmdbatch)
 {
 	unsigned int i;
+<<<<<<< HEAD
 	unsigned long pending, flags;
+=======
+	unsigned long flags;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 	if (IS_ERR_OR_NULL(cmdbatch))
 		return;
 
 	/* Zap the canary timer */
 	del_timer_sync(&cmdbatch->timer);
-
-	/*
-	 * Copy off the pending list and clear all pending events - this will
-	 * render any subsequent asynchronous callback harmless
-	 */
-	bitmap_copy(&pending, &cmdbatch->pending, KGSL_MAX_SYNCPOINTS);
-	bitmap_zero(&cmdbatch->pending, KGSL_MAX_SYNCPOINTS);
 
 	/*
 	 * Clear all pending events - this will render any subsequent async
@@ -254,8 +265,11 @@ void kgsl_cmdbatch_destroy(struct kgsl_cmdbatch *cmdbatch)
 	for (i = 0; i < cmdbatch->numsyncs; i++) {
 		struct kgsl_cmdbatch_sync_event *event = &cmdbatch->synclist[i];
 
-		/* Don't do anything if the event has already expired */
-		if (!test_bit(i, &pending))
+		/* Don't do anything if the event has already expired.
+		 * If this thread clears the pending bit mask then it is
+		 * responsible for doing context put.
+		 */
+		if (!test_and_clear_bit(i, &cmdbatch->pending))
 			continue;
 
 		switch (event->type) {
@@ -263,6 +277,11 @@ void kgsl_cmdbatch_destroy(struct kgsl_cmdbatch *cmdbatch)
 			kgsl_cancel_event(cmdbatch->device,
 				&event->context->events, event->timestamp,
 				kgsl_cmdbatch_sync_func, event);
+			/*
+			 * Do context put here to make sure the context is alive
+			 * till this thread cancels kgsl event.
+			 */
+			kgsl_context_put(event->context);
 			break;
 		case KGSL_CMD_SYNCPOINT_TYPE_FENCE:
 			spin_lock_irqsave(&event->handle_lock, flags);
@@ -297,7 +316,7 @@ void kgsl_cmdbatch_destroy(struct kgsl_cmdbatch *cmdbatch)
 	 * If we cancelled an event, there's a good chance that the context is
 	 * on a dispatcher queue, so schedule to get it removed.
 	 */
-	if (!bitmap_empty(&pending, KGSL_MAX_SYNCPOINTS) &&
+	if (!bitmap_empty(&cmdbatch->pending, KGSL_MAX_SYNCPOINTS) &&
 		cmdbatch->device->ftbl->drawctxt_sched)
 		cmdbatch->device->ftbl->drawctxt_sched(cmdbatch->device,
 							cmdbatch->context);
@@ -321,6 +340,17 @@ static void kgsl_cmdbatch_sync_fence_func(void *priv)
 		event->handle ? event->handle->name : "unknown");
 
 	spin_lock_irqsave(&event->handle_lock, flags);
+<<<<<<< HEAD
+=======
+
+	/*
+	 * Setting the event->handle to NULL here make sure that
+	 * other function does not dereference a invalid pointer.
+	 */
+	event->handle = NULL;
+
+	spin_unlock_irqrestore(&event->handle_lock, flags);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 	/*
 	 * Setting the event->handle to NULL here make sure that
@@ -569,13 +599,28 @@ static void add_profiling_buffer(struct kgsl_device *device,
 		return;
 	}
 
-	cmdbatch->profiling_buf_entry = entry;
+	if (!id) {
+		cmdbatch->profiling_buffer_gpuaddr = gpuaddr;
+	} else {
+		u64 off =
+			offset + sizeof(struct kgsl_cmdbatch_profiling_buffer);
 
-	if (id != 0)
+		/*
+		 * Make sure there is enough room in the object to store the
+		 * entire profiling buffer object
+		 */
+		if (off < offset || off >= entry->memdesc.size) {
+			dev_err(device->dev,
+				"ignore invalid profile offset ctxt %d id %d offset %lld gpuaddr %llx size %lld\n",
+			cmdbatch->context->id, id, offset, gpuaddr, size);
+			kgsl_mem_entry_put(entry);
+			return;
+		}
+
 		cmdbatch->profiling_buffer_gpuaddr =
 			entry->memdesc.gpuaddr + offset;
-	else
-		cmdbatch->profiling_buffer_gpuaddr = gpuaddr;
+	}
+	cmdbatch->profiling_buf_entry = entry;
 }
 
 /**

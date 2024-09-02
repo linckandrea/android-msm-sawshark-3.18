@@ -1321,6 +1321,9 @@ static int spidev_release(struct inode *inode, struct file *filp)
 		if (dofree)
 			kfree(spidev);
 	}
+#ifdef CONFIG_SPI_SLAVE
+	spi_slave_abort(spidev->spi);
+#endif
 	mutex_unlock(&device_list_lock);
 
 	return status;
@@ -1420,11 +1423,14 @@ static int spidev_remove(struct spi_device *spi)
 {
 	struct spidev_data	*spidev = spi_get_drvdata(spi);
 
+	/* prevent new opens */
+	mutex_lock(&device_list_lock);
 	/* make sure ops on existing fds can abort cleanly */
 	spin_lock_irq(&spidev->spi_lock);
 	spidev->spi = NULL;
 	spin_unlock_irq(&spidev->spi_lock);
 
+<<<<<<< HEAD
 	wake_lock_destroy(&spidev->wake_lock);
 	wake_lock_destroy(&spidev->wake_display_lock);
 
@@ -1445,6 +1451,8 @@ static int spidev_remove(struct spi_device *spi)
 	}
 	spidev_release_gpio(spidev);
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	list_del(&spidev->device_entry);
 	device_destroy(spidev_class, spidev->devt);
 	clear_bit(MINOR(spidev->devt), minors);

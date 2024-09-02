@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -19,9 +23,16 @@
 #define FASTRPC_IOCTL_INVOKE  _IOWR('R', 1, struct fastrpc_ioctl_invoke)
 #define FASTRPC_IOCTL_MMAP    _IOWR('R', 2, struct fastrpc_ioctl_mmap)
 #define FASTRPC_IOCTL_MUNMAP  _IOWR('R', 3, struct fastrpc_ioctl_munmap)
+#define FASTRPC_IOCTL_MMAP_64	_IOWR('R', 14, struct fastrpc_ioctl_mmap_64)
+#define FASTRPC_IOCTL_MUNMAP_64	_IOWR('R', 15, struct fastrpc_ioctl_munmap_64)
 #define FASTRPC_IOCTL_INVOKE_FD  _IOWR('R', 4, struct fastrpc_ioctl_invoke_fd)
 #define FASTRPC_IOCTL_SETMODE    _IOWR('R', 5, uint32_t)
 #define FASTRPC_IOCTL_INIT       _IOWR('R', 6, struct fastrpc_ioctl_init)
+<<<<<<< HEAD
+=======
+#define FASTRPC_IOCTL_GETINFO	_IOWR('R', 8, uint32_t)
+#define FASTRPC_GLINK_GUID "fastrpcglink-apps-dsp"
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #define FASTRPC_IOCTL_CONTROL	_IOWR('R', 12, struct fastrpc_ioctl_control)
 
 #define FASTRPC_SMD_GUID "fastrpcsmd-apps-dsp"
@@ -141,6 +152,10 @@ struct fastrpc_ioctl_munmap {
 	size_t size;		/* size */
 };
 
+struct fastrpc_ioctl_munmap_64 {
+	uint64_t vaddrout;	/* address to unmap */
+	size_t size;		/* size */
+};
 
 struct fastrpc_ioctl_mmap {
 	int fd;				/* ion fd */
@@ -150,6 +165,28 @@ struct fastrpc_ioctl_mmap {
 	uintptr_t vaddrout;		/* dsps virtual address */
 };
 
+<<<<<<< HEAD
+=======
+struct fastrpc_ioctl_mmap_64 {
+	int fd;				/* ion fd */
+	uint32_t flags;			/* flags for dsp to map with */
+	uint64_t vaddrin;		/* optional virtual address */
+	size_t size;			/* size */
+	uint64_t vaddrout;		/* dsps virtual address */
+};
+
+#define FASTRPC_CONTROL_LATENCY	(1)
+struct fastrpc_ctrl_latency {
+	uint32_t enable;	/* !latency control enable */
+	uint32_t level;		/* !level of control */
+};
+
+#define FASTRPC_CONTROL_SMMU	(2)
+struct fastrpc_ctrl_smmu {
+	uint32_t sharedcb;
+};
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #define FASTRPC_CONTROL_KALLOC (3)
 struct fastrpc_ctrl_kalloc {
 	uint32_t kalloc_support; /* Remote memory allocation from kernel */
@@ -158,6 +195,11 @@ struct fastrpc_ctrl_kalloc {
 struct fastrpc_ioctl_control {
 	uint32_t req;
 	union {
+<<<<<<< HEAD
+=======
+		struct fastrpc_ctrl_latency lp;
+		struct fastrpc_ctrl_smmu smmu;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		struct fastrpc_ctrl_kalloc kalloc;
 	};
 };
@@ -206,7 +248,10 @@ static inline struct smq_phy_page *smq_phy_page_start(uint32_t sc,
 						struct smq_invoke_buf *buf)
 {
 	uint32_t nTotal = REMOTE_SCALARS_INBUFS(sc)+REMOTE_SCALARS_OUTBUFS(sc);
+<<<<<<< HEAD
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	return (struct smq_phy_page *)(&buf[nTotal]);
 }
 

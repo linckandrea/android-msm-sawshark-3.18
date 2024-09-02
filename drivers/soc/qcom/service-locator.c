@@ -43,6 +43,9 @@
 static u32 locator_status = LOCATOR_UNKNOWN;
 static bool service_inited;
 
+int enable = 0;
+module_param(enable, int, 0);
+
 DECLARE_COMPLETION(locator_status_known);
 
 static void service_locator_svc_arrive(struct work_struct *work);
@@ -371,7 +374,7 @@ int get_service_location(struct pd_qmi_client_data *data)
 {
 	int rc = 0;
 
-	if (!data || !data->client_name || !data->service_name) {
+	if (!data) {
 		rc = -EINVAL;
 		pr_err("Invalid input!\n");
 		goto err;

@@ -54,7 +54,11 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 	int rc = 0;
 
 	switch (cmd) {
+<<<<<<< HEAD
 	case AUDIO_START: {
+=======
+	case AUDIO_START:
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		pr_err("%s[%pK]: AUDIO_START session_id[%d]\n", __func__,
 			audio, audio->ac->session);
 		if (audio->feedback == NON_TUNNEL_MODE) {
@@ -104,10 +108,8 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		pr_debug("%s:AUDIO_START sessionid[%d]enable[%d]\n", __func__,
 			audio->ac->session,
 			audio->enabled);
-		if (audio->stopped == 1)
-			audio->stopped = 0;
-			break;
-		}
+		audio->stopped = 0;
+		break;
 	default:
 		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
@@ -312,6 +314,8 @@ static int audio_open(struct inode *inode, struct file *file)
 	audio->miscdevice = &audio_amrwbplus_misc;
 	audio->wakelock_voted = false;
 	audio->audio_ws_mgr = &audio_amrwbplus_ws_mgr;
+
+	init_waitqueue_head(&audio->event_wait);
 
 	audio->ac =
 	q6asm_audio_client_alloc((app_cb) q6_audio_cb, (void *)audio);

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -37,9 +41,16 @@ static struct list_head    ordered_sd_list;
 static struct mutex        ordered_sd_mtx;
 static struct mutex        v4l2_event_mtx;
 
+static atomic_t qos_add_request_done = ATOMIC_INIT(0);
 static struct pm_qos_request msm_v4l2_pm_qos_request;
 
 static struct msm_queue_head *msm_session_q;
+
+/* This variable represent daemon status
+ * true = daemon present (default state)
+ * false = daemon is NOT present
+ */
+bool is_daemon_status = true;
 
 /* config node envent queue */
 static struct v4l2_fh  *msm_eventq;
@@ -210,9 +221,11 @@ static inline int __msm_queue_find_command_ack_q(void *d1, void *d2)
 	return (ack->stream_id == *(unsigned int *)d2) ? 1 : 0;
 }
 
-static void msm_pm_qos_add_request(void)
+static inline void msm_pm_qos_add_request(void)
 {
 	pr_info("%s: add request", __func__);
+	if (atomic_cmpxchg(&qos_add_request_done, 0, 1))
+		return;
 	pm_qos_add_request(&msm_v4l2_pm_qos_request, PM_QOS_CPU_DMA_LATENCY,
 	PM_QOS_DEFAULT_VALUE);
 }
@@ -226,6 +239,7 @@ static void msm_pm_qos_remove_request(void)
 void msm_pm_qos_update_request(int val)
 {
 	pr_info("%s: update request %d", __func__, val);
+	msm_pm_qos_add_request();
 	pm_qos_update_request(&msm_v4l2_pm_qos_request, val);
 }
 
@@ -602,9 +616,6 @@ static inline int __msm_remove_session_cmd_ack_q(void *d1, void *d2)
 {
 	struct msm_command_ack *cmd_ack = d1;
 
-	if (!(&cmd_ack->command_q))
-		return 0;
-
 	msm_queue_drain(&cmd_ack->command_q, struct msm_command, list);
 
 	return 0;
@@ -612,7 +623,7 @@ static inline int __msm_remove_session_cmd_ack_q(void *d1, void *d2)
 
 static void msm_remove_session_cmd_ack_q(struct msm_session *session)
 {
-	if ((!session) || !(&session->command_ack_q))
+	if (!session)
 		return;
 
 	mutex_lock(&session->lock);
@@ -718,6 +729,17 @@ static long msm_private_ioctl(struct file *file, void *fh,
 	unsigned long spin_flags = 0;
 	struct msm_sd_subdev *msm_sd;
 
+<<<<<<< HEAD
+=======
+	if (cmd == MSM_CAM_V4L2_IOCTL_DAEMON_DISABLED) {
+		is_daemon_status = false;
+		return 0;
+	}
+
+	if (!event_data)
+		return -EINVAL;
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	switch (cmd) {
 	case MSM_CAM_V4L2_IOCTL_NOTIFY:
 	case MSM_CAM_V4L2_IOCTL_CMD_ACK:
@@ -729,9 +751,13 @@ static long msm_private_ioctl(struct file *file, void *fh,
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	memset(&event, 0, sizeof(struct v4l2_event));
 >>>>>>> LAW.BR.2.0-05510-8x09w.0
+=======
+	memset(&event, 0, sizeof(struct v4l2_event));
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	session_id = event_data->session_id;
 	stream_id = event_data->stream_id;
 
@@ -1187,6 +1213,36 @@ struct msm_session *msm_get_session_from_vb2q(struct vb2_queue *q)
 }
 EXPORT_SYMBOL(msm_get_session_from_vb2q);
 
+<<<<<<< HEAD
+=======
+
+#ifdef CONFIG_COMPAT
+long msm_copy_camera_private_ioctl_args(unsigned long arg,
+	struct msm_camera_private_ioctl_arg *k_ioctl,
+	void __user **tmp_compat_ioctl_ptr)
+{
+	struct msm_camera_private_ioctl_arg up_ioctl;
+
+	if (WARN_ON(!arg || !k_ioctl || !tmp_compat_ioctl_ptr))
+		return -EIO;
+
+	if (copy_from_user(&up_ioctl,
+		(struct msm_camera_private_ioctl_arg *)arg,
+		sizeof(struct msm_camera_private_ioctl_arg)))
+		return -EFAULT;
+
+	k_ioctl->id = up_ioctl.id;
+	k_ioctl->size = up_ioctl.size;
+	k_ioctl->result = up_ioctl.result;
+	k_ioctl->reserved = up_ioctl.reserved;
+	*tmp_compat_ioctl_ptr = compat_ptr(up_ioctl.ioctl_ptr);
+
+	return 0;
+}
+EXPORT_SYMBOL(msm_copy_camera_private_ioctl_args);
+#endif
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 static void msm_sd_notify(struct v4l2_subdev *sd,
 	unsigned int notification, void *arg)
 {
@@ -1235,7 +1291,7 @@ static ssize_t write_logsync(struct file *file, const char __user *buf,
 	uint64_t seq_num = 0;
 	int ret;
 
-	if (copy_from_user(lbuf, buf, sizeof(lbuf)))
+	if (copy_from_user(lbuf, buf, sizeof(lbuf) - 1))
 		return -EFAULT;
 
 	ret = sscanf(lbuf, "%llu", &seq_num);
@@ -1293,7 +1349,7 @@ static int msm_probe(struct platform_device *pdev)
 	if (WARN_ON(rc < 0))
 		goto media_fail;
 
-	if (WARN_ON((rc == media_entity_init(&pvdev->vdev->entity,
+	if (WARN_ON((rc = media_entity_init(&pvdev->vdev->entity,
 			0, NULL, 0)) < 0))
 		goto entity_fail;
 

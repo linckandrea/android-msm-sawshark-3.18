@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2011-2017, 2019-2020, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1079,7 +1083,7 @@ static int32_t msm_actuator_vreg_control(struct msm_actuator_ctrl_t *a_ctrl,
 	if (!cnt)
 		return 0;
 
-	if (cnt >= MSM_ACTUATOT_MAX_VREGS) {
+	if (cnt >= MSM_ACTUATOR_MAX_VREGS) {
 		pr_err("%s failed %d cnt %d\n", __func__, __LINE__, cnt);
 		return -EINVAL;
 	}
@@ -1105,6 +1109,8 @@ static int32_t msm_actuator_vreg_control(struct msm_actuator_ctrl_t *a_ctrl,
 static int32_t msm_actuator_power_down(struct msm_actuator_ctrl_t *a_ctrl)
 {
 	int32_t rc = 0;
+	enum msm_sensor_power_seq_gpio_t gpio;
+
 	CDBG("Enter\n");
 	if (a_ctrl->actuator_state != ACT_DISABLE_STATE) {
 
@@ -1119,6 +1125,41 @@ static int32_t msm_actuator_power_down(struct msm_actuator_ctrl_t *a_ctrl)
 		if (rc < 0) {
 			pr_err("%s failed %d\n", __func__, __LINE__);
 			return rc;
+		}
+
+		for (gpio = SENSOR_GPIO_AF_PWDM;
+			gpio < SENSOR_GPIO_MAX; gpio++) {
+			if (a_ctrl->gconf &&
+				a_ctrl->gconf->gpio_num_info &&
+				a_ctrl->gconf->gpio_num_info->
+					valid[gpio] == 1) {
+
+				gpio_set_value_cansleep(
+					a_ctrl->gconf->gpio_num_info->
+						gpio_num[gpio],
+					GPIOF_OUT_INIT_LOW);
+
+				if (a_ctrl->cam_pinctrl_status) {
+					rc = pinctrl_select_state(
+						a_ctrl->pinctrl_info.pinctrl,
+						a_ctrl->pinctrl_info.
+							gpio_state_suspend);
+					if (rc < 0)
+						pr_err("ERR:%s:%d cannot set pin to suspend state: %d",
+							__func__, __LINE__, rc);
+
+					devm_pinctrl_put(
+						a_ctrl->pinctrl_info.pinctrl);
+				}
+				a_ctrl->cam_pinctrl_status = 0;
+				rc = msm_camera_request_gpio_table(
+					a_ctrl->gconf->cam_gpio_req_tbl,
+					a_ctrl->gconf->cam_gpio_req_tbl_size,
+					0);
+				if (rc < 0)
+					pr_err("ERR:%s:Failed in selecting state in actuator power down: %d\n",
+						__func__, rc);
+			}
 		}
 
 		kfree(a_ctrl->step_position_table);
@@ -1163,6 +1204,7 @@ static int32_t msm_actuator_set_position(
 	}
 
 	a_ctrl->i2c_tbl_index = 0;
+	hw_params = set_pos->hw_params;
 	for (index = 0; index < set_pos->number_of_steps; index++) {
 		next_lens_position = set_pos->pos[index];
 		delay = set_pos->delay[index];
@@ -1266,9 +1308,12 @@ static int32_t msm_actuator_set_param(struct msm_actuator_ctrl_t *a_ctrl,
 		(void *)set_info->af_tuning_params.region_params,
 		a_ctrl->region_size * sizeof(struct region_params_t))) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		a_ctrl->total_steps = 0;
 =======
 >>>>>>> LAW.BR.2.0-05510-8x09w.0
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		pr_err("Error copying region_params\n");
 		return -EFAULT;
 	}
@@ -1735,12 +1780,41 @@ static long msm_actuator_subdev_fops_ioctl(struct file *file, unsigned int cmd,
 static int32_t msm_actuator_power_up(struct msm_actuator_ctrl_t *a_ctrl)
 {
 	int rc = 0;
+	enum msm_sensor_power_seq_gpio_t gpio;
+
 	CDBG("%s called\n", __func__);
 
 	rc = msm_actuator_vreg_control(a_ctrl, 1);
 	if (rc < 0) {
 		pr_err("%s failed %d\n", __func__, __LINE__);
 		return rc;
+	}
+
+	for (gpio = SENSOR_GPIO_AF_PWDM; gpio < SENSOR_GPIO_MAX; gpio++) {
+		if (a_ctrl->gconf &&
+			a_ctrl->gconf->gpio_num_info &&
+			a_ctrl->gconf->gpio_num_info->valid[gpio] == 1) {
+			rc = msm_camera_request_gpio_table(
+				a_ctrl->gconf->cam_gpio_req_tbl,
+				a_ctrl->gconf->cam_gpio_req_tbl_size, 1);
+			if (rc < 0) {
+				pr_err("ERR:%s:Failed in selecting state for actuator: %d\n",
+					__func__, rc);
+				return rc;
+			}
+			if (a_ctrl->cam_pinctrl_status) {
+				rc = pinctrl_select_state(
+					a_ctrl->pinctrl_info.pinctrl,
+					a_ctrl->pinctrl_info.gpio_state_active);
+				if (rc < 0)
+					pr_err("ERR:%s:%d cannot set pin to active state: %d",
+						__func__, __LINE__, rc);
+			}
+
+			gpio_set_value_cansleep(
+				a_ctrl->gconf->gpio_num_info->gpio_num[gpio],
+				1);
+		}
 	}
 
 	/* VREG needs some delay to power up */
@@ -1903,6 +1977,21 @@ static int32_t msm_actuator_platform_probe(struct platform_device *pdev)
 			return rc;
 		}
 	}
+	rc = msm_sensor_driver_get_gpio_data(&(msm_actuator_t->gconf),
+		(&pdev->dev)->of_node);
+	if (-ENODEV == rc) {
+		pr_notice("No valid actuator GPIOs data\n");
+	} else if (rc < 0) {
+		pr_err("Error Actuator GPIOs\n");
+	} else {
+		msm_actuator_t->cam_pinctrl_status = 1;
+		rc = msm_camera_pinctrl_init(
+			&(msm_actuator_t->pinctrl_info), &(pdev->dev));
+		if (rc < 0) {
+			pr_err("ERR: Error in reading actuator pinctrl\n");
+			msm_actuator_t->cam_pinctrl_status = 0;
+		}
+	}
 
 	msm_actuator_t->act_v4l2_subdev_ops = &msm_actuator_subdev_ops;
 	msm_actuator_t->actuator_mutex = &msm_actuator_mutex;
@@ -1989,8 +2078,6 @@ static int __init msm_actuator_init_module(void)
 	int32_t rc = 0;
 	CDBG("Enter\n");
 	rc = platform_driver_register(&msm_actuator_platform_driver);
-	if (!rc)
-		return rc;
 
 	CDBG("%s:%d rc %d\n", __func__, __LINE__, rc);
 	return i2c_add_driver(&msm_actuator_i2c_driver);

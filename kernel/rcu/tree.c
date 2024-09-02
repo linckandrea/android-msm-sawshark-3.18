@@ -125,6 +125,8 @@ static int num_rcu_lvl[] = {  /* Number of rcu_nodes at specified level. */
 	NUM_RCU_LVL_4,
 };
 int rcu_num_nodes __read_mostly = NUM_RCU_NODES; /* Total # rcu_nodes in use. */
+/* panic() on RCU Stall sysctl. */
+int sysctl_panic_on_rcu_stall __read_mostly;
 
 /*
  * The rcu_scheduler_active variable transitions from zero to one just
@@ -152,22 +154,13 @@ EXPORT_SYMBOL_GPL(rcu_scheduler_active);
  */
 static int rcu_scheduler_fully_active __read_mostly;
 
-#ifdef CONFIG_RCU_BOOST
-
-/*
- * Control variables for per-CPU and per-rcu_node kthreads.  These
- * handle all flavors of RCU.
- */
-static DEFINE_PER_CPU(struct task_struct *, rcu_cpu_kthread_task);
-DEFINE_PER_CPU(unsigned int, rcu_cpu_kthread_status);
-DEFINE_PER_CPU(unsigned int, rcu_cpu_kthread_loops);
-DEFINE_PER_CPU(char, rcu_cpu_has_work);
-
-#endif /* #ifdef CONFIG_RCU_BOOST */
-
 static void rcu_boost_kthread_setaffinity(struct rcu_node *rnp, int outgoingcpu);
 static void invoke_rcu_core(void);
 static void invoke_rcu_callbacks(struct rcu_state *rsp, struct rcu_data *rdp);
+
+/* rcuc/rcub kthread realtime priority */
+static int kthread_prio = CONFIG_RCU_KTHREAD_PRIO;
+module_param(kthread_prio, int, 0644);
 
 /*
  * Track the rcutorture test sequence number and the update version
@@ -1045,6 +1038,12 @@ static void rcu_dump_cpu_stacks(struct rcu_state *rsp)
 	}
 }
 
+static inline void panic_on_rcu_stall(void)
+{
+	if (sysctl_panic_on_rcu_stall)
+		panic("RCU Stall\n");
+}
+
 static void print_other_cpu_stall(struct rcu_state *rsp)
 {
 	int cpu;
@@ -1111,6 +1110,8 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
 
 	rcu_print_detail_task_stall(rsp);
 
+	panic_on_rcu_stall();
+
 	force_quiescent_state(rsp);  /* Kick them all. */
 }
 
@@ -1142,6 +1143,8 @@ static void print_cpu_stall(struct rcu_state *rsp)
 		ACCESS_ONCE(rsp->jiffies_stall) = jiffies +
 				     3 * rcu_jiffies_till_stall_check() + 3;
 	raw_spin_unlock_irqrestore(&rnp->lock, flags);
+
+	panic_on_rcu_stall();
 
 	/*
 	 * Attempt to revive the RCU machinery by forcing a context switch.
@@ -3476,8 +3479,10 @@ static int rcu_cpu_notify(struct notifier_block *self,
 	case CPU_DEAD_FROZEN:
 	case CPU_UP_CANCELED:
 	case CPU_UP_CANCELED_FROZEN:
-		for_each_rcu_flavor(rsp)
+		for_each_rcu_flavor(rsp) {
 			rcu_cleanup_dead_cpu(cpu, rsp);
+			do_nocb_deferred_wakeup(per_cpu_ptr(rsp->rda, cpu));
+		}
 		break;
 	default:
 		break;
@@ -3511,17 +3516,35 @@ static int rcu_pm_notify(struct notifier_block *self,
 static int __init rcu_spawn_gp_kthread(void)
 {
 	unsigned long flags;
+	int kthread_prio_in = kthread_prio;
 	struct rcu_node *rnp;
 	struct rcu_state *rsp;
+	struct sched_param sp;
 	struct task_struct *t;
+
+	/* Force priority into range. */
+	if (IS_ENABLED(CONFIG_RCU_BOOST) && kthread_prio < 1)
+		kthread_prio = 1;
+	else if (kthread_prio < 0)
+		kthread_prio = 0;
+	else if (kthread_prio > 99)
+		kthread_prio = 99;
+	if (kthread_prio != kthread_prio_in)
+		pr_alert("rcu_spawn_gp_kthread(): Limited prio to %d from %d\n",
+			 kthread_prio, kthread_prio_in);
 
 	rcu_scheduler_fully_active = 1;
 	for_each_rcu_flavor(rsp) {
-		t = kthread_run(rcu_gp_kthread, rsp, "%s", rsp->name);
+		t = kthread_create(rcu_gp_kthread, rsp, "%s", rsp->name);
 		BUG_ON(IS_ERR(t));
 		rnp = rcu_get_root(rsp);
 		raw_spin_lock_irqsave(&rnp->lock, flags);
 		rsp->gp_kthread = t;
+		if (kthread_prio) {
+			sp.sched_priority = kthread_prio;
+			sched_setscheduler_nocheck(t, SCHED_FIFO, &sp);
+		}
+		wake_up_process(t);
 		raw_spin_unlock_irqrestore(&rnp->lock, flags);
 	}
 	rcu_spawn_nocb_kthreads();

@@ -140,8 +140,6 @@ source "drivers/staging/Kconfig"
 
 source "drivers/platform/Kconfig"
 
-source "drivers/soc/Kconfig"
-
 source "drivers/clk/Kconfig"
 
 source "drivers/hwspinlock/Kconfig"
@@ -198,8 +196,11 @@ source "drivers/firmware/Kconfig"
 
 source "drivers/bif/Kconfig"
 
+<<<<<<< HEAD
 source "drivers/hwmcu/Kconfig"
 
 source "drivers/nfc/Kconfig"
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 endmenu

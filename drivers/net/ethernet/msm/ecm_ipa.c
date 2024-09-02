@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -9,6 +13,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+<<<<<<< HEAD
+=======
+#include <linux/ipc_logging.h>
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #include <linux/debugfs.h>
 #include <linux/errno.h>
 #include <linux/etherdevice.h>
@@ -25,22 +33,54 @@
 #define ECM_IPA_IPV6_HDR_NAME "ecm_eth_ipv6"
 #define INACTIVITY_MSEC_DELAY 100
 #define DEFAULT_OUTSTANDING_HIGH 64
-#define DEFAULT_OUTSTANDING_LOW 32
+#define DEFAULT_OUTSTANDING_LOW 48
 #define DEBUGFS_TEMP_BUF_SIZE 4
 #define TX_TIMEOUT (5 * HZ)
 
 
+#define IPA_ECM_IPC_LOG_PAGES 50
+
+#define IPA_ECM_IPC_LOGGING(buf, fmt, args...) \
+	do { \
+		if (buf) \
+			ipc_log_string((buf), fmt, __func__, __LINE__, \
+				## args); \
+	} while (0)
+
+static void *ipa_ecm_logbuf;
+
 #define ECM_IPA_DEBUG(fmt, args...) \
-	pr_debug("ctx:%s: "\
-			fmt, current->comm, ## args)
+	do { \
+		pr_debug(DRIVER_NAME " %s:%d "\
+			fmt, __func__, __LINE__, ## args);\
+		if (ipa_ecm_logbuf) { \
+			IPA_ECM_IPC_LOGGING(ipa_ecm_logbuf, \
+				DRIVER_NAME " %s:%d " fmt, ## args); \
+		} \
+	} while (0)
+
+#define ECM_IPA_DEBUG_XMIT(fmt, args...) \
+	pr_debug(DRIVER_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
 
 #define ECM_IPA_INFO(fmt, args...) \
-	pr_err(DRIVER_NAME "@%s@%d@ctx:%s: "\
-			fmt, __func__, __LINE__, current->comm, ## args)
+	do { \
+		pr_info(DRIVER_NAME "@%s@%d@ctx:%s: "\
+			fmt, __func__, __LINE__, current->comm, ## args);\
+		if (ipa_ecm_logbuf) { \
+			IPA_ECM_IPC_LOGGING(ipa_ecm_logbuf, \
+				DRIVER_NAME " %s:%d " fmt, ## args); \
+		} \
+	} while (0)
 
 #define ECM_IPA_ERROR(fmt, args...) \
-	pr_err(DRIVER_NAME "@%s@%d@ctx:%s: "\
-			fmt, __func__, __LINE__, current->comm, ## args)
+	do { \
+		pr_err(DRIVER_NAME "@%s@%d@ctx:%s: "\
+			fmt, __func__, __LINE__, current->comm, ## args);\
+		if (ipa_ecm_logbuf) { \
+			IPA_ECM_IPC_LOGGING(ipa_ecm_logbuf, \
+				DRIVER_NAME " %s:%d " fmt, ## args); \
+		} \
+	} while (0)
 
 #define NULL_CHECK(ptr) \
 	do { \
@@ -165,7 +205,7 @@ static netdev_tx_t ecm_ipa_start_xmit(struct sk_buff *skb,
 static int ecm_ipa_debugfs_atomic_open(struct inode *inode, struct file *file);
 static ssize_t ecm_ipa_debugfs_atomic_read(struct file *file,
 		char __user *ubuf, size_t count, loff_t *ppos);
-static int ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx);
+static void ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx);
 static void ecm_ipa_debugfs_destroy(struct ecm_ipa_dev *ecm_ipa_ctx);
 static int ecm_ipa_ep_registers_cfg(u32 usb_to_ipa_hdl, u32 ipa_to_usb_hdl);
 static int ecm_ipa_set_device_ethernet_addr(u8 *dev_ethaddr,
@@ -262,10 +302,7 @@ int ecm_ipa_init(struct ecm_ipa_params *params)
 		ECM_IPA_DEBUG("device_ready_notify() was not supplied");
 	ecm_ipa_ctx->device_ready_notify = params->device_ready_notify;
 
-	result = ecm_ipa_debugfs_init(ecm_ipa_ctx);
-	if (result)
-		goto fail_debugfs;
-	ECM_IPA_DEBUG("debugfs entries were created\n");
+	ecm_ipa_debugfs_init(ecm_ipa_ctx);
 
 	result = ecm_ipa_set_device_ethernet_addr(net->dev_addr,
 			params->device_ethaddr);
@@ -314,7 +351,6 @@ fail_register_netdev:
 fail_set_device_ethernet:
 fail_rules_cfg:
 	ecm_ipa_debugfs_destroy(ecm_ipa_ctx);
-fail_debugfs:
 fail_netdev_priv:
 	free_netdev(net);
 fail_alloc_etherdev:
@@ -551,7 +587,8 @@ static netdev_tx_t ecm_ipa_start_xmit(struct sk_buff *skb,
 
 	net->trans_start = jiffies;
 
-	ECM_IPA_DEBUG("Tx, len=%d, skb->protocol=%d, outstanding=%d\n",
+	ECM_IPA_DEBUG_XMIT
+		("Tx, len=%d, skb->protocol=%d, outstanding=%d\n",
 		skb->len, skb->protocol,
 		atomic_read(&ecm_ipa_ctx->outstanding_pkts));
 
@@ -1156,7 +1193,9 @@ static void ecm_ipa_tx_complete_notify(void *priv,
 	ecm_ipa_ctx->net->stats.tx_packets++;
 	ecm_ipa_ctx->net->stats.tx_bytes += skb->len;
 
-	atomic_dec(&ecm_ipa_ctx->outstanding_pkts);
+	if (atomic_read(&ecm_ipa_ctx->outstanding_pkts) > 0)
+		atomic_dec(&ecm_ipa_ctx->outstanding_pkts);
+
 	if (netif_queue_stopped(ecm_ipa_ctx->net) &&
 		netif_carrier_ok(ecm_ipa_ctx->net) &&
 		atomic_read(&ecm_ipa_ctx->outstanding_pkts) <
@@ -1201,8 +1240,9 @@ static ssize_t ecm_ipa_debugfs_atomic_read(struct file *file,
 	return simple_read_from_buffer(ubuf, count, ppos, atomic_str, nbytes);
 }
 
+#ifdef CONFIG_DEBUG_FS
 
-static int ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx)
+static void ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx)
 {
 	const mode_t flags_read_write = S_IRUGO | S_IWUGO;
 	const mode_t flags_read_only = S_IRUGO;
@@ -1211,7 +1251,7 @@ static int ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx)
 	ECM_IPA_LOG_ENTRY();
 
 	if (!ecm_ipa_ctx)
-		return -EINVAL;
+		return;
 
 	ecm_ipa_ctx->directory = debugfs_create_dir("ecm_ipa", NULL);
 	if (!ecm_ipa_ctx->directory) {
@@ -1238,13 +1278,17 @@ static int ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx)
 		goto fail_file;
 	}
 
+<<<<<<< HEAD
+=======
+	ECM_IPA_DEBUG("debugfs entries were created\n");
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	ECM_IPA_LOG_EXIT();
 
-	return 0;
+	return;
 fail_file:
 	debugfs_remove_recursive(ecm_ipa_ctx->directory);
 fail_directory:
-	return -EFAULT;
+	return;
 }
 
 static void ecm_ipa_debugfs_destroy(struct ecm_ipa_dev *ecm_ipa_ctx)
@@ -1252,6 +1296,13 @@ static void ecm_ipa_debugfs_destroy(struct ecm_ipa_dev *ecm_ipa_ctx)
 	debugfs_remove_recursive(ecm_ipa_ctx->directory);
 }
 
+#else /* !CONFIG_DEBUG_FS*/
+
+static void ecm_ipa_debugfs_init(struct ecm_ipa_dev *ecm_ipa_ctx) {}
+
+static void ecm_ipa_debugfs_destroy(struct ecm_ipa_dev *ecm_ipa_ctx) {}
+
+#endif /* CONFIG_DEBUG_FS */
 /**
  * ecm_ipa_ep_cfg() - configure the USB endpoints for ECM
  *
@@ -1408,6 +1459,10 @@ static const char *ecm_ipa_state_string(enum ecm_ipa_state state)
 static int ecm_ipa_init_module(void)
 {
 	ECM_IPA_LOG_ENTRY();
+	ipa_ecm_logbuf =
+		ipc_log_context_create(IPA_ECM_IPC_LOG_PAGES, "ipa_ecm", 0);
+	if (ipa_ecm_logbuf == NULL)
+		ECM_IPA_DEBUG("failed to create IPC log, continue...\n");
 	ECM_IPA_LOG_EXIT();
 	return 0;
 }
@@ -1419,6 +1474,9 @@ static int ecm_ipa_init_module(void)
 static void ecm_ipa_cleanup_module(void)
 {
 	ECM_IPA_LOG_ENTRY();
+	if (ipa_ecm_logbuf)
+		ipc_log_context_destroy(ipa_ecm_logbuf);
+	ipa_ecm_logbuf = NULL;
 	ECM_IPA_LOG_EXIT();
 	return;
 }

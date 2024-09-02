@@ -1,6 +1,10 @@
 /* Qualcomm CE device driver.
  *
+<<<<<<< HEAD
  * Copyright (c) 2010-2016, The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2010-2017, The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -201,7 +205,7 @@ static int qcedev_release(struct inode *inode, struct file *file)
 	handle =  file->private_data;
 	podev =  handle->cntl;
 	if (podev != NULL && podev->magic != QCEDEV_MAGIC) {
-		pr_err("%s: invalid handle %p\n",
+		pr_err("%s: invalid handle %pK\n",
 					__func__, podev);
 	}
 	kzfree(handle);
@@ -1209,6 +1213,7 @@ static int qcedev_vbuf_ablk_cipher(struct qcedev_async_req *areq,
 	struct qcedev_cipher_op_req *saved_req;
 	struct	qcedev_cipher_op_req *creq = &areq->cipher_op_req;
 
+<<<<<<< HEAD
 	/* Verify Destination Address's */
 	if (creq->in_place_op != 1) {
 		for (i = 0, total = 0; i < QCEDEV_MAX_BUFFERS; i++) {
@@ -1224,6 +1229,8 @@ static int qcedev_vbuf_ablk_cipher(struct qcedev_async_req *areq,
 			}
 		}
 	}
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	total = 0;
 
 	if (areq->cipher_op_req.mode == QCEDEV_AES_MODE_CTR)
@@ -1395,7 +1402,7 @@ static int qcedev_check_cipher_key(struct qcedev_cipher_op_req *req,
 			/* if not using HW key make sure key
 			 * length is valid
 			 */
-			if ((req->mode == QCEDEV_AES_MODE_XTS)) {
+			if (req->mode == QCEDEV_AES_MODE_XTS) {
 				if ((req->encklen != QCEDEV_AES_KEY_128*2) &&
 				(req->encklen != QCEDEV_AES_KEY_256*2)) {
 					pr_err("%s: unsupported key size: %d\n",
@@ -1613,14 +1620,18 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 	int err = 0;
 	struct qcedev_handle *handle;
 	struct qcedev_control *podev;
-	struct qcedev_async_req qcedev_areq;
+	struct qcedev_async_req *qcedev_areq;
 	struct qcedev_stat *pstat;
+
+	qcedev_areq = kzalloc(sizeof(struct qcedev_async_req), GFP_KERNEL);
+	if (!qcedev_areq)
+		return -ENOMEM;
 
 	handle =  file->private_data;
 	podev =  handle->cntl;
-	qcedev_areq.handle = handle;
+	qcedev_areq->handle = handle;
 	if (podev == NULL || podev->magic != QCEDEV_MAGIC) {
-		pr_err("%s: invalid handle %p\n",
+		pr_err("%s: invalid handle %pK\n",
 			__func__, podev);
 		return -ENOENT;
 	}
@@ -1629,27 +1640,35 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 	if (_IOC_TYPE(cmd) != QCEDEV_IOC_MAGIC)
 		return -ENOTTY;
 
-	init_completion(&qcedev_areq.complete);
+	init_completion(&qcedev_areq->complete);
 	pstat = &_qcedev_stat;
 
 	switch (cmd) {
 	case QCEDEV_IOCTL_ENC_REQ:
 	case QCEDEV_IOCTL_DEC_REQ:
+<<<<<<< HEAD
 		if (copy_from_user(&qcedev_areq.cipher_op_req,
+=======
+		if (copy_from_user(&qcedev_areq->cipher_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 				(void __user *)arg,
 				sizeof(struct qcedev_cipher_op_req)))
 			return -EFAULT;
-		qcedev_areq.op_type = QCEDEV_CRYPTO_OPER_CIPHER;
+		qcedev_areq->op_type = QCEDEV_CRYPTO_OPER_CIPHER;
 
-		if (qcedev_check_cipher_params(&qcedev_areq.cipher_op_req,
+		if (qcedev_check_cipher_params(&qcedev_areq->cipher_op_req,
 				podev))
 			return -EINVAL;
 
-		err = qcedev_vbuf_ablk_cipher(&qcedev_areq, handle);
+		err = qcedev_vbuf_ablk_cipher(qcedev_areq, handle);
 		if (err)
 			return err;
 		if (copy_to_user((void __user *)arg,
+<<<<<<< HEAD
 					&qcedev_areq.cipher_op_req,
+=======
+					&qcedev_areq->cipher_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					sizeof(struct qcedev_cipher_op_req)))
 			return -EFAULT;
 		break;
@@ -1658,23 +1677,40 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		{
 		struct scatterlist sg_src;
 
+<<<<<<< HEAD
 		if (copy_from_user(&qcedev_areq.sha_op_req,
+=======
+		if (copy_from_user(&qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					(void __user *)arg,
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		mutex_lock(&hash_access_lock);
+<<<<<<< HEAD
 		if (qcedev_check_sha_params(&qcedev_areq.sha_op_req, podev)) {
 			mutex_unlock(&hash_access_lock);
 			return -EINVAL;
 		}
 		qcedev_areq.op_type = QCEDEV_CRYPTO_OPER_SHA;
 		err = qcedev_hash_init(&qcedev_areq, handle, &sg_src);
+=======
+		if (qcedev_check_sha_params(&qcedev_areq->sha_op_req, podev)) {
+			mutex_unlock(&hash_access_lock);
+			return -EINVAL;
+		}
+		qcedev_areq->op_type = QCEDEV_CRYPTO_OPER_SHA;
+		err = qcedev_hash_init(qcedev_areq, handle, &sg_src);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		if (err) {
 			mutex_unlock(&hash_access_lock);
 			return err;
 		}
 		mutex_unlock(&hash_access_lock);
+<<<<<<< HEAD
 		if (copy_to_user((void __user *)arg, &qcedev_areq.sha_op_req,
+=======
+		if (copy_to_user((void __user *)arg, &qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		}
@@ -1687,11 +1723,16 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		{
 		struct scatterlist sg_src;
 
+<<<<<<< HEAD
 		if (copy_from_user(&qcedev_areq.sha_op_req,
+=======
+		if (copy_from_user(&qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					(void __user *)arg,
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		mutex_lock(&hash_access_lock);
+<<<<<<< HEAD
 		if (qcedev_check_sha_params(&qcedev_areq.sha_op_req, podev)) {
 			mutex_unlock(&hash_access_lock);
 			return -EINVAL;
@@ -1700,6 +1741,16 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 
 		if (qcedev_areq.sha_op_req.alg == QCEDEV_ALG_AES_CMAC) {
 			err = qcedev_hash_cmac(&qcedev_areq, handle, &sg_src);
+=======
+		if (qcedev_check_sha_params(&qcedev_areq->sha_op_req, podev)) {
+			mutex_unlock(&hash_access_lock);
+			return -EINVAL;
+		}
+		qcedev_areq->op_type = QCEDEV_CRYPTO_OPER_SHA;
+
+		if (qcedev_areq->sha_op_req.alg == QCEDEV_ALG_AES_CMAC) {
+			err = qcedev_hash_cmac(qcedev_areq, handle, &sg_src);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			if (err) {
 				mutex_unlock(&hash_access_lock);
 				return err;
@@ -1710,7 +1761,11 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 				mutex_unlock(&hash_access_lock);
 				return -EINVAL;
 			}
+<<<<<<< HEAD
 			err = qcedev_hash_update(&qcedev_areq, handle, &sg_src);
+=======
+			err = qcedev_hash_update(qcedev_areq, handle, &sg_src);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			if (err) {
 				mutex_unlock(&hash_access_lock);
 				return err;
@@ -1720,6 +1775,7 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		if (handle->sha_ctxt.diglen > QCEDEV_MAX_SHA_DIGEST) {
 			pr_err("Invalid sha_ctxt.diglen %d\n",
 					handle->sha_ctxt.diglen);
+<<<<<<< HEAD
 			return -EINVAL;
 		}
 		memcpy(&qcedev_areq.sha_op_req.digest[0],
@@ -1728,6 +1784,16 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 			handle->sha_ctxt.diglen, QCEDEV_MAX_SHA_DIGEST));
 		mutex_unlock(&hash_access_lock);
 		if (copy_to_user((void __user *)arg, &qcedev_areq.sha_op_req,
+=======
+			mutex_unlock(&hash_access_lock);
+			return -EINVAL;
+		}
+		memcpy(&qcedev_areq->sha_op_req.digest[0],
+				&handle->sha_ctxt.digest[0],
+				handle->sha_ctxt.diglen);
+		mutex_unlock(&hash_access_lock);
+		if (copy_to_user((void __user *)arg, &qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		}
@@ -1739,17 +1805,30 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 			pr_err("%s Init was not called\n", __func__);
 			return -EINVAL;
 		}
+<<<<<<< HEAD
 		if (copy_from_user(&qcedev_areq.sha_op_req,
+=======
+		if (copy_from_user(&qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					(void __user *)arg,
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		mutex_lock(&hash_access_lock);
+<<<<<<< HEAD
 		if (qcedev_check_sha_params(&qcedev_areq.sha_op_req, podev)) {
 			mutex_unlock(&hash_access_lock);
 			return -EINVAL;
 		}
 		qcedev_areq.op_type = QCEDEV_CRYPTO_OPER_SHA;
 		err = qcedev_hash_final(&qcedev_areq, handle);
+=======
+		if (qcedev_check_sha_params(&qcedev_areq->sha_op_req, podev)) {
+			mutex_unlock(&hash_access_lock);
+			return -EINVAL;
+		}
+		qcedev_areq->op_type = QCEDEV_CRYPTO_OPER_SHA;
+		err = qcedev_hash_final(qcedev_areq, handle);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		if (err) {
 			mutex_unlock(&hash_access_lock);
 			return err;
@@ -1760,12 +1839,21 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 			mutex_unlock(&hash_access_lock);
 			return -EINVAL;
 		}
+<<<<<<< HEAD
 		qcedev_areq.sha_op_req.diglen = handle->sha_ctxt.diglen;
 		memcpy(&qcedev_areq.sha_op_req.digest[0],
 				&handle->sha_ctxt.digest[0],
 				handle->sha_ctxt.diglen);
 		mutex_unlock(&hash_access_lock);
 		if (copy_to_user((void __user *)arg, &qcedev_areq.sha_op_req,
+=======
+		qcedev_areq->sha_op_req.diglen = handle->sha_ctxt.diglen;
+		memcpy(&qcedev_areq->sha_op_req.digest[0],
+				&handle->sha_ctxt.digest[0],
+				handle->sha_ctxt.diglen);
+		mutex_unlock(&hash_access_lock);
+		if (copy_to_user((void __user *)arg, &qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		handle->sha_ctxt.init_done = false;
@@ -1775,11 +1863,16 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		{
 		struct scatterlist sg_src;
 
+<<<<<<< HEAD
 		if (copy_from_user(&qcedev_areq.sha_op_req,
+=======
+		if (copy_from_user(&qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					(void __user *)arg,
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		mutex_lock(&hash_access_lock);
+<<<<<<< HEAD
 		if (qcedev_check_sha_params(&qcedev_areq.sha_op_req, podev)) {
 			mutex_unlock(&hash_access_lock);
 			return -EINVAL;
@@ -1787,11 +1880,24 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 		qcedev_areq.op_type = QCEDEV_CRYPTO_OPER_SHA;
 		qcedev_hash_init(&qcedev_areq, handle, &sg_src);
 		err = qcedev_hash_update(&qcedev_areq, handle, &sg_src);
+=======
+		if (qcedev_check_sha_params(&qcedev_areq->sha_op_req, podev)) {
+			mutex_unlock(&hash_access_lock);
+			return -EINVAL;
+		}
+		qcedev_areq->op_type = QCEDEV_CRYPTO_OPER_SHA;
+		qcedev_hash_init(qcedev_areq, handle, &sg_src);
+		err = qcedev_hash_update(qcedev_areq, handle, &sg_src);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		if (err) {
 			mutex_unlock(&hash_access_lock);
 			return err;
 		}
+<<<<<<< HEAD
 		err = qcedev_hash_final(&qcedev_areq, handle);
+=======
+		err = qcedev_hash_final(qcedev_areq, handle);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		if (err) {
 			mutex_unlock(&hash_access_lock);
 			return err;
@@ -1802,12 +1908,21 @@ long qcedev_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 			mutex_unlock(&hash_access_lock);
 			return -EINVAL;
 		}
+<<<<<<< HEAD
 		qcedev_areq.sha_op_req.diglen =	handle->sha_ctxt.diglen;
 		memcpy(&qcedev_areq.sha_op_req.digest[0],
 				&handle->sha_ctxt.digest[0],
 				handle->sha_ctxt.diglen);
 		mutex_unlock(&hash_access_lock);
 		if (copy_to_user((void __user *)arg, &qcedev_areq.sha_op_req,
+=======
+		qcedev_areq->sha_op_req.diglen =	handle->sha_ctxt.diglen;
+		memcpy(&qcedev_areq->sha_op_req.digest[0],
+				&handle->sha_ctxt.digest[0],
+				handle->sha_ctxt.diglen);
+		mutex_unlock(&hash_access_lock);
+		if (copy_to_user((void __user *)arg, &qcedev_areq->sha_op_req,
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 					sizeof(struct qcedev_sha_op_req)))
 			return -EFAULT;
 		}

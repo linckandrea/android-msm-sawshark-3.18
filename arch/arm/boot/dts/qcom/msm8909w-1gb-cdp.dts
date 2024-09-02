@@ -90,11 +90,15 @@
 };
 
 &i2c_3 {
+<<<<<<< HEAD
 	status = "ok";
 };
 
 &i2c_2 {
 	status = "ok";
+=======
+	status = "disabled";
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 };
 
 &blsp1_uart1 {

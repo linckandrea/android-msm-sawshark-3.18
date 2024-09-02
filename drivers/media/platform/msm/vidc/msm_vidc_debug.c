@@ -12,6 +12,10 @@
  */
 
 #define CREATE_TRACE_POINTS
+<<<<<<< HEAD
+=======
+#include "msm_vidc_common.h"
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #define MAX_SSR_STRING_LEN 10
 #include "msm_vidc_debug.h"
 #include "vidc_hfi_api.h"
@@ -23,9 +27,14 @@ int msm_vidc_fw_debug_mode = 1;
 int msm_vidc_fw_low_power_mode = 1;
 int msm_vidc_hw_rsp_timeout = 1000;
 int msm_vidc_fw_coverage = 0;
+<<<<<<< HEAD
 int msm_vidc_vpe_csc_601_to_709 = 0;
 int msm_vidc_dec_dcvs_mode = 0;
 int msm_vidc_enc_dcvs_mode = 0;
+=======
+int msm_vidc_dec_dcvs_mode = 1;
+int msm_vidc_enc_dcvs_mode = 1;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 int msm_vidc_sys_idle_indicator = 0;
 int msm_vidc_firmware_unload_delay = 15000;
 int msm_vidc_thermal_mitigation_disabled = 0;
@@ -199,8 +208,6 @@ struct dentry *msm_vidc_debugfs_init_drv(void)
 			&msm_vidc_fw_low_power_mode) &&
 	__debugfs_create(u32, "debug_output", &msm_vidc_debug_out) &&
 	__debugfs_create(u32, "hw_rsp_timeout", &msm_vidc_hw_rsp_timeout) &&
-	__debugfs_create(bool, "enable_vpe_csc_601_709",
-			&msm_vidc_vpe_csc_601_to_709) &&
 	__debugfs_create(bool, "sys_idle_indicator",
 			&msm_vidc_sys_idle_indicator) &&
 	__debugfs_create(u32, "firmware_unload_delay",
@@ -229,7 +236,7 @@ failed_create_dir:
 struct dentry *msm_vidc_debugfs_init_core(struct msm_vidc_core *core,
 		struct dentry *parent)
 {
-	struct dentry *dir = NULL;
+	struct dentry *dir;
 	char debugfs_name[MAX_DEBUGFS_NAME];
 	if (!core) {
 		dprintk(VIDC_ERR, "Invalid params, core: %pK\n", core);
@@ -238,22 +245,28 @@ struct dentry *msm_vidc_debugfs_init_core(struct msm_vidc_core *core,
 
 	snprintf(debugfs_name, MAX_DEBUGFS_NAME, "core%d", core->id);
 	dir = debugfs_create_dir(debugfs_name, parent);
-	if (!dir) {
+	if (IS_ERR_OR_NULL(dir)) {
 		dprintk(VIDC_ERR, "Failed to create debugfs for msm_vidc\n");
 		goto failed_create_dir;
 	}
 
+<<<<<<< HEAD
 	if (!debugfs_create_file("info", S_IRUGO, dir, core, &core_info_fops)) {
+=======
+	if (IS_ERR_OR_NULL(debugfs_create_file("info", S_IRUGO, dir, core, &core_info_fops))) {
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		dprintk(VIDC_ERR, "debugfs_create_file: fail\n");
-		goto failed_create_dir;
+		goto failed_create_file;
 	}
-	if (!debugfs_create_file("trigger_ssr", S_IWUSR,
-			dir, core, &ssr_fops)) {
+	if (IS_ERR_OR_NULL(debugfs_create_file("trigger_ssr", S_IWUSR,
+			dir, core, &ssr_fops))) {
 		dprintk(VIDC_ERR, "debugfs_create_file: fail\n");
-		goto failed_create_dir;
+		goto failed_create_file;
 	}
+failed_create_file:
+	debugfs_remove_recursive(dir);
 failed_create_dir:
-	return dir;
+	return NULL;
 }
 
 static int inst_info_open(struct inode *inode, struct file *file)
@@ -296,7 +309,11 @@ static int publish_unreleased_reference(struct msm_vidc_inst *inst,
 	return 0;
 }
 
+<<<<<<< HEAD
 void put_inst_helper(struct kref *kref)
+=======
+static void put_inst_helper(struct kref *kref)
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 {
 	struct msm_vidc_inst *inst = container_of(kref,
 			struct msm_vidc_inst, kref);
@@ -363,11 +380,19 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 		cur += write_str(cur, end - cur, "capability: %s\n",
 			i == OUTPUT_PORT ? "Output" : "Capture");
 		cur += write_str(cur, end - cur, "name : %s\n",
+<<<<<<< HEAD
 			inst->fmts[i]->name);
 		cur += write_str(cur, end - cur, "planes : %d\n",
 			inst->fmts[i]->num_planes);
 		cur += write_str(cur, end - cur,
 			"type: %s\n", inst->fmts[i]->type == OUTPUT_PORT ?
+=======
+			inst->fmts[i].name);
+		cur += write_str(cur, end - cur, "planes : %d\n",
+			inst->fmts[i].num_planes);
+		cur += write_str(cur, end - cur,
+			"type: %s\n", inst->fmts[i].type == OUTPUT_PORT ?
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			"Output" : "Capture");
 
 		switch (inst->buffer_mode_set[i]) {
@@ -391,7 +416,11 @@ static ssize_t inst_info_read(struct file *file, char __user *buf,
 		cur += write_str(cur, end - cur, "count: %u\n",
 				inst->bufq[i].vb2_bufq.num_buffers);
 
+<<<<<<< HEAD
 		for (j = 0; j < inst->fmts[i]->num_planes; j++)
+=======
+		for (j = 0; j < inst->fmts[i].num_planes; j++)
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			cur += write_str(cur, end - cur,
 			"size for plane %d: %u\n", j,
 			inst->bufq[i].vb2_bufq.plane_sizes[j]);
@@ -437,7 +466,11 @@ static const struct file_operations inst_info_fops = {
 struct dentry *msm_vidc_debugfs_init_inst(struct msm_vidc_inst *inst,
 		struct dentry *parent)
 {
+<<<<<<< HEAD
 	struct dentry *dir = NULL, *info = NULL;
+=======
+	struct dentry *dir, *info;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	char debugfs_name[MAX_DEBUGFS_NAME];
 	struct core_inst_pair *idata = NULL;
 
@@ -445,7 +478,10 @@ struct dentry *msm_vidc_debugfs_init_inst(struct msm_vidc_inst *inst,
 		dprintk(VIDC_ERR, "Invalid params, inst: %pK\n", inst);
 		goto exit;
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	snprintf(debugfs_name, MAX_DEBUGFS_NAME, "inst_%pK", inst);
 
 	idata = kzalloc(sizeof(struct core_inst_pair), GFP_KERNEL);
@@ -458,14 +494,18 @@ struct dentry *msm_vidc_debugfs_init_inst(struct msm_vidc_inst *inst,
 	idata->inst = inst;
 
 	dir = debugfs_create_dir(debugfs_name, parent);
-	if (!dir) {
+	if (IS_ERR_OR_NULL(dir)) {
 		dprintk(VIDC_ERR, "Failed to create debugfs for msm_vidc\n");
 		goto failed_create_dir;
 	}
 
 	info = debugfs_create_file("info", S_IRUGO, dir,
 			idata, &inst_info_fops);
+<<<<<<< HEAD
 	if (!info) {
+=======
+	if (IS_ERR_OR_NULL(info)) {
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 		dprintk(VIDC_ERR, "debugfs_create_file: fail\n");
 		goto failed_create_file;
 	}
@@ -476,11 +516,18 @@ struct dentry *msm_vidc_debugfs_init_inst(struct msm_vidc_inst *inst,
 
 failed_create_file:
 	debugfs_remove_recursive(dir);
+<<<<<<< HEAD
 	dir = NULL;
 failed_create_dir:
 	kfree(idata);
 exit:
 	return dir;
+=======
+failed_create_dir:
+	kfree(idata);
+exit:
+	return NULL;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 }
 
 void msm_vidc_debugfs_deinit_inst(struct msm_vidc_inst *inst)

@@ -172,7 +172,7 @@ static int qcota_release(struct inode *inode, struct file *file)
 	podev =  file->private_data;
 
 	if (podev != NULL && podev->magic != OTA_MAGIC) {
-		pr_err("%s: invalid handle %p\n",
+		pr_err("%s: invalid handle %pK\n",
 			__func__, podev);
 	}
 
@@ -239,13 +239,19 @@ static void req_done(unsigned long data)
 		if (!list_empty(&podev->ready_commands)) {
 			new_req = container_of(podev->ready_commands.next,
 						struct ota_async_req, rlist);
+			if (NULL == new_req) {
+				pr_err("ota_crypto: req_done, new_req = NULL");
+				return;
+			}
 			list_del(&new_req->rlist);
 			pqce->active_command = new_req;
 			spin_unlock_irqrestore(&podev->lock, flags);
 
-			new_req->err = 0;
-			/* start a new request */
-			ret = start_req(pqce, new_req);
+			if (new_req) {
+				new_req->err = 0;
+				/* start a new request */
+				ret = start_req(pqce, new_req);
+			}
 			if (unlikely(new_req && ret)) {
 				new_req->err = ret;
 				complete(&new_req->complete);
@@ -441,7 +447,7 @@ static long qcota_ioctl(struct file *file,
 
 	podev =  file->private_data;
 	if (podev == NULL || podev->magic != OTA_MAGIC) {
-		pr_err("%s: invalid handle %p\n",
+		pr_err("%s: invalid handle %pK\n",
 			__func__, podev);
 		return -ENOENT;
 	}

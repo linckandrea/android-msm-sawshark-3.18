@@ -226,12 +226,15 @@ struct dentry_operations {
 #define DCACHE_MAY_FREE			0x00800000
 #define DCACHE_OP_SELECT_INODE		0x02000000 /* Unioned entry: dcache op selects inode */
 
+#define DCACHE_ENCRYPTED_WITH_KEY	0x04000000 /* dir is encrypted with a valid key */
+
 extern seqlock_t rename_lock;
 
 /*
  * These are the low-level FS interfaces to the dcache..
  */
 extern void d_instantiate(struct dentry *, struct inode *);
+extern void d_instantiate_new(struct dentry *, struct inode *);
 extern struct dentry * d_instantiate_unique(struct dentry *, struct inode *);
 #define d_materialise_unique(d, i) d_splice_alias(i, d)
 extern int d_instantiate_no_diralias(struct dentry *, struct inode *);
@@ -535,4 +538,19 @@ struct name_snapshot {
 void take_dentry_name_snapshot(struct name_snapshot *, struct dentry *);
 void release_dentry_name_snapshot(struct name_snapshot *);
 
+<<<<<<< HEAD
+=======
+static inline struct inode *vfs_select_inode(struct dentry *dentry,
+					     unsigned open_flags)
+{
+	struct inode *inode = d_inode(dentry);
+
+	if (inode && unlikely(dentry->d_flags & DCACHE_OP_SELECT_INODE))
+		inode = dentry->d_op->d_select_inode(dentry, open_flags);
+
+	return inode;
+}
+
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 #endif	/* __LINUX_DCACHE_H */

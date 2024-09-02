@@ -93,8 +93,10 @@ obj-$(CONFIG_TC)		+= tc/
 obj-$(CONFIG_UWB)		+= uwb/
 obj-$(CONFIG_USB_PHY)		+= usb/
 obj-$(CONFIG_USB)		+= usb/
+obj-$(CONFIG_USB_SUPPORT)	+= usb/
 obj-$(CONFIG_PCI)		+= usb/
 obj-$(CONFIG_USB_GADGET)	+= usb/
+obj-$(CONFIG_OF)		+= usb/
 obj-$(CONFIG_SERIO)		+= input/serio/
 obj-$(CONFIG_GAMEPORT)		+= input/gameport/
 obj-$(CONFIG_INPUT)		+= input/
@@ -169,8 +171,12 @@ obj-$(CONFIG_ESOC)		+= esoc/
 
 obj-$(CONFIG_BIF)		+= bif/
 
+obj-$(CONFIG_SENSORS)		+= sensors/
 obj-$(CONFIG_SENSORS_SSC)	+= sensors/
+<<<<<<< HEAD
 
 # <t-base drivers
 obj-y                           += hwversion/
 obj-y                           += hwmcu/
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0

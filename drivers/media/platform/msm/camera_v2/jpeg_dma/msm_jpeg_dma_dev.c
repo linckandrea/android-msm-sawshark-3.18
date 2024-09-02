@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2015-2016, 2019, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2015-2017, 2019 The Linux Foundation. All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -437,7 +441,7 @@ static int msm_jpegdma_queue_init(void *priv, struct vb2_queue *src_vq,
 	src_vq->drv_priv = ctx;
 	src_vq->mem_ops = &msm_jpegdma_vb2_mem_ops;
 	src_vq->ops = &msm_jpegdma_vb2_q_ops;
-	src_vq->buf_struct_size = sizeof(struct vb2_buffer);
+	src_vq->buf_struct_size = sizeof(struct v4l2_m2m_buffer);
 	src_vq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_COPY;
 
 	ret = vb2_queue_init(src_vq);
@@ -451,7 +455,7 @@ static int msm_jpegdma_queue_init(void *priv, struct vb2_queue *src_vq,
 	dst_vq->drv_priv = ctx;
 	dst_vq->mem_ops = &msm_jpegdma_vb2_mem_ops;
 	dst_vq->ops = &msm_jpegdma_vb2_q_ops;
-	dst_vq->buf_struct_size = sizeof(struct vb2_buffer);
+	dst_vq->buf_struct_size = sizeof(struct v4l2_m2m_buffer);
 	dst_vq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_COPY;
 
 	ret = vb2_queue_init(dst_vq);
@@ -757,7 +761,10 @@ static int msm_jpegdma_reqbufs(struct file *file,
 {
 	int ret = 0;
 	struct jpegdma_ctx *ctx = msm_jpegdma_ctx_from_fh(fh);
+<<<<<<< HEAD
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	mutex_lock(&ctx->lock);
 	ret = v4l2_m2m_reqbufs(file, ctx->m2m_ctx, req);
 	mutex_unlock(&ctx->lock);
@@ -840,7 +847,10 @@ static int msm_jpegdma_streamoff(struct file *file,
 {
 	struct jpegdma_ctx *ctx = msm_jpegdma_ctx_from_fh(fh);
 	int ret;
+<<<<<<< HEAD
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	mutex_lock(&ctx->lock);
 	ret = v4l2_m2m_streamoff(file, ctx->m2m_ctx, buf_type);
 	if (ret < 0)
@@ -1209,7 +1219,7 @@ static int jpegdma_probe(struct platform_device *pdev)
 		goto error_mem_resources;
 
 	/* get all the regulators */
-	ret = msm_camera_get_regulator_info(pdev, &jpegdma->vdd,
+	ret = msm_camera_get_regulator_info(pdev, &jpegdma->dma_vdd,
 		&jpegdma->num_reg);
 	if (ret < 0)
 		goto error_get_regulators;
@@ -1316,7 +1326,7 @@ error_qos_get:
 	msm_camera_put_clk_info(pdev, &jpegdma->jpeg_clk_info,
 		&jpegdma->clk, jpegdma->num_clk);
 error_get_clocks:
-	msm_camera_put_regulators(pdev, &jpegdma->vdd,
+	msm_camera_put_regulators(pdev, &jpegdma->dma_vdd,
 		jpegdma->num_reg);
 error_get_regulators:
 	msm_jpegdma_hw_release_mem_resources(jpegdma);
@@ -1344,7 +1354,7 @@ static int jpegdma_device_remove(struct platform_device *pdev)
 	/* unregister bus client */
 	msm_camera_unregister_bus_client(dma->bus_client);
 	/* release all the regulators */
-	msm_camera_put_regulators(dma->pdev, &dma->vdd,
+	msm_camera_put_regulators(dma->pdev, &dma->dma_vdd,
 		dma->num_reg);
 	/* release all the clocks */
 	msm_camera_put_clk_info(dma->pdev, &dma->jpeg_clk_info,

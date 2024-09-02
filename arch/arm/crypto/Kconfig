@@ -27,6 +27,18 @@ config CRYPTO_SHA1_ARM_NEON
 	  using optimized ARM NEON assembly, when NEON instructions are
 	  available.
 
+<<<<<<< HEAD
+=======
+config CRYPTO_SHA2_ARM_CE
+	tristate "SHA-224/256 digest algorithm (ARM v8 Crypto Extensions)"
+	depends on KERNEL_MODE_NEON
+	select CRYPTO_SHA256
+	select CRYPTO_HASH
+	help
+	  SHA-256 secure hash standard (DFIPS 180-2) implemented
+	  using special ARMv8 Crypto Extensions.
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 config CRYPTO_SHA256_ARM
 	tristate "SHA-224/256 digest algorithm (ARM-asm and NEON)"
 	select CRYPTO_HASH
@@ -89,4 +101,16 @@ config CRYPTO_AES_ARM_BS
 	  This implementation does not rely on any lookup tables so it is
 	  believed to be invulnerable to cache timing attacks.
 
+<<<<<<< HEAD
+=======
+config CRYPTO_AES_ARM_CE
+	tristate "Accelerated AES using ARMv8 Crypto Extensions"
+	depends on KERNEL_MODE_NEON
+	select CRYPTO_ALGAPI
+	select CRYPTO_ABLK_HELPER
+	help
+	  Use an implementation of AES in CBC, CTR and XTS modes that uses
+	  ARMv8 Crypto Extensions
+
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 endif

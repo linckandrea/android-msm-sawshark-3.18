@@ -26,6 +26,8 @@
 #include <linux/atomic.h>
 #include <linux/of.h>
 #include <linux/input.h>
+#include <linux/pm_runtime.h>
+#include <linux/pm_wakeup.h>
 #include <uapi/linux/qbt1000.h>
 #include <soc/qcom/scm.h>
 #include "qseecom_kernel.h"
@@ -84,8 +86,13 @@ struct qbt1000_drvdata {
 	uint32_t	ssc_subsys_id;
 	uint32_t	ssc_spi_port;
 	uint32_t	ssc_spi_port_slave_index;
+<<<<<<< HEAD
+=======
+	struct wakeup_source w_lock;
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	struct qseecom_handle *app_handle;
 };
+#define W_LOCK_DELAY_MS (2000)
 
 /**
  * get_cmd_rsp_buffers() - Function sets cmd & rsp buffer pointers and
@@ -833,6 +840,7 @@ static long qbt1000_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 				"%s: Failed copy 2us LOAD rc:%d\n",
 				 __func__, rc);
 			rc = -ENOMEM;
+<<<<<<< HEAD
 			goto end;
 		}
 
@@ -845,6 +853,8 @@ static long qbt1000_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 				"%s: Failed copy 2us LOAD rc:%d\n",
 				 __func__, rc);
 			rc = -ENOMEM;
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 			goto end;
 		}
 
@@ -997,6 +1007,8 @@ static long qbt1000_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 	}
 
 end:
+	pm_runtime_mark_last_busy(drvdata->dev);
+	pm_runtime_put_autosuspend(drvdata->dev);
 	mutex_unlock(&drvdata->mutex);
 	return rc;
 }
@@ -1104,8 +1116,10 @@ int qbt1000_create_input_device(struct qbt1000_drvdata *drvdata)
 
 	drvdata->in_dev->evbit[0] = BIT_MASK(EV_KEY) |  BIT_MASK(EV_ABS);
 	drvdata->in_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-	drvdata->in_dev->keybit[BIT_WORD(KEY_HOMEPAGE)] =
-		BIT_MASK(KEY_HOMEPAGE);
+
+	/* enable all 256 key events except to key 00 which is "KEY_RESERVED" */
+	memset(drvdata->in_dev->keybit, 0xFE,
+		   BIT_WORD(0x100)*sizeof(unsigned long));
 
 	input_set_abs_params(drvdata->in_dev, ABS_X,
 			     0,
@@ -1183,7 +1197,7 @@ static int qbt1000_read_spi_conn_properties(struct device_node *node,
 					dev_err(drvdata->dev,
 						"%s: Failed get %s\n",
 						__func__, clock_name);
-					return rc;
+				return rc;
 			}
 
 			if (!strcmp(clock_name, "spi_clk"))
@@ -1315,6 +1329,10 @@ static int qbt1000_probe(struct platform_device *pdev)
 	atomic_set(&drvdata->available, 1);
 
 	mutex_init(&drvdata->mutex);
+	wakeup_source_init(&drvdata->w_lock, "qbt_wake_source");
+	pm_runtime_set_autosuspend_delay(dev, W_LOCK_DELAY_MS);
+	pm_runtime_use_autosuspend(dev);
+	pm_runtime_enable(dev);
 
 	rc = qbt1000_dev_register(drvdata);
 	if (rc < 0)
@@ -1355,9 +1373,10 @@ static int qbt1000_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int qbt1000_suspend(struct platform_device *pdev, pm_message_t state)
+static int qbt1000_suspend(struct device *dev)
 {
 	int rc = 0;
+	struct platform_device *pdev = to_platform_device(dev);
 	struct qbt1000_drvdata *drvdata = platform_get_drvdata(pdev);
 
 	/*
@@ -1376,18 +1395,44 @@ static int qbt1000_suspend(struct platform_device *pdev, pm_message_t state)
 	return rc;
 }
 
+static int qbt1000_runtime_suspend(struct device *dev)
+{
+	struct platform_device *pdev = to_platform_device(dev);
+	struct qbt1000_drvdata *drvdata = platform_get_drvdata(pdev);
+
+	__pm_relax(&drvdata->w_lock);
+
+	return 0;
+};
+
+static int qbt1000_runtime_resume(struct device *dev)
+{
+	struct platform_device *pdev = to_platform_device(dev);
+	struct qbt1000_drvdata *drvdata = platform_get_drvdata(pdev);
+
+	__pm_stay_awake(&drvdata->w_lock);
+
+	return 0;
+};
+
 static struct of_device_id qbt1000_match[] = {
 	{ .compatible = "qcom,qbt1000" },
 	{}
 };
 
+static const struct dev_pm_ops qbt1000_dev_pm_ops = {
+	SET_SYSTEM_SLEEP_PM_OPS(qbt1000_suspend, NULL)
+	SET_RUNTIME_PM_OPS(qbt1000_runtime_suspend,
+			   qbt1000_runtime_resume, NULL)
+};
+
 static struct platform_driver qbt1000_plat_driver = {
 	.probe = qbt1000_probe,
 	.remove = qbt1000_remove,
-	.suspend = qbt1000_suspend,
 	.driver = {
 		.name = "qbt1000",
 		.owner = THIS_MODULE,
+		.pm = &qbt1000_dev_pm_ops,
 		.of_match_table = qbt1000_match,
 	},
 };

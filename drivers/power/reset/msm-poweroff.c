@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -47,7 +47,7 @@
 
 
 static int restart_mode;
-static void *restart_reason, *dload_type_addr;
+static void *restart_reason;
 static bool scm_pmic_arbiter_disable_supported;
 static bool scm_deassert_ps_hold_supported;
 /* Download mode master kill-switch */
@@ -55,22 +55,44 @@ static void __iomem *msm_ps_hold;
 static phys_addr_t tcsr_boot_misc_detect;
 static void scm_disable_sdi(void);
 
+#ifdef CONFIG_MSM_DLOAD_MODE
 /* Runtime could be only changed value once.
- * There is no API from TZ to re-enable the registers.
- * So the SDI cannot be re-enabled when it already by-passed.
+* There is no API from TZ to re-enable the registers.
+* So the SDI cannot be re-enabled when it already by-passed.
 */
+<<<<<<< HEAD
 static int download_mode = 0;
 static struct kobject dload_kobj;
+=======
+static int download_mode = 1;
+#else
+static const int download_mode;
+#endif
+
+static int in_panic;
+
+static int panic_prep_restart(struct notifier_block *this,
+			      unsigned long event, void *ptr)
+{
+	in_panic = 1;
+	return NOTIFY_DONE;
+}
+
+static struct notifier_block panic_blk = {
+	.notifier_call	= panic_prep_restart,
+};
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 
 #ifdef CONFIG_MSM_DLOAD_MODE
 #define EDL_MODE_PROP "qcom,msm-imem-emergency_download_mode"
 #define DL_MODE_PROP "qcom,msm-imem-download_mode"
 
-static int in_panic;
 static void *dload_mode_addr;
 static bool dload_mode_enabled;
 static void *emergency_dload_mode_addr;
 static bool scm_dload_supported;
+static struct kobject dload_kobj;
+static void *dload_type_addr;
 
 static int dload_set(const char *val, struct kernel_param *kp);
 /* interface for exporting attributes */
@@ -89,17 +111,6 @@ struct reset_attribute {
 
 module_param_call(download_mode, dload_set, param_get_int,
 			&download_mode, 0644);
-
-static int panic_prep_restart(struct notifier_block *this,
-			      unsigned long event, void *ptr)
-{
-	in_panic = 1;
-	return NOTIFY_DONE;
-}
-
-static struct notifier_block panic_blk = {
-	.notifier_call	= panic_prep_restart,
-};
 
 int scm_set_dload_mode(int arg1, int arg2)
 {
@@ -262,8 +273,13 @@ static void msm_restart_prepare(const char *cmd)
 			need_warm_reset = true;
 	} else {
 		need_warm_reset = (get_dload_mode() ||
-				(cmd != NULL && cmd[0] != '\0'));
+				((cmd != NULL && cmd[0] != '\0') &&
+				strcmp(cmd, "userrequested")));
 	}
+
+#ifdef CONFIG_MSM_PRESERVE_MEM
+	need_warm_reset = true;
+#endif
 
 	/* Hard reset the PMIC unless memory contents must be maintained. */
 	if (need_warm_reset) {
@@ -385,6 +401,7 @@ static void do_msm_poweroff(void)
 	return;
 }
 
+#ifdef CONFIG_MSM_DLOAD_MODE
 static ssize_t attr_show(struct kobject *kobj, struct attribute *attr,
 				char *buf)
 {
@@ -462,6 +479,7 @@ static struct attribute *reset_attrs[] = {
 static struct attribute_group reset_attr_group = {
 	.attrs = reset_attrs,
 };
+#endif
 
 static int msm_restart_probe(struct platform_device *pdev)
 {
@@ -470,11 +488,12 @@ static int msm_restart_probe(struct platform_device *pdev)
 	struct device_node *np;
 	int ret = 0;
 
+	atomic_notifier_chain_register(&panic_notifier_list, &panic_blk);
+
 #ifdef CONFIG_MSM_DLOAD_MODE
 	if (scm_is_call_available(SCM_SVC_BOOT, SCM_DLOAD_CMD) > 0)
 		scm_dload_supported = true;
 
-	atomic_notifier_chain_register(&panic_notifier_list, &panic_blk);
 	np = of_find_compatible_node(NULL, NULL, DL_MODE_PROP);
 	if (!np) {
 		pr_err("unable to find DT imem DLOAD mode node\n");

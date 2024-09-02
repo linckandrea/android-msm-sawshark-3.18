@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 /* Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2011-2015, 2017-2018, The Linux Foundation.
+ * All rights reserved.
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -430,7 +435,11 @@ static ssize_t rpmstats_show(struct kobject *kobj,
 					prvdata);
 	}
 
+<<<<<<< HEAD
 	ret = snprintf(buf, prvdata->len, prvdata->buf);
+=======
+	ret = snprintf(buf, prvdata->len, "%s", prvdata->buf);
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	iounmap(prvdata->reg_base);
 ioremap_fail:
 	kfree(prvdata);
@@ -494,8 +503,10 @@ static int msm_rpmstats_probe(struct platform_device *pdev)
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 							"phys_addr_base");
-	if (!res)
+	if (!res) {
+		kfree(pdata);
 		return -EINVAL;
+	}
 
 	offset = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 							"offset_addr");
@@ -503,8 +514,9 @@ static int msm_rpmstats_probe(struct platform_device *pdev)
 		/* Remap the rpm-stats pointer */
 		phys_ptr = ioremap_nocache(offset->start, SZ_4);
 		if (!phys_ptr) {
-			pr_err("%s: Failed to ioremap address: %x\n",
-					__func__, offset_addr);
+			pr_err("%s: Failed to ioremap address: %pa\n",
+					__func__, &offset->start);
+			kfree(pdata);
 			return -ENODEV;
 		}
 		offset_addr = readl_relaxed(phys_ptr);

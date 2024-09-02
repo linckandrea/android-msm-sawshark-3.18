@@ -3897,6 +3897,7 @@ static int bfq_init_queue(struct request_queue *q, struct elevator_type *e)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void bfq_registered_queue(struct request_queue *q)
 {
 	struct elevator_queue *e = q->elevator;
@@ -3909,6 +3910,8 @@ static void bfq_registered_queue(struct request_queue *q)
 		bfqd->bfq_slice_idle = 0;
 }
 
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 static void bfq_slab_kill(void)
 {
 	if (bfq_pool != NULL)
@@ -4172,7 +4175,10 @@ static struct elevator_type iosched_bfq = {
 		.elevator_may_queue_fn =	bfq_may_queue,
 		.elevator_init_fn =		bfq_init_queue,
 		.elevator_exit_fn =		bfq_exit_queue,
+<<<<<<< HEAD
 		.elevator_registered_fn =	bfq_registered_queue,
+=======
+>>>>>>> e475a91d9cd2899a604ee5160186403f9b69ada0
 	},
 	.icq_size =		sizeof(struct bfq_io_cq),
 	.icq_align =		__alignof__(struct bfq_io_cq),
