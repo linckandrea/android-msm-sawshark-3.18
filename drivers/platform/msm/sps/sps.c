@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
-=======
 /* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
->>>>>>> LAW.BR.2.0-05510-8x09w.0
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
