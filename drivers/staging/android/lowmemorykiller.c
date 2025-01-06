@@ -127,6 +127,19 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		if (tsk->flags & PF_KTHREAD)
 			continue;
 
+<<<<<<< HEAD
+=======
+		if (time_before_eq(jiffies, lowmem_deathpending_timeout)) {
+			if (test_task_flag(tsk, TIF_MEMDIE)) {
+				rcu_read_unlock();
+				/* give the system time to free up the memory */
+				msleep_interruptible(20);
+				mutex_unlock(&scan_mutex);
+				return 0;
+			}
+		}
+
+>>>>>>> parent of 0a377865fd0c (android/lowmemorykiller: Ignore tasks with freed mm)
 		p = find_lock_task_mm(tsk);
 		if (!p)
 			continue;
@@ -179,11 +192,20 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		set_tsk_thread_flag(selected, TIF_MEMDIE);
 		send_sig(SIGKILL, selected, 0);
 		rem += selected_tasksize;
+<<<<<<< HEAD
+=======
+		/* give the system time to free up the memory */
+		msleep_interruptible(20);
+>>>>>>> parent of 0a377865fd0c (android/lowmemorykiller: Ignore tasks with freed mm)
 	}
 
 	lowmem_print(4, "lowmem_scan %lu, %x, return %lu\n",
 		     sc->nr_to_scan, sc->gfp_mask, rem);
 	rcu_read_unlock();
+<<<<<<< HEAD
+=======
+	mutex_unlock(&scan_mutex);
+>>>>>>> parent of 0a377865fd0c (android/lowmemorykiller: Ignore tasks with freed mm)
 	return rem;
 }
 
