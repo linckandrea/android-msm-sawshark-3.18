@@ -223,7 +223,7 @@ static void __ref cpu_all_ctrl(bool online) {
 		}
 	} else {
 		for_each_possible_cpu(cpu) {
-			if (!cpu_online(cpu) || cpu == 0)
+			if (!cpu_online(cpu) || (cpu == 0 & cpu == 1))
 				continue;
 			cpu_down(cpu);
 		}
