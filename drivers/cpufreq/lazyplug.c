@@ -297,10 +297,6 @@ static void update_per_cpu_stat(void)
 	for_each_online_cpu(cpu) {
 		l_ip_info = &per_cpu(ip_info, cpu);
 		l_ip_info->cpu_nr_running = avg_cpu_nr_running(cpu);
-#ifdef DEBUG_LAZYPLUG
-		pr_info("cpu %u nr_running => %lu\n", cpu,
-			l_ip_info->cpu_nr_running);
-#endif
 	}
 	put_online_cpus();
 }
@@ -330,12 +326,6 @@ static void lazyplug_work_fn(struct work_struct *work)
 	unsigned int nr_cpus = 0;
 
 	if (lazyplug_active) {
-		nr_run_stat = calculate_thread_stats();
-		update_per_cpu_stat();
-#ifdef DEBUG_LAZYPLUG
-		pr_info("nr_run_stat: %u\n", nr_run_stat);
-#endif
-		cpu_count = nr_run_stat;
 		nr_cpus = num_online_cpus();
 
 		if (!suspended) {
@@ -351,36 +341,12 @@ static void lazyplug_work_fn(struct work_struct *work)
 				if (idle_count == DEF_IDLE_COUNT && persist_count == 0) {
 					/* take down everyone */
 					unplug_cpu(0);
-#ifdef DEBUG_LAZYPLUG
-					offline_state_count++;
-					if (previous_online_status == true) {
-						previous_online_status = false;
-						switch_count++;
-					}
-				} else {
-					online_state_count++;
-					if (previous_online_status == false) {
-						previous_online_status = true;
-						switch_count++;
-					}
-#endif
 				}
 			} else {
 				idle_count = 0;
 				schedule_work(&cpu_all_up_work);
-#ifdef DEBUG_LAZYPLUG
-				online_state_count++;
-				if (previous_online_status == false) {
-					previous_online_status = true;
-					switch_count++;
-				}
-#endif
 			}
 		}
-#ifdef DEBUG_LAZYPLUG
-        else
-			pr_info("lazyplug is suspended!\n");
-#endif
 	}
 	queue_delayed_work(lazyplug_wq, &lazyplug_work,
 		msecs_to_jiffies(sampling_time));
