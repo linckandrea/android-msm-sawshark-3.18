@@ -247,12 +247,13 @@ config DEVFREQ_BOOST
 	  frequencies. The goal of this driver is to provide an interface to
 	  achieve optimal device performance by requesting boosts on key events,
 	  such as when a frame is ready to rendered to the display.
+	default y
 
 if DEVFREQ_BOOST
 
 config DEVFREQ_INPUT_BOOST_DURATION_MS
 	int "Input boost duration"
-	default "100"
+	default "0"
 	help
 	  Input boost duration in milliseconds for all boostable devices.
 
