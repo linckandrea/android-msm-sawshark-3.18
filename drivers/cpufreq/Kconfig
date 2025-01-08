@@ -254,12 +254,13 @@ config CPU_INPUT_BOOST
 	  display. The boost frequencies for this driver should be set so that
 	  frame drops are near-zero at the boosted frequencies and power
 	  consumption is minimized at said frequency combination.
+	default y
 
 if CPU_INPUT_BOOST
 
 config INPUT_BOOST_DURATION_MS
 	int "Input boost duration"
-	default "."
+	default "0"
 	help
 	  Input boost duration in milliseconds.
 
