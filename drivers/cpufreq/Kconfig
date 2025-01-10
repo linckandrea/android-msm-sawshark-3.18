@@ -253,8 +253,6 @@ config CPU_WAKE_BOOST
 	  make the display power on faster, as well as ensures good performance
 	  immediately after powering on the display.
 
-comment "CPU frequency scaling drivers"
-
 config CPUFREQ_DT
 	tristate "Generic DT based cpufreq driver"
 	depends on HAVE_CLK && OF
